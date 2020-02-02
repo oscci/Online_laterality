@@ -501,7 +501,9 @@ for (i in 1:nsub) { # loop through subjects
     
     temp_dat$subject[myrow] <- subname # add row for subject
     temp_dat$side[myrow] <- latlist[j] # add row for side
-    temp_dat$accurate[myrow] <- 100*mean(tmp1$Correct,na.rm=TRUE) # add row for accurate responses - this has been modified to give % correct
+    temp_dat$accurate[myrow] <- sum(tmp$Correct,na.rm=TRUE) # add row for N accurate response
+    temp_dat$p.corr[myrow] <- 100*mean(tmp$Correct,na.rm=TRUE) # add row for %accurate responses - NB for chimeric only error is wrong emotion - measure is just a measure of choice. For RDT, can make error of selecting wrong side, so % correct is meaningful
+  
     temp_dat$RT[myrow] <- mean(tmp2$RT,na.rm=TRUE) # add row for mean RT
     temp_dat$N[myrow]<-length(tmp1$RT) # add count of rows for this subject
   }
@@ -579,7 +581,7 @@ dopirate(origdat,task,measure)
 origdat <- chim_dat2
 origdat$X1 <- chim_dat2$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
 task <- 'Chimeric faces day 2'
-
+measure <- 'Accuracy'
 dopirate(origdat,task,measure)
 origdat$X1 <- chim_dat2$RT
 measure <- 'RT'
@@ -744,12 +746,12 @@ if (length(w)>0) {RDT_df2<-RDT_df2[-w,]}
 # Exclude cases with low % correct
 # NB something weird with these - seem to be ones with too many trials, suggesting some problem with multiple responses
 
-w<-which(RDT_df1$accurate<60)
+w<-which(RDT_df1$p.corr<60)
 if (length(w)>0)
 {RDT_df1$accurate[w]<-NA
 RDT_df1$RT[w]<-NA
 }
-w<-which(RDT_df2$accurate<60)
+w<-which(RDT_df2$p.corr<60)
 if (length(w)>0)
 {RDT_df2$accurate[w]<-NA
 RDT_df2$RT[w]<-NA
@@ -774,8 +776,8 @@ measure <- 'RT'
 dopirate(origdat,task,measure)
 
 #now create LI
-origdat$X1 <- origdat$accurate
-mycolname<-"RDT_acc_LI"
+origdat$X1 <- origdat$p.corr
+mycolname<-"RDT_p.corr_LI"
 polarity<- 1 #so LI is positive in predicted direction
 mycutoff <- 75
 demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
@@ -790,16 +792,16 @@ w<-which(is.na(demographics$RDT_acc_LI))
 if(length(w)>0)
 {demographics$RDT_RT_LI[w]<-NA}
 #t.test to test if laterality index differs from zero
-t.test(demographics$RDT_acc_LI)
+t.test(demographics$RDT_p.corr_LI)
 t.test(demographics$RDT_RT_LI)
 #rename column to identify day
 myncol <- length(colnames(demographics))
 colnames(demographics)[(myncol-1):myncol] <- paste0('Day',d,'.',colnames(demographics)[(myncol-1):myncol])
 
 }
-cor1<-cor(demographics$Day1.RDT_acc_LI,demographics$Day2.RDT_acc_LI,use='complete.obs')
+cor1<-cor(demographics$Day1.RDT_p.corr_LI,demographics$Day2.RDT_p.corr_LI,use='complete.obs')
 cor2<-cor(demographics$Day1.RDT_RT_LI,demographics$Day2.RDT_RT_LI,use='complete.obs')
-plot(demographics$Day1.RDT_acc_LI,demographics$Day2.RDT_acc_LI,main='Rhyme detect: LI for accuracy')
+plot(demographics$Day1.RDT_p.corr_LI,demographics$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
 abline(v=0)
 abline(h=0)
 text(-3,3,paste0('r = ',round(cor1,3)))
@@ -875,13 +877,24 @@ for (d in 1:2){ #we will process day 1 and day 2 together
   {origfile <- all_dat2}
 #As with earlier reading in, we default to saving finger2 (day2), but at end of the chunk we reassign to finger1 in the first run through the d loop
 task <- "Key Sequence Task"
-wanted <- c("subject", "Response", "display") # select wanted columns
+wanted <- c("subject", "Response", "display","RT") # select wanted columns
+#NB RT is not meaningful, in that we are just counting N sequences in fixed time.
+# But it could be looked at for measure of variability.
 finger2 <- procdata(origfile,wanted,task)
-
+finger2$complex <-'easy'
+task <- "Key Sequence Task (wider keys)"
+finger2a<-procdata(origfile,wanted,task)
+finger2a$complex <-'hard'
+finger2<-rbind(finger2,finger2a)
 # count subjects
 nsub <-length(levels(finger2$subject))
 print(paste('day',d,task,": subjects: ", nsub))
 
+finger2$RTbase[2:nrow(finger2)]<-finger2$RT[1:(nrow(finger2)-1)]
+finger2$RTa <- finger2$RT-finger2$RTbase
+#remove negative or v long RTs - can indicate when block changes etc
+w<-c(which(finger2$RTa<0),which(finger2$RTa>1000))
+finger2$RTa[w]<-NA
 if (d==1)
 {finger1 <- finger2
  }
@@ -892,21 +905,25 @@ if (d==1)
 
 In this section, the correct sequences are marked (e.g. pressing Y, M, I, B, in order will correspond to a score of 1).
 
+Added exploratory analysis of SDs of RTs for keypress rather than means, but this was not particularly illuminating.
+
 ```{r scorefinger}
 # We can go directly to creation of a data.frame by subjects, and use string matching to identify N correct seqs
-# y, m, i, b- complex
-# w, v, r, x- complex
-# t, u, m, b- easy
-# w, r, v, x- easy
+# y, m, i, b- complex R
+# t, u, m, b- easy R
+# w, v, r, x- complex L
+# w, r, v, x- easy L
 
 myseq <-c( 'ymib','tumb','wvrx','wrvx') #R complex , R easy, L complex, L easy
 
 subids <- levels(finger1$subject) #just look at data for those doing time1 and
 nsub <- length(subids)
 
-finger.df <- data.frame(matrix(NA,nrow=nsub,ncol=9))
-colnames(finger.df)<-c('subject','Leasy1','Reasy1','Lhard1','Rhard1',
-                       'Leasy2','Reasy2','Lhard2','Rhard2')
+finger.df <- data.frame(matrix(NA,nrow=nsub,ncol=17))
+colnames(finger.df)<-c('subject','Rhard1','Reasy1','Lhard1','Leasy1',
+                       'Rhard2','Reasy2','Lhard2','Leasy2',
+                       'Rhard1sd','Reasy1sd','Lhard1sd','Leasy1sd',
+                       'Rhard2sd','Reasy2sd','Lhard2sd','Leasy2sd')
 for (n in 1:nsub){
   finger.df$subject[n] <- subids[n]
   myc <- 1 #will be incremented so sums written to correct columns
@@ -916,25 +933,49 @@ for (n in 1:nsub){
       myfinger<- finger2}
       tempfinger <- filter(myfinger,subject==subids[n],Response %in% c('y','m','i','b','t','u','w','v','r','x')) #exclude rows with other stuff in Response
       #(this is not essential as nonsequences will just get ignored)
+
       wholeseq <-paste0(tempfinger$Response,collapse='') #make a long string of responses
       for (s in 1:4){
         myc<-myc+1 #increment column counter
         target <- myseq[s]
         finger.df[n,myc]<-str_count(wholeseq,target) #count how many target sequences are in the long string that contains all responses
+        
       }
+      righteasy<-filter(tempfinger,display=='right hand',complex=='easy')
+      righthard<-filter(tempfinger,display=='right hand',complex=='hard')
+      lefteasy<-filter(tempfinger,display=='left hand',complex=='easy')
+      lefthard<-filter(tempfinger,display=='left hand',complex=='hard')
+      startcol<-10
+      if(d==2){startcol<-14}
+      finger.df[n,startcol]<-sd(righthard$RTa,na.rm=T)
+      finger.df[n,(startcol+1)]<-sd(righteasy$RTa,na.rm=T)
+      finger.df[n,(startcol+2)]<-sd(lefthard$RTa,na.rm=T)
+      finger.df[n,(startcol+3)]<-sd(lefteasy$RTa,na.rm=T)
     }
+}
+# Substitute NA for any totals less than 5 - suggest using wrong keys perhaps
+
+for (c in 2:9){
+  w<-which(finger.df[,c]<5)
+  if (length(w)>0){
+     finger.df[w,2:17]<-NA
+
   }
+ 
+}
 #Need same data in long form for pirate plot, so reorganise
-finger.left <- finger.df[,c(1,2,4,6,8)]
-finger.right <- finger.df[,c(1,3,5,7,9)]
+finger.left <- finger.df[,c(1,4,5,8,9,12,13,16,17)]
+finger.right <- finger.df[,c(1,2,3,6,7,10,11,14,15)]
 finger.left$side<-'Left'
 finger.right$side <-'Right'
-colnames(finger.right)<-c('subject','easy1','hard1','easy2','hard2','side')
+colnames(finger.right)<-c('subject','hard1','easy1','hard2','easy2',
+                          'hard1sd','easy1sd','hard2sd','easy2sd','side')
 colnames(finger.left)<-colnames(finger.right)
 finger.long <-rbind(finger.left,finger.right)
 
 
 ```
+
 
 ```{r dosummary, warning = F}
 origdat <- finger.long
@@ -956,6 +997,27 @@ dopirate(origdat,task,measure)
 
 measure <- 'hard2'
 origdat$X1 <- origdat$hard2 #we used a dummy column name so we can vary the data that are used in the pirate plot etc
+task <- 'Finger hard day 2'
+dopirate(origdat,task,measure)
+
+measure<-'easy1sd'
+origdat$X1 <- origdat$easy1sd #we used a dummy column name X1, so we can vary the data that are used in the pirate plot etc
+task <- 'Finger easy day 1sd'
+dopirate(origdat,task,measure)
+
+
+measure <- 'easy2sd'
+origdat$X1 <- origdat$easy2sd #we used a dummy column name so we can vary the data that are used in the pirate plot etc
+task <- 'Finger easy day 2'
+dopirate(origdat,task,measure)
+
+measure <- 'hard1sd'
+origdat$X1 <- origdat$hard1sd #we used a dummy column name so we can vary the data that are used in the pirate plot etc
+task <- 'Finger hard day 1'
+dopirate(origdat,task,measure)
+
+measure <- 'hard2sd'
+origdat$X1 <- origdat$hard2sd #we used a dummy column name so we can vary the data that are used in the pirate plot etc
 task <- 'Finger hard day 2'
 dopirate(origdat,task,measure)
 ```
@@ -987,12 +1049,12 @@ origdat$X1 <- origdat$hard2
 mycolname<-"Day2_finger.hard_LI"
 demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
 
-cor1 <- cor(demographics$Day1_finger.easy_LI,demographics$Day2_finger.easy_LI)
+cor1 <- cor(demographics$Day1_finger.easy_LI,demographics$Day2_finger.easy_LI,use='complete.obs')
 plot(demographics$Day1_finger.easy_LI,demographics$Day2_finger.easy_LI,main='Finger easy LI')
 abline(v=0)
 abline(h=0)
 text(40,10,paste0('r = ',round(cor1,3)))
-cor2 <- cor(demographics$Day1_finger.hard_LI,demographics$Day2_finger.hard_LI)
+cor2 <- cor(demographics$Day1_finger.hard_LI,demographics$Day2_finger.hard_LI,use='complete.obs')
 plot(demographics$Day1_finger.hard_LI,demographics$Day2_finger.hard_LI,main='Finger hard LI')
 abline(v=0)
 abline(h=0)
