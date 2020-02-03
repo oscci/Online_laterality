@@ -296,6 +296,7 @@ all_dat2 %>% filter(Attempt >= 1,display=="e_Task") # only answers
 # write as factors
 all_dat2$subject <- as.factor(all_dat2$Participant.Public.ID)
 all_dat2$RT <- as.numeric(as.character(all_dat2$Reaction.Time))
+all_dat2$Trial <-as.numeric(all_dat2$Trial.Number) #useful if we want to restrict analysis to subset of trials so retain this variable
 all_dat2$Task.Name <- as.factor(all_dat2$Task.Name)
 all_dat2$word<-substring(all_dat2$word,66,(nchar(all_dat2$word)-4)) #remove format from written word stimuli
 if (d==1)
@@ -348,9 +349,8 @@ The Hoaglin-Iglewicz function is used to remove outliers. We create an 'outlier'
 
 ```{r RToutlierfunction}
 remove.outliers <- function(origdat,lowcut,zcut){
-# Outlier removal put in separate function, as needed to reuse when considering t-test
-# Hoaglin, D. C., & Iglewicz, B. (1987). Fine-tuning some resistant rules for outlier labelling. Journal of the American Statistical Association, 82(400), 1147-1149. 
-
+# Outlier removal put in separate function, which can be applied to different task RTs.
+# 
 # origdat is the dataframe with data for outlier removal, mycolname is name of variable 
 # for outlier removal (usually RT), lowcut is a cutoff value below which data excluded
 # (typically v fast responses that are implausible, e.g. 201 ms for RT)
@@ -403,7 +403,7 @@ for (d in 1:2){ #we will process day 1 and day 2 together
 #As with earlier reading in, we default to saving CF_dat2 (day2), but at end of the chunk we reassign to CF_day1 in the first run through the d loop
 task <- "Chimeric faces (Karlsson, Johnstone, & Carey, 2019)"
 wanted <- c("subject", "stimuli", "Response", "RT", "l_hemiface", "r_hemiface") # select wanted columns
-CF_dat2 <- procdata(origfile,wanted,task)
+CF_dat2 <- procdata(origfile,wanted,task) #use generic function (see above) to read in relevant columns
 
 # count subjects
 nsub <-length(levels(CF_dat2$subject))
@@ -411,7 +411,7 @@ print(paste('day',d,task,": subjects: ", nsub))
 
 CF_same2 <- CF_dat2[CF_dat2$l_hemiface == CF_dat2$r_hemiface,] # create data frame for non-chimeras
 CF_dat2 <- CF_dat2[CF_dat2$l_hemiface != CF_dat2$r_hemiface,] # remove items where same expression in both hemifaces
-CF_dat2 <- remove.outliers(CF_dat2,200,2.2)
+CF_dat2 <- remove.outliers(CF_dat2,200,2.2) #use generic outlier removal function
 outliertable<-table(CF_dat2$subject,CF_dat2$outlier)
 print(outliertable)
 if (d==1)
@@ -701,7 +701,7 @@ task <- "Rhyme Detection Task"
 # nb when creating new file, we default to name 'RDT_dat2', but this is reassigned to 'RDT_dat1' at end of processing for day 1.
 
 # new data
-wanted <- c("subject", "Correct", "RT", "ANSWER","Response") # select wanted columns
+wanted <- c("Trial","subject", "Correct", "RT", "ANSWER","Response") # select wanted columns
 RDT_dat2 <- procdata(origfile,wanted,task) #Here we reuse the procdata function that we developed for processing Chimeric faces data - just does some generic processing
 
 # do some wrangling on the ANSWER variable to make it compatible with functions
@@ -1053,12 +1053,12 @@ cor1 <- cor(demographics$Day1_finger.easy_LI,demographics$Day2_finger.easy_LI,us
 plot(demographics$Day1_finger.easy_LI,demographics$Day2_finger.easy_LI,main='Finger easy LI')
 abline(v=0)
 abline(h=0)
-text(40,10,paste0('r = ',round(cor1,3)))
+text(-5,20,paste0('r = ',round(cor1,3)))
 cor2 <- cor(demographics$Day1_finger.hard_LI,demographics$Day2_finger.hard_LI,use='complete.obs')
 plot(demographics$Day1_finger.hard_LI,demographics$Day2_finger.hard_LI,main='Finger hard LI')
 abline(v=0)
 abline(h=0)
-text(40,10,paste0('r = ',round(cor2,3)))
+text(-5,20,paste0('r = ',round(cor2,3)))
 
 ```
 
@@ -1068,5 +1068,6 @@ text(40,10,paste0('r = ',round(cor2,3)))
 **References:**
 
 - Burt, D. M., & Perrett, D. I. (1997). Perceptual asymmetries in judgements of facial attractiveness, age, gender, speech and expression. Neuropsychologia, 35(5), 685–693.
+- Hoaglin, D. C., & Iglewicz, B. (1987). Fine-tuning some resistant rules for outlier labelling. Journal of the American Statistical Association, 82(400), 1147-1149. 
 - Innes, B. R., Burt, D. M., Birch, Y. K., & Hausmann, M. (2016). A leftward bias however you look at it: Revisiting the emotional chimeric face task as a tool for measuring emotion lateralization. Laterality: Asymmetries of Body, Brain and Cognition, 21(4-6), 643–661.
 - Karlsson, E. M., Johnstone, L. T., & Carey, D. P. (2019). The depth and breadth of multiple perceptual asymmetries in right handers and non-right handers. Laterality: Asymmetries of Body, Brain and Cognition, 24(6), 707-739.
