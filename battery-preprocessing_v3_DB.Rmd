@@ -52,6 +52,7 @@ require(tidyr)  # for unnest()
 require(purrr)  # for map(), reduce()
 library(GGally)
 require(stringr) # string matching
+library(maps)
 ```
 
 First, the demographics is processed.This gives us a participant ID, age, gender, footedness, and handedness.
