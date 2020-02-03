@@ -52,7 +52,7 @@ require(tidyr)  # for unnest()
 require(purrr)  # for map(), reduce()
 library(GGally)
 require(stringr) # string matching
-library(maps)
+
 ```
 
 First, the demographics is processed.This gives us a participant ID, age, gender, footedness, and handedness.
@@ -502,8 +502,8 @@ for (i in 1:nsub) { # loop through subjects
     
     temp_dat$subject[myrow] <- subname # add row for subject
     temp_dat$side[myrow] <- latlist[j] # add row for side
-    temp_dat$accurate[myrow] <- sum(tmp$Correct,na.rm=TRUE) # add row for N accurate response
-    temp_dat$p.corr[myrow] <- 100*mean(tmp$Correct,na.rm=TRUE) # add row for %accurate responses - NB for chimeric only error is wrong emotion - measure is just a measure of choice. For RDT, can make error of selecting wrong side, so % correct is meaningful
+    temp_dat$accurate[myrow] <- sum(tmp2$Correct,na.rm=TRUE) # add row for N accurate response
+    temp_dat$p.corr[myrow] <- 100*mean(tmp2$Correct,na.rm=TRUE) # add row for %accurate responses - NB for chimeric only error is wrong emotion - measure is just a measure of choice. For RDT, can make error of selecting wrong side, so % correct is meaningful
   
     temp_dat$RT[myrow] <- mean(tmp2$RT,na.rm=TRUE) # add row for mean RT
     temp_dat$N[myrow]<-length(tmp1$RT) # add count of rows for this subject
