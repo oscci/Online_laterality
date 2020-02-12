@@ -444,7 +444,7 @@ mycol <- length(colnames(demographics))
 colnames(demographics)[(mycol-1):mycol]<-c('Emot.recog1','Emot.recog2')
 ```
 
-In this section, the correct sequences are marked as 1, incorrect asnwers are marked as 0. We then mark whether the correct answers were in the left or right hemiface. 
+In this section, the correct sequences are marked as 1, incorrect answers are marked as 0. We then mark whether the correct answers were in the left or right hemiface. 
 
 ```{r mark_face_correct_face, warning=FALSE}
 # this will mark correct responses as 1 or 0.
@@ -503,7 +503,8 @@ for (i in 1:nsub) { # loop through subjects
     temp_dat$subject[myrow] <- subname # add row for subject
     temp_dat$side[myrow] <- latlist[j] # add row for side
     temp_dat$accurate[myrow] <- sum(tmp2$Correct,na.rm=TRUE) # add row for N accurate response
-    temp_dat$p.corr[myrow] <- 100*mean(tmp2$Correct,na.rm=TRUE) # add row for %accurate responses - NB for chimeric only error is wrong emotion - measure is just a measure of choice. For RDT, can make error of selecting wrong side, so % correct is meaningful
+    temp_dat$p.corr[myrow] <- 100*mean(tmp1$Correct,na.rm=TRUE) # add row for %accurate responses - NB for chimeric only error is wrong emotion - measure is just a measure of choice. For RDT, can make error of selecting wrong side, so % correct is meaningful
+    #need to use tmp1, as this contains errors
   
     temp_dat$RT[myrow] <- mean(tmp2$RT,na.rm=TRUE) # add row for mean RT
     temp_dat$N[myrow]<-length(tmp1$RT) # add count of rows for this subject
@@ -532,8 +533,7 @@ if (length(w)>0) {chim_dat2<-chim_dat2[-w,]}
 
 
 
-The data is visualised using the pirate plot function and t.test conducted.
-
+Generic function for pirate plot and group-level t-test:
 ```{r plotdata_ttest, warning=FALSE}
 #Same function can be used for various tasks - we specify relevant data/task in the function call by assigning origdat etc to relevant values
 dopirate <- function(origdat,task,measure){
@@ -566,6 +566,8 @@ print(myt1)
 
 }
 ```
+
+The data is visualised using the pirate plot function and t.test for laterality at group level conducted.
 
 ```{r dosummary}
 origdat <- chim_dat1
@@ -609,8 +611,9 @@ Here, a .csv is written for the chimeric face LI.
 # Polarity is -1 or 1 and can be set to keep all LIs positive if in a given direction
 # Cutoff will create NA if level of performance is outside predetermined limits
 
-makeLI <- function(demogs,origdat,task,mycolname,polarity,mycutoff){
-# we do this for accuracy first
+makeLI <- function(demogs,origdat,task,mycolname1,mycolname2,polarity,mycutoff){
+
+# mycolname1 and 2 are names for newly created columns for LI and statistic (z)
 # reformat data frame
 keeps <- c("subject", "side", "X1") #X1 holds either accuracy or RT
 LIdf <- origdat[keeps]
@@ -632,12 +635,25 @@ w<-which(LIdf$avg<mycutoff)
 if(length(w)>0){
 LIdf$LI[w] <- NA}
 
+#statistic is z score - see http://www.sthda.com/english/wiki/one-proportion-z-test-in-r
+LIdf$statistic <-NA
+for (i in 1:nrow(LIdf)){
+    pN <- (LIdf$Left[i]+LIdf$Right[i])
+  p0 <- LIdf$Left[i]/ pN
+  q <- 1-p0
+  pe <- .5
+  LIdf$statistic[i]<-(p0-pe)/sqrt(p0*q/pN)
+}
+
+
+
+
 # now create a data frame for lat index 
-LIdf <- select(LIdf, "subject", "LI")
+LIdf <- select(LIdf, "subject", "LI","statistic")
 # now merge with demographics
 demogs <- merge(demogs, LIdf, by= "subject")
 lastcol<-length(colnames(demogs))
-colnames(demogs)[lastcol]<-mycolname
+colnames(demogs)[(lastcol-1):lastcol]<- c(mycolname1,mycolname2)
 
 return(demogs)
 }
@@ -648,42 +664,44 @@ return(demogs)
 task<-'Chimeric faces'
 origdat<-chim_dat1
 origdat$X1 <- origdat$accurate
-mycolname<-"Day1_CF_acc_LI"
+mycolname1<-"Day1_CF_acc_LI"
+mycolname2 <-"Day1_CF_z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+demographics <- makeLI(demographics,origdat,task,mycolname1,mycolname2,polarity,mycutoff)
 
-# now do RT
-origdat$X1 <- origdat$RT
-mycolname<-"Day1_CF_RT_LI"
-polarity <-1
-
-#if we don't specify mycutoff, it will remain at level set for accuracy, which means it should not trap any RT values as they will all be much bigger
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-chim_dat2
 origdat$X1 <- origdat$accurate
-mycolname<-"Day2_CF_acc_LI"
+mycolname1<-"Day2_CF_acc_LI"
+mycolname2 <-"Day2_CF_z"
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
-origdat$X1 <- origdat$RT
-mycolname<-"Day2_CF_RT_LI"
-polarity <-1
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+demographics <- makeLI(demographics,origdat,task,mycolname1,mycolname2,polarity,mycutoff)
 
-cor1 <- cor(demographics$Day1_CF_acc_LI,demographics$Day2_CF_acc_LI)
+cor1 <- cor(demographics$Day1_CF_acc_LI,demographics$Day2_CF_acc_LI,use="complete.obs")
 plot(demographics$Day1_CF_acc_LI,demographics$Day2_CF_acc_LI,main='Chimeric LI accuracy')
 abline(v=0)
 abline(h=0)
 text(-10,15,paste0('r = ',round(cor1,3)))
-cor2<-cor(demographics$Day1_CF_RT_LI,demographics$Day2_CF_RT_LI)
-plot(demographics$Day1_CF_RT_LI,demographics$Day2_CF_RT_LI,main='Chimeric LI RT')
+cor2<-cor(demographics$Day1_CF_z,demographics$Day2_CF_z,use="complete.obs")
+plot(demographics$Day1_CF_z,demographics$Day2_CF_z,main='Chimeric LI.z')
 abline(v=0)
 abline(h=0)
-text(-5,15,paste0('r = ',round(cor2,3)))
+abline(v=1.65,lty=2,col='red')
+abline(v=-1.65,lty=2,col='red')
+abline(h=1.65,lty=2,col='red')
+abline(h=-1.65,lty=2,col='red')
+text(-1,3,paste0('r = ',round(cor2,3)))
+
+cor3 <- cor(demographics$Day1_CF_acc_LI,demographics$Day1_CF_z,use="complete.obs")
+plot(demographics$Day1_CF_acc_LI,demographics$Day1_CF_z,main='Chimeric LI vs z time1')
+abline(v=0)
+abline(h=0)
 
 ```
-As we can see, we generally get a left side/right hemisphere advantage in our accuracy data. The RT advantage is not as expected. This may be due to the buttons being clicked on screen and the additional time penalty of moving the mouse. 
+As we can see, we generally get a left side/right hemisphere advantage in our accuracy data. 
+Agreement between the z-score and conventional LI is very strong.
+Test-retest seems good.
 
 ## Rhyme Detection Task
 
@@ -725,7 +743,7 @@ if(d==1)
 }
 ```
 
-Now the data is ready, create an empty data frame and populate this. It includes columns for the participant identifier, rhyme, acuracy, RT (RT only for correct answers).
+Now the data is ready, create an empty data frame and populate this. It includes columns for the participant identifier, rhyme, accuracy, RT (RT only for correct answers).
 
 ```{r makedataframeRDT, warning=F}
 #We create files for day1 and day 2
@@ -751,11 +769,13 @@ w<-which(RDT_df1$p.corr<60)
 if (length(w)>0)
 {RDT_df1$accurate[w]<-NA
 RDT_df1$RT[w]<-NA
+RDT_df1$p.corr[w]<-NA
 }
 w<-which(RDT_df2$p.corr<60)
 if (length(w)>0)
 {RDT_df2$accurate[w]<-NA
 RDT_df2$RT[w]<-NA
+RDT_df2$p.corr[w]<-NA
   }
 ```
 
@@ -778,42 +798,37 @@ dopirate(origdat,task,measure)
 
 #now create LI
 origdat$X1 <- origdat$p.corr
-mycolname<-"RDT_p.corr_LI"
+mycolname1<-"RDT_p.corr_LI"
+mycolname2 <- "RDT_pcorr.z"
 polarity<- 1 #so LI is positive in predicted direction
 mycutoff <- 75
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
-origdat$X1 <- origdat$RT
-mycolname<-"RDT_RT_LI"
-polarity <- (-1)
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+
+demographics <- makeLI(demographics,origdat,task,mycolname1,mycolname2,polarity,mycutoff)
+
 
 #Cutoff has removed those with low accuracy, but we should also remove their RT LIs
 #We do this by finding those with NA in accuracy LI
 w<-which(is.na(demographics$RDT_acc_LI))
 if(length(w)>0)
 {demographics$RDT_RT_LI[w]<-NA}
-#t.test to test if laterality index differs from zero
+#t.test to test if laterality index differs from zero in sample as a whole
 t.test(demographics$RDT_p.corr_LI)
-t.test(demographics$RDT_RT_LI)
+t.test(demographics$RDT_pcorr.z)
 #rename column to identify day
 myncol <- length(colnames(demographics))
 colnames(demographics)[(myncol-1):myncol] <- paste0('Day',d,'.',colnames(demographics)[(myncol-1):myncol])
 
 }
 cor1<-cor(demographics$Day1.RDT_p.corr_LI,demographics$Day2.RDT_p.corr_LI,use='complete.obs')
-cor2<-cor(demographics$Day1.RDT_RT_LI,demographics$Day2.RDT_RT_LI,use='complete.obs')
 plot(demographics$Day1.RDT_p.corr_LI,demographics$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
 abline(v=0)
 abline(h=0)
 text(-3,3,paste0('r = ',round(cor1,3)))
-plot(demographics$Day1.RDT_RT_LI,demographics$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
-abline(v=0)
-abline(h=0)
-text(-3,3,paste0('r = ',round(cor2,3)))
+
 ```
 ### T-test as alternative to LI for RDT
 
-This is an exploratory analysis.
+Advantage of using a t-statistics to represent LI is that we can also identify people whose L-R difference is significantly different from zero.
 
 ```{r do.ttest}
 for (d in 1:2){
@@ -850,16 +865,15 @@ demographics[w,(colcount-3):colcount]<-NA
 w<-which(is.na(demographics$Day2.RDT_RT_LI))
 demographics[w,(colcount-3):colcount]<-NA
 
-#compare t-value with LI : use t = 1.65 as cutoff for sig lateralised
- plot(demographics$tlat_RDT_1,demographics$Day1.RDT_RT_LI)
- abline(v=1.65)
-  plot(demographics$tlat_RDT_2,demographics$Day2.RDT_RT_LI)
-   abline(v=1.65)
 #compare t-value from day 1 and day 2 
      myr <- cor(demographics$tlat_RDT_1,demographics$tlat_RDT_2,use='complete.obs')
-    plot(demographics$tlat_RDT_1,demographics$tlat_RDT_2)
-   abline(v=1.65) 
-   abline(h=1.65)
+    plot(demographics$tlat_RDT_1,demographics$tlat_RDT_2,xlim=c(-4,4),ylim=c(-4,4))
+  abline(v=0)
+  abline(h=0)
+   abline(v=-1.65,lty=2,col='red') 
+   abline(h=-1.65,lty=2,col='red')
+    abline(v=1.65,lty=2,col='red') 
+   abline(h=1.65,lty=2,col='red')
    text(0,2.5,paste0('r = ',round(myr,3)))
 ```
 
@@ -1033,22 +1047,26 @@ In the next chunk, the LI is also added to demographics
 task<-'Finger'
 origdat<-finger.long
 origdat$X1 <- origdat$easy1
-mycolname<-"Day1_finger.easy_LI"
+mycolname1<-"Day1_finger.easy_LI"
+mycolname2<-"Day1_finger.easy_z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+demographics <- makeLI(demographics,origdat,task,mycolname1,mycolname2,polarity,mycutoff)
 
 origdat$X1 <- origdat$hard1
-mycolname<-"Day1_finger.hard_LI"
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+mycolname1<-"Day1_finger.hard_LI"
+mycolname2<-"Day1_finger.hard_z"
+demographics <- makeLI(demographics,origdat,task,mycolname1,mycolname2,polarity,mycutoff)
 
 origdat$X1 <- origdat$easy2
-mycolname<-"Day2_finger.easy_LI"
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+mycolname1<-"Day2_finger.easy_LI"
+mycolname2<-"Day2_finger.easy_z"
+demographics <- makeLI(demographics,origdat,task,mycolname1,mycolname2,polarity,mycutoff)
 
 origdat$X1 <- origdat$hard2
-mycolname<-"Day2_finger.hard_LI"
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+mycolname1<-"Day2_finger.hard_LI"
+mycolname2<-"Day2_finger.hard_z"
+demographics <- makeLI(demographics,origdat,task,mycolname1,mycolname2,polarity,mycutoff)
 
 cor1 <- cor(demographics$Day1_finger.easy_LI,demographics$Day2_finger.easy_LI,use='complete.obs')
 plot(demographics$Day1_finger.easy_LI,demographics$Day2_finger.easy_LI,main='Finger easy LI')
@@ -1060,6 +1078,13 @@ plot(demographics$Day1_finger.hard_LI,demographics$Day2_finger.hard_LI,main='Fin
 abline(v=0)
 abline(h=0)
 text(-5,20,paste0('r = ',round(cor2,3)))
+
+cor3 <- cor(demographics$Day1_finger.easy_z,demographics$Day2_finger.easy_z,use='complete.obs')
+plot(demographics$Day1_finger.easy_z,demographics$Day2_finger.easy_z,main='Finger easy z')
+abline(v=0)
+abline(h=0)
+text(-5,20,paste0('r = ',round(cor1,3)))
+
 
 ```
 
