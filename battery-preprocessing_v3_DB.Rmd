@@ -844,7 +844,7 @@ for (d in 1:2){
     w<-which(myfile$subject==demographics$subject[i])
     if(length(w)>0)
     {
-      myt<-t.test(myfile$RT[w]~myfile$side[w])
+      myt<-t.test(log(myfile$RT[w])~myfile$side[w])  #NB USING LOG HERE TO GIVE MORE NORMAL RT DATA
       demographics$tlat_RDT[i]<-myt$statistic
       demographics$plat_RDT[i]<-myt$p.value
     }
