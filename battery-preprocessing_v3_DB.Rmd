@@ -1,7 +1,7 @@
 ---
 title: "Online Laterality Battery Pre-Processing - short version"
 author: "Adam Parker + Dorothy Bishop"
-date: "1st Feb 2020"
+date: "original version from 1st Feb 2020"
 output: html_document
 ---
 
