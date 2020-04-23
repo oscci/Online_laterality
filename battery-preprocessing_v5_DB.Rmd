@@ -1,37 +1,40 @@
 ---
 title: "Online Laterality Battery Pre-Processing - short version"
 author: "Adam Parker + Dorothy Bishop"
-date: "20th March 2020"
+date: "updated April 22nd 2020"
 output:
   pdf_document: default
   html_document: default
 ---
-
+NB. 2 changes Apr 22nd by DB: 
+a) all data now in a Data folder, so when reading need to specify that; 
+b) *demographics* data frame renamed to *allsum*.
 
 This R Markdown file prcoesses the various components of the Online Laterality Battery which is implemented online via Gorilla.sc. 
 
 This version updated on 1st Feb 2020 to make script more reproducible and compact by using functions for repeated operations.
+Adapted in April 2020 for processing dataset on 300 people
 
-The script pulls in csv files and processes them so that pre-registered analyses can be conducted (pre-registered on the OSF: ). First, questionnaires are analyses followed by visual half field tasks. This is done for time 1 and time 2. A "full" laterality index output is then appended to a file with the demographics. This is then used in subsequent R markdown scripts.
+The script pulls in csv files and processes them so that pre-registered analyses can be conducted (pre-registered on the OSF: ). First, questionnaires are analyses followed by chimeric, dichotic, visual half field and tapping tasks. This is done for time 1 and time 2. A "full" laterality index output is then appended to a file with the demographics. This is then used in subsequent R markdown scripts.
 
 This script analyses the following: 
-
 1) Questionnaires
-  - Demographics
+  - demographics
   - Miles test
   - Porta test
   - Edinburgh Handedness Inventory
   - lexTALE
 2) Chimeric face task
-3) Rhyme detection task
-4) Key Pressing Task (finger dexterity)
-5) Summary of demographics for the final sample
+3) Dichotic listening
+4) Rhyme detection task
+5) Key Pressing Task (finger dexterity)
+And then produces summary of demog and results for the final sample
 
 # Questionnaires
 
 This R Markdown processes the following questionnaires from the Online battery:
 
-- Demographics
+- demographics
 - Miles test
 - Porta test
 - Edinburgh Handedness Inventory
@@ -42,7 +45,7 @@ Once processed, a file is made.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-#NB for present setwd("~/Dropbox/Online LDT/300 Ps")
+#NB for original data setwd("~/Dropbox/Online LDT/300 Ps")
 # libraries 
 library(readr)
 library(yarrr)
@@ -63,9 +66,9 @@ library(corrr) #easier correlations!
 
 First, the demographics is processed.This gives us a participant ID, age, gender, footedness, and handedness.
 
-```{r demographics, warning=FALSE}
-demo_dat_R <- read_csv("./Demographics_R.csv", na = c("empty", "NA")) # read in data
-demo_dat_L <- read_csv("./Demographics_L.csv", na = c("empty", "NA")) # read in data
+```{r demograhics, warning=FALSE}
+demo_dat_R <- read_csv("./data/demographics_R.csv", na = c("empty", "NA")) # read in data
+demo_dat_L <- read_csv("./data/demographics_L.csv", na = c("empty", "NA")) # read in data
 demo_dat <- rbind(demo_dat_R, demo_dat_L)
 # relabel 
 demo_dat$subject <- demo_dat$`Participant Public ID`
@@ -75,8 +78,8 @@ nsub <-length(levels(demo_dat$subject))
 print(paste0("subjects: ", nsub))
 
 # create data frame
-demographics <- data.frame(matrix(ncol = 7, nrow = nsub))
-  colnames(demographics) <- c("subject", "age", "gender", "footedness", "handedness", "bilingual", "strongest.language")
+allsum <- data.frame(matrix(ncol = 7, nrow = nsub))
+  colnames(allsum) <- c("subject", "age", "gender", "footedness", "handedness", "bilingual", "strongest.language")
 myrow <- 0 # start row counter
 for (i in 1:nsub) { # loop through subjects
   subname <- levels(demo_dat$subject)[i] # find subject ID
@@ -85,34 +88,38 @@ for (i in 1:nsub) { # loop through subjects
 
     myrow <- myrow+1
 
-    demographics$subject[myrow] <- subname
-    demographics$age[myrow] <- as.numeric(tmp[tmp$Question.Key == "Age",]$Response)
-    demographics$gender[myrow] <- tmp[tmp$Question.Key == "Gender",]$Response
-    demographics$footedness[myrow] <- tmp[tmp$Question.Key == "footedness",]$Response
-    demographics$handedness[myrow] <- tmp[tmp$Question.Key == "categorical_hand",]$Response
-    demographics$bilingual[myrow] <- tmp[tmp$Question.Key == "bilingual",]$Response
-    demographics$strongest.language[myrow] <- tolower(tmp[tmp$Question.Key == "bilingual-text",]$Response)
+    allsum$subject[myrow] <- subname
+    allsum$age[myrow] <- as.numeric(tmp[tmp$Question.Key == "Age",]$Response)
+    allsum$gender[myrow] <- tmp[tmp$Question.Key == "Gender",]$Response
+    allsum$footedness[myrow] <- tmp[tmp$Question.Key == "footedness",]$Response
+    allsum$handedness[myrow] <- tmp[tmp$Question.Key == "categorical_hand",]$Response
+    allsum$bilingual[myrow] <- tmp[tmp$Question.Key == "bilingual",]$Response
+    allsum$strongest.language[myrow] <- tolower(tmp[tmp$Question.Key == "bilingual-text",]$Response)
     
-    demographics$bilingual <- as.character(demographics$bilingual)
-    demographics$bilingual <- gsub('. My strongest language is:', '', demographics$bilingual)
+    allsum$bilingual <- as.character(allsum$bilingual)
+    allsum$bilingual <- gsub('. My strongest language is:', '', allsum$bilingual)
 }
 
 # Here we summarise the age broken down by handedness and gender. This will be important for any write up. 
 #### NOTE. THIS IS NOT REPRESENTATIVE OF THE FINAL DATASET
 # age
-demographics %>%
+allsum %>%
     group_by(handedness, gender) %>%
     summarize(avg = mean(age), n = n(), sd = sd(age))
+
+#create a numerical code for handedness - can be used in plots to distinguish handedness groups (eg if pch set to handpch, get circles and triangles)
+allsum$handpch <-1
+allsum$handpch[allsum$handedness=='Left'] <-2
 ```
 
-Now we import and append the Porta and Miles Test to the demographics data frame. 
+Now we import and append the Porta and Miles Test to the allsum data frame. 
 
 ```{r sightednesss, warning=FALSE}
-miles_dat_R <- read_csv("./Miles_R.csv", na = c("empty", "NA")) # read in data
-miles_dat_L <- read_csv("./Miles_L.csv", na = c("empty", "NA")) # read in data
+miles_dat_R <- read_csv("./data/Miles_R.csv", na = c("empty", "NA")) # read in data
+miles_dat_L <- read_csv("./data/Miles_L.csv", na = c("empty", "NA")) # read in data
 miles_dat <- rbind(miles_dat_R, miles_dat_L)
 #porta_dat_R <- read_csv("./dat2/Porta_R.csv", na = c("empty", "NA")) # read in data
-porta_dat_L <- read_csv("./Porta_L.csv", na = c("empty", "NA")) # read in data
+porta_dat_L <- read_csv("./data/Porta_L.csv", na = c("empty", "NA")) # read in data
 porta_dat <- rbind(porta_dat_L)
 # add test ID
 miles_dat$test_ID <- "miles"
@@ -143,15 +150,15 @@ for (i in 1:nsub) { # loop through subjects
     sightedness$porta[myrow] <- tmp[tmp$Question.Key == "response-2",]$Response
   }
 
-# now merge sightedness and demographics
-demographics <- merge(demographics, sightedness, by= "subject")
+# now merge sightedness and allsum
+allsum <- merge(allsum, sightedness, by= "subject")
 ```
 
 Now we add the EHI. Here we score and plot the Edinburgh handedness inventory (Oldfield, 1971) in its short form.
 
 ```{r EHI, warning=FALSE}
-EHI_R <- read_csv("./EHI_R.csv", na = "empty") # read in data
-EHI_L <- read_csv("./EHI_L.csv", na = "empty") # read in data
+EHI_R <- read_csv("./data/EHI_R.csv", na = "empty") # read in data
+EHI_L <- read_csv("./data/EHI_L.csv", na = "empty") # read in data
 EHI <- rbind(EHI_R, EHI_L)
 
 # select only responses
@@ -177,7 +184,7 @@ c<-which(names(EHI) %in% meaningful) #find colnumbers of unwanted
 EHI <-EHI[,c] #remove unwanted columns
 EHI <- na.omit(EHI) # remove NAs
 
-# score responses accoridng to the original scoring method in Oldifeld (1971)
+# score responses according to the original scoring method in Oldifeld (1971)
 EHI$right_hand <- 0
 EHI$left_hand <- 0
 for (r in 1:nrow(EHI)) {
@@ -233,24 +240,33 @@ for_index2 <-
 
 # now create a data frame only for index 
 EHI_index <- select(for_index2, "subject", "index_EHI")
-# merge which demographics
-demographics <- merge(demographics, EHI_index, by= "subject")
+# merge with allsum
+allsum <- merge(allsum, EHI_index, by= "subject")
 
 #now plot EHI in relation to handedness (modified by DB)
-x<-ggplot(demographics, aes(x=index_EHI, y=subject, fill=subject)) +
-  geom_dotplot(binaxis='y', stackdir='center') + xlim(-100, 100) +
-  ggtitle("Handedness index on the Edinburgh Handedness Inventory")
-x + theme_bw() + theme(legend.position = "none") + theme(axis.text.y = element_blank())
 
-hist(demographics$index_EHI)
+eplot<-ggplot(allsum, aes(handpch,index_EHI, colour=gender)) +
+  geom_jitter(width=.25,height=2)+
+  ggtitle("Handedness index on the Edinburgh Handedness Inventory")
+eplot
+#This is not perfect, but gives and idea to check EHI is valid etc.
+
+ggplot(allsum, aes(x=index_EHI)) + geom_density(aes(group=handpch,fill=handpch))
+
+#NB one supposed right-hander has index_EHI around -50. 
+#I will recode this one, as this seems an error.
+
+oddcase <- intersect(which(allsum$index_EHI<0),which(allsum$handedness=='Right'))
+allsum$handedness[oddcase] <- 'Left'
+allsum$handpch[oddcase] <- 1
 ```
 
 Next, the lexTale is preprocesssed. This is done using the weighted average for the test. 
 
 ```{r lexTALE, warning=FALSE}
 # read data
-lexTALE_L <- read_csv("./LexTale_L.csv", na = "empty")
-lexTALE_R <- read_csv("./lexTale_R.csv", na = "empty")
+lexTALE_L <- read_csv("./data/LexTale_L.csv", na = "empty")
+lexTALE_R <- read_csv("./data/lexTale_R.csv", na = "empty")
 lexTALE <- rbind(lexTALE_R, lexTALE_L)
 # filter
 lexTALE <- lexTALE[lexTALE$Attempt == 1,]
@@ -290,31 +306,31 @@ x + theme_bw() + theme(legend.position = "none") + theme(axis.text.y = element_b
 
 # now create a data frame only for index 
 lexTALE <- select(lexTale_score, "subject", "lexTALE")
-# now merge with demographics
-demographics <- merge(demographics, lexTALE, by= "subject")
-# now write the full demographics 
-write.csv(demographics, file = "./demographics_out.csv")
+# now merge with allsum
+allsum <- merge(allsum, lexTALE, by= "subject")
+# now write the full allsum 
+write.csv(allsum, file = "./allsum_out.csv")
 
-hist(demographics$lexTALE)
+hist(allsum$lexTALE)
 abline(v=80,col='red')
 
-paste0("No. of participants below LexTALE cuttoff: ", sum(demographics$lexTALE < 80))
+paste0("No. of participants below LexTALE cuttoff: ", sum(allsum$lexTALE < 80))
 
 # remove those who didn't pass the LexTALE
-demographics <- demographics[demographics$lexTALE >= 80,]
+allsum <- allsum[allsum$lexTALE >= 80,]
 ```
 
 # Read in raw data for day 1 and 2
 
-Before doing anything with the data, we now pull in all the data from all nodes and combind them from a sub folder in the directory. Participants, identified by random letter strings, are stacked on top of each other. We start by reading the data and cutting out unwanted information.
+Before doing anything with the data, we now pull in all the data from all nodes and combine them from a sub folder in the directory. Participants, identified by random letter strings, are stacked on top of each other. We start by reading the data and cutting out unwanted information.
 
 ```{r readraw,include= FALSE, warning=FALSE}
 # Set directory
 for (d in 1:2){
-  data_file <- "./day1_combined.csv"
+  data_file <- "./data/day1_combined.csv"
   
   if (d ==2){
-    data_file <-  "./day2_combined.csv"
+    data_file <-  "./data/day2_combined.csv"
   }
   #we will assign raw data to all_dat2 (day2), but then reassign to all_dat1 on first run through loop, so we have correct data for each day
 all_dat2 <- read.csv(data_file, na.strings = "NA",stringsAsFactors=F)
@@ -330,23 +346,6 @@ if (d==1)
 {all_dat1 <- all_dat2}
 }
 
-
-
-# #remove cols from all_dat2 that contain 'branch' or 'randomiser'
-# branchcols2 <- c(which(grepl('branch', names(all_dat2))=='TRUE'),which(grepl('randomiser', names(all_dat2))=='TRUE'))
-# all_dat2 <- all_dat2[,-branchcols2]
-# branchcols1 <- c(which(grepl('branch', names(all_dat1))=='TRUE'),which(grepl('randomiser', names(all_dat1))=='TRUE'))
-# all_dat1 <- all_dat1[,-branchcols1]
-
-#check that colnames are the same
-# colcomp<-data.frame(colnames(all_dat2)[order(colnames(all_dat2))])
-# colnames(colcomp)[1]<-'name1'
-# ncol1 <-length(colnames(all_dat1))
-# colcomp$name2<-NA
-# colcomp$name2[1:ncol1]<-colnames(all_dat1)[order(colnames(all_dat1))]
-
-#NB the colnames are identical but in different order, and all_dat1 has extra column of word_OG
-#It is just conceivable the ordering might affect processing when columns are subsequently selected, so we'll reorder them to be consistent across sessions
 
 all_dat2$word_OG<-NA #create dummy column just to make it easier to align columns
 collist <- colnames(all_dat1)
@@ -492,17 +491,17 @@ print(myt1)
 }
 ```
 
-Another generic function that can be used for different tasks to make a laterality index and write it to the demographics file
+Another generic function that can be used for different tasks to make a laterality index and write it to the allsum file
 
 ```{r makeLIs, warning=FALSE}
-# This function modifies a copy of the demographics file and returns it
+# This function modifies a copy of the allsum file and returns it
 
 # User selects whether accuracy or RT by specifying col X1 in origdat when calling the function
 
 # Polarity is -1 or 1 and can be set to keep all LIs positive if in a given direction
 # Cutoff will create NA if level of performance is outside predetermined limits
 
-makeLI <- function(demogs,origdat,task,mycolname,polarity,mycutoff){
+makeLI <- function(allsums,origdat,task,mycolname,polarity,mycutoff){
 # we do this for accuracy first
 # reformat data frame
 keeps <- c("subject", "side", "X1") #X1 holds either accuracy or RT
@@ -527,12 +526,12 @@ LIdf$LI[w] <- NA}
 
 # now create a data frame for lat index 
 LIdf <- select(LIdf, "subject", "LI")
-# now merge with demographics
-demogs <- merge(demogs, LIdf, by= "subject")
-lastcol<-length(colnames(demogs))
-colnames(demogs)[lastcol]<-mycolname
+# now merge with allsum
+allsums <- merge(allsums, LIdf, by= "subject")
+lastcol<-length(colnames(allsums))
+colnames(allsums)[lastcol]<-mycolname
 
-return(demogs)
+return(allsums)
 }
 ```
 
@@ -542,14 +541,14 @@ So you either compare their L-sided RTs and their R-sided RTs, or the proportion
 Note that this in effect adjusts for any overall differences in accuracy and RT, as the person is compared with themselves.
 
 ```{r makeZ, warning=FALSE}
-# This function modifies a copy of the demographics file and returns it
+# This function modifies a copy of the allsum file and returns it
 
 # User selects the measure by specifying col X1 in origdat when calling the function
 
 # Polarity is -1 or 1 and can be set to keep all LIs positive if in a given direction
 # Cutoff will create NA if level of performance is outside predetermined limits
 
-makeZ <- function(demogs,origdat,task,mycolname,polarity,mycutoff){
+makeZ <- function(allsums,origdat,task,mycolname,polarity,mycutoff){
 # we do this for accuracy first
 # reformat data frame
 keeps <- c("subject", "side", "X1") #X1 holds either accuracy or RT
@@ -572,12 +571,12 @@ Zdf$Z <- Zdf$Z*polarity #polarity can be set to reverse sign - eg for RT a large
 
 # now create a data frame for lat index 
 Zdf <- select(Zdf, "subject", "Z")
-# now merge with demographics
-demogs <- merge(demogs, Zdf, by= "subject")
-lastcol<-length(colnames(demogs))
-colnames(demogs)[lastcol]<-mycolname
+# now merge with allsum
+allsums <- merge(allsums, Zdf, by= "subject")
+lastcol<-length(colnames(allsums))
+colnames(allsums)[lastcol]<-mycolname
 
-return(demogs)
+return(allsums)
 }
 ```
 
@@ -630,23 +629,23 @@ CF_same <-
   mutate(emotion_recog= ifelse(as.character(Response) == as.character(l_hemiface), 1, 0))
 # calculate participants average
 emotion_mean <- aggregate(FUN= mean, data= CF_same, emotion_recog~ subject)
-# add this to demographics 
-demographics <- merge(demographics, emotion_mean, by= "subject")
+# add this to allsum 
+allsum <- merge(allsum, emotion_mean, by= "subject")
 }
-mycol <- length(colnames(demographics))
-colnames(demographics)[(mycol-1):mycol]<-c('Emot.recog1','Emot.recog2')
+mycol <- length(colnames(allsum))
+colnames(allsum)[(mycol-1):mycol]<-c('Emot.recog1','Emot.recog2')
 
-plot(demographics$Emot.recog1,demographics$Emot.recog2)
+plot(jitter(allsum$Emot.recog1,10),jitter(allsum$Emot.recog2,10),pch=3,cex=.6)
 abline(h=.75)
 abline(v=.75)
 text(.6,.8,'drop if <75% on either run',cex=.8)
 
 #db modified to mark rather than drop cases with scores < .75
-demographics$exclude <- 0 #default is to exclude
+allsum$exclude <- 0 #default is to exclude
 
 # mark the cases where there is less than 75% for identical stimuli
-w <- union(which(demographics$Emot.recog1 < .75),which(demographics$Emot.recog2 < .75))
-demographics$exclude[w]<-1 #code exclude = 1 if excluded because poor emot recog
+w <- union(which(allsum$Emot.recog1 < .75),which(allsum$Emot.recog2 < .75))
+allsum$exclude[w]<-1 #code exclude = 1 if excluded because poor emot recog
 ```
 
 In this section, the correct sequences are marked as 1, incorrect asnwers are marked as 0. We then mark whether the correct answers were in the left or right hemiface. 
@@ -726,14 +725,14 @@ If the index is negative, emotion recognition is lateralised in the left hemisph
 Here, a .csv is written for the chimeric face LI.
 
 ```{r domakeLI}
-#We add Chimeric faces LIs to demographics for day 1 and then day2
+#We add Chimeric faces LIs to allsum for day 1 and then day2
 task<-'Chimeric faces'
 origdat<-chim_dat1
 origdat$X1 <- origdat$accurate
 mycolname<-"Day1_CF_acc_LI"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 # now do RT
 origdat$X1 <- origdat$RT
@@ -741,73 +740,74 @@ mycolname<-"Day1_CF_RT_LI"
 polarity <-1
 
 #if we don't specify mycutoff, it will remain at level set for accuracy, which means it should not trap any RT values as they will all be much bigger
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-chim_dat2
 origdat$X1 <- origdat$accurate
 mycolname<-"Day2_CF_acc_LI"
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat$X1 <- origdat$RT
 mycolname<-"Day2_CF_RT_LI"
 polarity <-1
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
-cor1 <- cor(demographics$Day1_CF_acc_LI,demographics$Day2_CF_acc_LI)
-plot(demographics$Day1_CF_acc_LI,demographics$Day2_CF_acc_LI,main='Chimeric LI accuracy',col=(1+demographics$exclude))
+cor1 <- cor(allsum$Day1_CF_acc_LI,allsum$Day2_CF_acc_LI)
+plot(allsum$Day1_CF_acc_LI,allsum$Day2_CF_acc_LI,main='Chimeric LI accuracy',col=(1+allsum$exclude))
 abline(v=0)
 abline(h=0)
 text(-50,75,paste0('r = ',round(cor1,3)))
 text(-50,65,'red will be excluded',cex=.85)
-cor2<-cor(demographics$Day1_CF_RT_LI,demographics$Day2_CF_RT_LI)
-plot(demographics$Day1_CF_RT_LI,demographics$Day2_CF_RT_LI,main='Chimeric LI RT',col=(1+demographics$exclude))
+cor2<-cor(allsum$Day1_CF_RT_LI,allsum$Day2_CF_RT_LI)
+plot(allsum$Day1_CF_RT_LI,allsum$Day2_CF_RT_LI,main='Chimeric LI RT',col=(1+allsum$exclude))
 abline(v=0)
 abline(h=0)
 text(-10,20,paste0('r = ',round(cor2,3)))
 text(-10,18,'red will be excluded',cex=.85)
 ```
 
-Here we use the Z score version. 
+Here we use the Z score version. This computes for each subject whether they have a different proportion correct for L and R
 
 ```{r domakeZ}
-#We add Chimeric faces LIs to demographics for day 1 and then day2
+#We add Chimeric faces LIs to allsum for day 1 and then day2
 task<-'Chimeric faces'
 origdat<-chim_dat1
 origdat$X1 <- origdat$N
 mycolname<-"Day1_CF_acc_Z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeZ(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-chim_dat2
 origdat$X1 <- origdat$N
 mycolname<-"Day2_CF_acc_Z"
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeZ(demographics,origdat,task,mycolname,polarity,mycutoff)
-w<-which(demographics$excluded == 1)
-demographics$Day1_CF_acc_Z[w] <- NA #removes zscores for excluded cases
-demographics$Day2_CF_acc_Z[w] <- NA
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+w<-which(allsum$excluded == 1)
+allsum$Day1_CF_acc_Z[w] <- NA #removes zscores for excluded cases
+allsum$Day2_CF_acc_Z[w] <- NA
 
-RR<-intersect(which(demographics$Day1_CF_acc_Z>1.96),which(demographics$Day2_CF_acc_Z>1.96))
-LL<-intersect(which(demographics$Day1_CF_acc_Z< -1.96),which(demographics$Day2_CF_acc_Z< -1.96))
+RR<-intersect(which(allsum$Day1_CF_acc_Z>1.96),which(allsum$Day2_CF_acc_Z>1.96))
+LL<-intersect(which(allsum$Day1_CF_acc_Z< -1.96),which(allsum$Day2_CF_acc_Z< -1.96))
 
-cor1 <- cor(demographics$Day1_CF_acc_Z,demographics$Day2_CF_acc_Z,use='complete.obs',method='spearman')
-plot(demographics$Day1_CF_acc_Z,demographics$Day2_CF_acc_Z,main='Chimeric Z accuracy')
+cor1 <- cor(allsum$Day1_CF_acc_Z,allsum$Day2_CF_acc_Z,use='complete.obs',method='spearman')
+plot(allsum$Day1_CF_acc_Z,allsum$Day2_CF_acc_Z,main='Chimeric Z accuracy')
 abline(v=0)
 abline(h=0)
 abline(v = 1.96, col='red')
 abline(v = -1.96, col='red')
 abline(h = 1.96, col='red')
 abline(h = -1.96, col='red')
-text(-7,7.5,paste0('r = ',round(cor1,3)),cex=.8)
+text(-7,7.5,paste0('Spearman r = ',round(cor1,3)),cex=.8)
 text(-2,-15,paste('Those in bottom quadrant\n bounded by red are consistently\n L-lateralised, N = ',length(LL)),cex=.8)
 text(5,18,paste('Those in top quadrant\n bounded by red are consistently\n R-lateralised, N = ',length(RR)),cex=.8)
-text(8,-8,'One outlier excluded',cex=.8)
+#text(8,-8,'One outlier excluded',cex=.8)
+#Removal of the outlier does not have much influence on rs
 
 
 ```
 
-As we can see, we generally get a left side/right hemisphere advantage in our accuracy data. The RT advantage is not as expected. This may be due to the buttons being clicked on screen and the additional time penalty of moving the mouse. 
+As we can see, we generally get a left side/right hemisphere advantage in our accuracy data. We would not expect a RT advantage for this type of measure, where the response is to a single stimulus with conflicting information from the 2 sides.
 
 ## Bergen Dichotic listening
 
@@ -847,7 +847,7 @@ if (d==1)
 }
 ```
 
-First, we judge participants' ability to correctly identify sounds using the "dichotic_same" dataframe. Participants are removed if their performance is below 75%.
+First, we judge participants' ability to correctly identify sounds using the "dichotic_same" dataframe. Participants are marked as excluded if their performance is below 75%.
 
 ```{r soundsability, warning=FALSE,message=FALSE}
 # this will mark correct responses as 1 or 0. It will be importantfor removing participants later on. 
@@ -863,20 +863,22 @@ dichotic_same <-
   mutate(sound_recog= ifelse(as.character(Response) == as.character(left_channel), 1, 0))
 # calculate participants average
 sound_mean <- aggregate(FUN= mean, data= dichotic_same, sound_recog~ subject)
-# add this to demographics 
-demographics <- merge(demographics, sound_mean, by= "subject")
+# add this to allsum 
+allsum <- merge(allsum, sound_mean, by= "subject")
 }
-mycol <- length(colnames(demographics))
-colnames(demographics)[(mycol-1):mycol]<-c('sound.recog1','sound.recog2')
+mycol <- length(colnames(allsum))
+colnames(allsum)[(mycol-1):mycol]<-c('sound.recog1','sound.recog2')
 
 # once again, mark rather than remove those with poor performance on identical stimuli
-w<-union(which(demographics$sound.recog1 < .75), which(demographics$sound.recog2 < .75))
-ww<-intersect(which(demographics$exclude==1),w)
+w<-union(which(allsum$sound.recog1 < .75), which(allsum$sound.recog2 < .75))
+ww<-intersect(which(allsum$exclude==1),w)
 #ww contains people who were excluded on both dichotic and faces. 
 # code exclude = 2 for the cases where there less than 75% for identical stimuli
-demographics$exclude[w]<-2 #code exclude = 2 if excluded because poor dichotic
-demographics$exclude[ww]<-12 #code for those excluded on both chimeric and dichotic
-table(demographics$exclude) 
+allsum$exclude[w]<-2 #code exclude = 2 if excluded because poor dichotic
+allsum$exclude[ww]<-12 #code for those excluded on both chimeric and dichotic
+t <- table(allsum$exclude) 
+rownames(t)<-c('include','exclude CF','exclude dich','exclude CF+dich')
+t
 ```
 
 In this section, the correct sequences are marked as 1, incorrect asnwers are marked as 0. We then mark whether the correct answers were in the left or right ear. 
@@ -959,14 +961,14 @@ If the index is negative, emotion recognition is lateralised in the left hemisph
 Here, a .csv is written for the chimeric face LI.
 
 ```{r domakeLIdich}
-#We add Dichotic LIs to demographics for day 1 and then day2
+#We add Dichotic LIs to allsum for day 1 and then day2
 task<-'Dichotic listening'
 origdat<-DL_dat1
 origdat$X1 <- origdat$accurate
 mycolname<-"Day1_DL_acc_LI"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 # now do RT
 origdat$X1 <- origdat$RT
@@ -974,25 +976,25 @@ mycolname<-"Day1_DL_RT_LI"
 polarity <-1
 
 #if we don't specify mycutoff, it will remain at level set for accuracy, which means it should not trap any RT values as they will all be much bigger
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-DL_dat2
 origdat$X1 <- origdat$accurate
 mycolname<-"Day2_DL_acc_LI"
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat$X1 <- origdat$RT
 mycolname<-"Day2_DL_RT_LI"
 polarity <-1
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
-cor1 <- cor(demographics$Day1_DL_acc_LI,demographics$Day2_DL_acc_LI)
-plot(demographics$Day1_DL_acc_LI,demographics$Day2_DL_acc_LI,main='Dichotic LI accuracy',col=(1+demographics$exclude))
+cor1 <- cor(allsum$Day1_DL_acc_LI,allsum$Day2_DL_acc_LI)
+plot(allsum$Day1_DL_acc_LI,allsum$Day2_DL_acc_LI,main='Dichotic LI accuracy',col=(1+allsum$exclude))
 abline(v=0)
 abline(h=0)
 text(-75,75,paste0('r = ',round(cor1,3)))
-cor2<-cor(demographics$Day1_DL_RT_LI,demographics$Day2_DL_RT_LI)
-plot(demographics$Day1_DL_RT_LI,demographics$Day2_DL_RT_LI,main='Dichotic LI RT',col=(1+demographics$exclude))
+cor2<-cor(allsum$Day1_DL_RT_LI,allsum$Day2_DL_RT_LI)
+plot(allsum$Day1_DL_RT_LI,allsum$Day2_DL_RT_LI,main='Dichotic LI RT',col=(1+allsum$exclude))
 abline(v=0)
 abline(h=0)
 text(-5,15,paste0('r = ',round(cor2,3)))
@@ -1001,33 +1003,32 @@ text(-5,15,paste0('r = ',round(cor2,3)))
 Here we use the Z score version. This is an individualised score that directly indicates whether or not the person is reliably lateralised on one test occasion.
 
 ```{r domakeZ_dich}
-#We add dichotic LIs to demographics for day 1 and then day2
+#We add dichotic LIs to allsum for day 1 and then day2
 task<-'Dichotic listening'
 origdat<-DL_dat1
 origdat$X1 <- origdat$N
 mycolname<-"Day1_Dich_acc_Z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeZ(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-DL_dat2
 origdat$X1 <- origdat$N
 mycolname<-"Day2_Dich_acc_Z"
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeZ(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 #convert excluded cases with code 2 or 12 to NA
-w<-which(demographics$exclude>1)
-demographics$Day1_Dich_acc_Z[w]<-NA
-demographics$Day2_Dich_acc_Z[w]<-NA
+w<-which(allsum$exclude>1)
+allsum$Day1_Dich_acc_Z[w]<-NA
+allsum$Day2_Dich_acc_Z[w]<-NA
 
-RR<-intersect(which(demographics$Day1_Dich_acc_Z>1.96),which(demographics$Day2_Dich_acc_Z>1.96))
-LL<-intersect(which(demographics$Day1_Dich_acc_Z< -1.96),which(demographics$Day2_Dich_acc_Z< -1.96))
+RR<-intersect(which(allsum$Day1_Dich_acc_Z>1.96),which(allsum$Day2_Dich_acc_Z>1.96))
+LL<-intersect(which(allsum$Day1_Dich_acc_Z< -1.96),which(allsum$Day2_Dich_acc_Z< -1.96))
 
-cor1 <- cor(demographics$Day1_Dich_acc_Z,demographics$Day2_Dich_acc_Z,use='complete.obs',method='spearman')
-demographics$handpch <-1
-demographics$handpch[demographics$handedness=='Left'] <-2
-plot(demographics$Day1_Dich_acc_Z,demographics$Day2_Dich_acc_Z,main='Dich Z accuracy',pch=demographics$handpch)
+cor1 <- cor(allsum$Day1_Dich_acc_Z,allsum$Day2_Dich_acc_Z,use='complete.obs',method='spearman')
+
+plot(allsum$Day1_Dich_acc_Z,allsum$Day2_Dich_acc_Z,main='Dich Z accuracy',pch=allsum$handpch)
 abline(v=0)
 abline(h=0)
 text(-7.5,15,paste0('Spearman r = ',round(cor1,3)),cex=.8)
@@ -1080,7 +1081,7 @@ outliertable<-table(RDT_dat2$subject,RDT_dat2$outlier)
 #remove.outlier <- as.data.frame(outliertable)
 #remove.outlier <- remove.outlier[remove.outlier$Freq >= 260 & remove.outlier$Freq <= 208,]
 #remove.p <- list(unique(remove.outlier$Var1))
-#demographics <- demographics[demographics$subject != remove.p,]
+#allsum <- allsum[allsum$subject != remove.p,]
 
 if(d==1)
 {RDT_dat1 <- RDT_dat2}
@@ -1153,32 +1154,32 @@ origdat$X1 <- origdat$p.corr
 mycolname<-"RDT_p.corr_LI"
 polarity<- 1 #so LI is positive in predicted direction
 mycutoff <- 75
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat$X1 <- origdat$RT
 mycolname<-"RDT_RT_LI"
 polarity <- (-1)
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 #Cutoff has removed those with low accuracy, but we should also remove their RT LIs
 #We do this by finding those with NA in accuracy LI
-w<-which(is.na(demographics$RDT_acc_LI))
+w<-which(is.na(allsum$RDT_acc_LI))
 if(length(w)>0)
-{demographics$RDT_RT_LI[w]<-NA}
+{allsum$RDT_RT_LI[w]<-NA}
 #t.test to test if laterality index differs from zero
-t.test(demographics$RDT_p.corr_LI)
-t.test(demographics$RDT_RT_LI)
+t.test(allsum$RDT_p.corr_LI)
+t.test(allsum$RDT_RT_LI)
 #rename column to identify day
-myncol <- length(colnames(demographics))
-colnames(demographics)[(myncol-1):myncol] <- paste0('Day',d,'.',colnames(demographics)[(myncol-1):myncol])
+myncol <- length(colnames(allsum))
+colnames(allsum)[(myncol-1):myncol] <- paste0('Day',d,'.',colnames(allsum)[(myncol-1):myncol])
 
 }
-cor1<-cor(demographics$Day1.RDT_p.corr_LI,demographics$Day2.RDT_p.corr_LI,use='complete.obs')
-cor2<-cor(demographics$Day1.RDT_RT_LI,demographics$Day2.RDT_RT_LI,use='complete.obs')
-plot(demographics$Day1.RDT_p.corr_LI,demographics$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
+cor1<-cor(allsum$Day1.RDT_p.corr_LI,allsum$Day2.RDT_p.corr_LI,use='complete.obs')
+cor2<-cor(allsum$Day1.RDT_RT_LI,allsum$Day2.RDT_RT_LI,use='complete.obs')
+plot(allsum$Day1.RDT_p.corr_LI,allsum$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
 abline(v=0)
 abline(h=0)
 text(-3,3,paste0('r = ',round(cor1,3)))
-plot(demographics$Day1.RDT_RT_LI,demographics$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
+plot(allsum$Day1.RDT_RT_LI,allsum$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
 abline(v=0)
 abline(h=0)
 text(-3,3,paste0('r = ',round(cor2,3)))
@@ -1193,42 +1194,42 @@ for (d in 1:2){
     myfile<-RDT_dat2}
 
 
-  nsubs <- nrow(demographics)
-  demographics$tlat_RDT<-NA
-   demographics$plat_RDT<-NA
+  nsubs <- nrow(allsum)
+  allsum$tlat_RDT<-NA
+   allsum$plat_RDT<-NA
   for (i in 1:nsubs) {
-    w<-which(myfile$subject==demographics$subject[i])
+    w<-which(myfile$subject==allsum$subject[i])
     if(length(w)>0)
     {
       myt<-t.test(myfile$RT[w]~myfile$side[w])
-      demographics$tlat_RDT[i]<-myt$statistic
-      demographics$plat_RDT[i]<-myt$p.value
+      allsum$tlat_RDT[i]<-myt$statistic
+      allsum$plat_RDT[i]<-myt$p.value
     }
   }
    if (d==1){
-     maxcol <-length(colnames(demographics))
-     colnames(demographics)[(maxcol-1):maxcol]<-c('tlat_RDT_1','plat_RDT_1')
+     maxcol <-length(colnames(allsum))
+     colnames(allsum)[(maxcol-1):maxcol]<-c('tlat_RDT_1','plat_RDT_1')
    }
    if (d==2){
-     maxcol <-length(colnames(demographics))
-     colnames(demographics)[(maxcol-1):maxcol]<-c('tlat_RDT_2','plat_RDT_2')
+     maxcol <-length(colnames(allsum))
+     colnames(allsum)[(maxcol-1):maxcol]<-c('tlat_RDT_2','plat_RDT_2')
    }
 }
-colcount<-length(colnames(demographics))
-# Remove values for cases that are excluded for low acc: do this for both times by just blitzing last 4 columns of demographics
-w<-which(is.na(demographics$Day1.RDT_RT_LI))
-demographics[w,(colcount-3):colcount]<-NA
-w<-which(is.na(demographics$Day2.RDT_RT_LI))
-demographics[w,(colcount-3):colcount]<-NA
+colcount<-length(colnames(allsum))
+# Remove values for cases that are excluded for low acc: do this for both times by just blitzing last 4 columns of allsum
+w<-which(is.na(allsum$Day1.RDT_RT_LI))
+allsum[w,(colcount-3):colcount]<-NA
+w<-which(is.na(allsum$Day2.RDT_RT_LI))
+allsum[w,(colcount-3):colcount]<-NA
 
 # compare t-value with LI : use t = 1.65 as cutoff for sig lateralised
- plot(demographics$tlat_RDT_1,demographics$Day1.RDT_RT_LI)
+ plot(allsum$tlat_RDT_1,allsum$Day1.RDT_RT_LI)
  abline(v=1.65)
-  plot(demographics$tlat_RDT_2,demographics$Day2.RDT_RT_LI)
+  plot(allsum$tlat_RDT_2,allsum$Day2.RDT_RT_LI)
    abline(v=1.65)
 # compare t-value from day 1 and day 2 
-     myr <- cor(demographics$tlat_RDT_1,demographics$tlat_RDT_2,use='complete.obs')
-    plot(demographics$tlat_RDT_1,demographics$tlat_RDT_2)
+     myr <- cor(allsum$tlat_RDT_1,allsum$tlat_RDT_2,use='complete.obs')
+    plot(allsum$tlat_RDT_1,allsum$tlat_RDT_2)
     abline(v=0)
     abline(h=0)
    abline(v=1.65) 
@@ -1402,7 +1403,7 @@ Finally, a handedness index is calculated and plotted. The handedness index is b
 
 If the index is negative, the participant is categorised as left handed. If the index is positive, the participant is categorised as right handed. 
 
-In the next chunk, the LI is also added to demographics
+In the next chunk, the LI is also added to allsum
 
 ```{r fingerLI}
 task<-'Finger'
@@ -1411,14 +1412,14 @@ origdat$X1 <- origdat$`1`
 mycolname<-"Day1_finger_LI"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (1)#so LI is positive in predicted direction
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat$X1 <- origdat$`2`
 mycolname<-"Day2_finger_LI"
-demographics <- makeLI(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
-cor1 <- cor(demographics$Day1_finger_LI,demographics$Day2_finger_LI,use='complete.obs')
-plot(demographics$Day1_finger_LI,demographics$Day2_finger_LI,main='Finger Tapping LI')
+cor1 <- cor(allsum$Day1_finger_LI,allsum$Day2_finger_LI,use='complete.obs')
+plot(allsum$Day1_finger_LI,allsum$Day2_finger_LI,main='Finger Tapping LI')
 abline(v=0)
 abline(h=0)
 text(-20,10,paste0('r = ',round(cor1,3)))
@@ -1427,73 +1428,73 @@ text(-20,10,paste0('r = ',round(cor1,3)))
 Here we use the Z score version. 
 
 ```{r domakeZ_finger}
-#We add Chimeric faces LIs to demographics for day 1 and then day2
+#We add Chimeric faces LIs to allsum for day 1 and then day2
 task<-'Finger'
 origdat<-finger.long
 origdat$X1 <- origdat$`1`
 mycolname<-"Day1_Finger_acc_Z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
 polarity<- (1)#so LI is positive in predicted direction
-demographics <- makeZ(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-finger.long
 origdat$X1 <- origdat$`2`
 mycolname<-"Day2_Finger_acc_Z"
 polarity<- (-1)#so LI is positive in predicted direction
-demographics <- makeZ(demographics,origdat,task,mycolname,polarity,mycutoff)
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
-cor1 <- cor(demographics$Day1_Finger_acc_Z,demographics$Day2_Finger_acc_Z)
-plot(demographics$Day1_Finger_acc_Z,demographics$Day2_Finger_acc_Z,main='Finger Z accuracy')
+cor1 <- cor(allsum$Day1_Finger_acc_Z,allsum$Day2_Finger_acc_Z)
+plot(allsum$Day1_Finger_acc_Z,allsum$Day2_Finger_acc_Z,main='Finger Z accuracy')
 abline(v=0)
 abline(h=0)
 text(-2.5,2.5,paste0('r = ',round(cor1,3)))
 
-write.csv(demographics, "LIs.csv")
+write.csv(allsum, "LIs.csv")
 ```
 
 ## Final sample summary
 
 Here we report the descriptives for the participants who had full datasets. 
 
-```{r Finaldemographics, warning=FALSE}
+```{r Finalallsum, warning=FALSE}
 # first, describe age for the whole sample and plot
-demographics %>%
+allsum %>%
     summarize(avg = mean(age), n = n(), sd = sd(age))
 # second, show gender count for the whole population
-demographics %>%
+allsum %>%
   group_by(gender) %>%
     summarize(n = n())
 # third, show footedness
-demographics %>%
+allsum %>%
   group_by(footedness) %>%
     summarize(n = n())
 # fourth, show handedness
-demographics %>%
+allsum %>%
   group_by(handedness) %>%
     summarize(n = n())
 # fifth, show bilingualism
-demographics %>%
+allsum %>%
   group_by(bilingual) %>%
     summarize(n = n())
 # sixth, show miles
-demographics %>%
+allsum %>%
   group_by(miles) %>%
     summarize(n = n())
 # seventh, show porta
-demographics %>%
+allsum %>%
   group_by(porta) %>%
     summarize(n = n())
 # eigth, show LexTALE
-demographics %>%
+allsum %>%
     summarize(avg = mean(lexTALE), n = n(), sd = sd(lexTALE))
 
 # Now that we have the basic scores, let's look at how this looks with regards to handedness
 # first, describe age for the whole sample and plot
-ggplot(demographics, aes(x = handedness, y = age)) +
+ggplot(allsum, aes(x = handedness, y = age)) +
   geom_pirate(aes(colour = handedness), bars = FALSE) + theme_classic() + 
   ylim(10, 60) + ggtitle("Age by handedness") + ylab("Age (years)") + xlab("")
 # second, show gender count for the whole population
-a <- demographics %>%
+a <- allsum %>%
   group_by(gender, handedness) %>%
     summarize(n = n())
 ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
@@ -1502,7 +1503,7 @@ ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
   theme_classic() + facet_wrap(.~ gender) + ggtitle("Gender by handedness") + 
   ylab("Count") + xlab("")
 # third, show footedness
-a <- demographics %>%
+a <- allsum %>%
   group_by(handedness, footedness) %>%
     summarize(n = n())
 ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
@@ -1511,7 +1512,7 @@ ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
   theme_classic() + facet_wrap(.~ footedness) + ggtitle("Footedness by handedness") + 
   ylab("Count") + xlab("")
 # fourth, show bilingualism
-a <- demographics %>%
+a <- allsum %>%
   group_by(bilingual, handedness) %>%
     summarize(n = n())
 ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
@@ -1520,7 +1521,7 @@ ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
   theme_classic() + facet_wrap(.~ bilingual) + ggtitle("Bilingualism by handedness") + 
   ylab("Count") + xlab("")
 # fifth, show miles
-a <- demographics %>%
+a <- allsum %>%
   group_by(miles, handedness) %>%
     summarize(n = n())
 ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
@@ -1529,7 +1530,7 @@ ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
   theme_classic() + facet_wrap(.~ miles) + ggtitle("Mile test by handedness") + 
   ylab("Count") + xlab("")
 # six, show porta
-a <- demographics %>%
+a <- allsum %>%
   group_by(porta, handedness) %>%
     summarize(n = n())
 ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
@@ -1538,30 +1539,30 @@ ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
   theme_classic() + facet_wrap(.~ porta) + ggtitle("Porta test by handedness") + 
   ylab("Count") + xlab("")
 # seventh, show LexTALE
-ggplot(demographics, aes(x = handedness, y = lexTALE)) +
+ggplot(allsum, aes(x = handedness, y = lexTALE)) +
   geom_pirate(aes(colour = handedness), bars = FALSE) + theme_classic() + 
   ylim(70, 110) + ggtitle("LexTALE by handedness") + ylab("Standardised score") + xlab("")
 ```
 
 ```{r corr_between_tasks}
 mycols <- c('Day1_CF_acc_Z','Day2_CF_acc_Z','Day1_Dich_acc_Z','Day2_Dich_acc_Z','tlat_RDT_1','tlat_RDT_2','Day1_Finger_acc_Z','Day2_Finger_acc_Z')
-colnums<- which(colnames(demographics) %in% mycols)
-mycorrs<-correlate(demographics[,colnums],method='spearman')
+colnums<- which(colnames(allsum) %in% mycols)
+mycorrs<-correlate(allsum[,colnums],method='spearman')
 
-mycorrsL <-correlate(demographics[demographics$handedness=='Left',colnums],method='spearman')
-mycorrsR <-correlate(demographics[demographics$handedness=='Right',colnums],method='spearman')
+mycorrsL <-correlate(allsum[allsum$handedness=='Left',colnums],method='spearman')
+mycorrsR <-correlate(allsum[allsum$handedness=='Right',colnums],method='spearman')
 
 #compare L and R handers
 
 for (i in colnums){
-  print(names(demographics)[i])
- print(t.test(demographics[,i]~demographics$handedness))
+  print(names(allsum)[i])
+ print(t.test(allsum[,i]~allsum$handedness))
 }
 
 #check lateralisaiton with single group t vs zero
 for (i in colnums){
-  print(names(demographics)[i])
- print(t.test(demographics[,i]))
+  print(names(allsum)[i])
+ print(t.test(allsum[,i]))
 }
 
 ```
