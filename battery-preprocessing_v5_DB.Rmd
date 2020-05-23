@@ -558,8 +558,10 @@ Lsubjectf <- select(Lsubjectf, "subject", "LI")
 w<-which(colnames(allsum)==mycolname)
 if(length(w)>0){
 allsum<-allsum[,-w]}
+
 #now add this LI
-allsum <- merge(allsum, Lsubjectf, by= "subject")
+allsum <- merge(allsum, Lsubjectf, by= "subject",all.x=T)
+#Need all.x = T to retain all original subjects from allsum, even if no match
 lastcol<-length(colnames(allsum))
 colnames(allsum)[lastcol]<-mycolname
 
@@ -609,7 +611,7 @@ w<-which(colnames(allsum)==mycolname)
 if(length(w)>0){
 allsum<-allsum[,-w]} #delete cols that already exist with that name
 
-allsum <- merge(allsum, Zdf, by= "subject")
+allsum <- merge(allsum, Zdf, by= "subject",all.x=T)
 lastcol<-length(colnames(allsum))
 colnames(allsum)[lastcol]<-mycolname
 
@@ -688,7 +690,7 @@ for (d in 1:2){
   emot_corr_Diff <- aggregate(FUN= mean, data= CF_diff, Correct~ subject)
   # add this to allsum 
   colnames(emot_corr_Diff)[2]<-'Emot_corr_diff'
-  allsum <- merge(allsum, emot_corr_Diff, by= "subject")
+  allsum <- merge(allsum, emot_corr_Diff, by= "subject",all.x=T)
 }
 
 w<-which(colnames(allsum) %in% c("Emot.corr.same1","Emot.corr.diff1","Emot.corr.same2","Emot.corr.diff2"))
@@ -707,7 +709,7 @@ allsum$exclude <- 0 #default is to exclude
 # mark the cases where there is less than 75% for identical stimuli
 w <- union(which(allsum$Emot.corr.same1 < .75),which(allsum$Emot.corr.same2 < .75))
 allsum$exclude[w]<-1 #code exclude = 1 if excluded because poor emot recog
-print(paste('N excluded because < 75% on at least one trial:',length(w)))
+print(paste('N flagged for exclusion because < 75% on at least one trial:',length(w)))
 
 ```
 
@@ -776,12 +778,9 @@ chim_dat2 <- make.df(CF_dat2,varlist,latlist)
 # if (length(w)>0) {chim_dat2<-chim_dat2[-w,]}
 
 
-#find included cases
-w<-which(allsum$exclude==0)
-inclsubs <- allsum$subject[w]
 
-chim_dat1 <- chim_dat1[(chim_dat1$subject %in% inclsubs),]
-chim_dat2 <- chim_dat2[(chim_dat2$subject %in% inclsubs),]
+
+
 
 
 ```
@@ -789,14 +788,18 @@ chim_dat2 <- chim_dat2[(chim_dat2$subject %in% inclsubs),]
 The data is visualised using the pirate plot function and t.test conducted.
 
 ```{r dosummary}
+#find included cases
+w<-which(allsum$exclude==0)
+inclsubs <- allsum$subject[w]
+
 #First look at accuracy, Day 1
-origdat <- chim_dat1
+origdat <- chim_dat1[(chim_dat1$subject %in% inclsubs),]
 measure <- 'Accuracy'
-origdat$X1 <- chim_dat1$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc with the dopirate function
+origdat$X1 <- origdat$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc with the dopirate function
 task <- 'Chimeric faces day 1'
 dopirate(origdat,task,measure)
 #Same function will do RT next
-origdat$X1 <- chim_dat1$RT
+origdat$X1 <- origdat$RT
 measure <- 'RT'
 dopirate(origdat,task,measure)
 t.test(origdat$accurate~ origdat$side)
@@ -808,13 +811,13 @@ dropsub <- chim_dat2$subject[w]
 chim_dat2$accurate[chim_dat2$subject %in% dropsub]<-NA
 chim_dat2$RT[chim_dat2$subject %in% dropsub]<-NA
 #-------------------------
-origdat <- chim_dat2
-origdat$X1 <- chim_dat2$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
+origdat <- chim_dat2[(chim_dat2$subject %in% inclsubs),]
+origdat$X1 <- origdat$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
 task <- 'Chimeric faces day 2'
 measure <- 'Accuracy'
 dopirate(origdat,task,measure)
 
-origdat$X1 <- chim_dat2$RT
+origdat$X1 <- origdat$RT
 measure <- 'RT'
 dopirate(origdat,task,measure)
 ```
@@ -1010,19 +1013,20 @@ for (d in 1:2){
   if (d==2){
     dichotic_same <- dichotic_same2
   }
-
-# calculate participants average
-sound_mean <- aggregate(FUN= mean, data= dichotic_same, Correct~ subject)
-# add this to allsum 
-
-# Check if sound.recog columns already exist (ie if this chunk was run previously)
-w <- which(colnames(allsum) %in% c('sound.recog1','sound.recog2'))
-if (length(w)>0){
-  allsum<-allsum[,-w]
+  
+  # calculate participants average
+  sound_mean <- aggregate(FUN= mean, data= dichotic_same, Correct~ subject)
+  # add this to allsum 
+  
+  # Check if sound.recog columns already exist (ie if this chunk was run previously)
+  w <- which(colnames(allsum) %in% c('sound.recog1','sound.recog2'))
+  if (length(w)>0){
+    allsum<-allsum[,-w]
+  }
+  
+  allsum <- merge(allsum, sound_mean, by= "subject",all.x=T)
 }
 
-allsum <- merge(allsum, sound_mean, by= "subject")
-}
 mycol <- length(colnames(allsum))
 colnames(allsum)[(mycol-1):mycol]<-c('sound.recog1','sound.recog2')
 
@@ -1048,10 +1052,7 @@ for (d in 1:2){
   if (d==2){
     dichotic_dat <- dichotic_dat2
   }
-dichotic_dat <- 
-  dichotic_dat %>% 
-  mutate(Correct= ifelse(as.character(Response) == as.character(left_channel), 1, 
-                         ifelse(as.character(Response) == as.character(right_channel), 1, 0)))
+
 # this will mark the side responded to. NB to allow for generic functions for all tasks, we use the label 'side' rather than hemiface
 dichotic_dat <- 
   dichotic_dat %>% 
@@ -1091,22 +1092,23 @@ DL_dat2[is.na(DL_dat2)] <- 0
 The data is visualised using the pirate plot function and t.test conducted.
 
 ```{r dosummarydich}
-origdat <- DL_dat1
+includesubs <- which(allsum$exclude<2) #only plot/t-test included cases
+origdat <- DL_dat1[DL_dat1$subject %in% includesubs,]
 measure <- 'Accuracy'
-origdat$X1 <- DL_dat1$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
+origdat$X1 <- origdat$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
 task <- 'Dichotic listening day 1'
 dopirate(origdat,task,measure)
-origdat$X1 <- DL_dat1$RT
+origdat$X1 <- origdat$RT
 measure <- 'RT'
 dopirate(origdat,task,measure)
 t.test(origdat$accurate~ origdat$side)
 #Now repeat for day 2
-origdat <- DL_dat2
-origdat$X1 <- DL_dat2$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
+origdat <-  DL_dat2[DL_dat2$subject %in% includesubs,]
+origdat$X1 <- origdat$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
 task <- 'Dichotic listening day 2'
 measure <- 'Accuracy'
 dopirate(origdat,task,measure)
-origdat$X1 <- DL_dat2$RT
+origdat$X1 <- origdat$RT
 measure <- 'RT'
 dopirate(origdat,task,measure)
 ```
