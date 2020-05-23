@@ -31,7 +31,7 @@ This script analyses the following:
 And then produces summary of demog and results for the final sample
 
 NB. Just also putting here relevant references that need to be looked at!
-https://pubmed.ncbi.nlm.nih.gov/18050003/
+Bourne on RT in chimeric faces: https://pubmed.ncbi.nlm.nih.gov/18050003/
 
 
 # Questionnaires
@@ -65,6 +65,7 @@ library(GGally)
 require(stringr) # string matching
 library(ggpirate)
 library(corrr) #easier correlations!
+library(beeswarm) #just a kind of plot Dorothy likes
 ```
 
 First, the demographics is processed.This gives us a participant subject, age, gender, footedness, and handedness.
@@ -531,7 +532,7 @@ Another generic function that can be used for different tasks to make a laterali
 
 makeLI <- function(allsum,origdat,task,mycolname,polarity,mycutoff){
 # we do this for accuracy first
-# reformat data frame
+# reformat data frame so left and right are side by side
 keeps <- c("subject", "side", "X1") #X1 holds either accuracy or RT
 Lsubjectf <- origdat[keeps]
 Lsubjectf <- spread(Lsubjectf, side, X1)
@@ -555,7 +556,8 @@ Lsubjectf <- select(Lsubjectf, "subject", "LI")
 # now merge with allsum
 # First check if this column already exists and delete it if so
 w<-which(colnames(allsum)==mycolname)
-allsum<-allsum[,-w]
+if(length(w)>0){
+allsum<-allsum[,-w]}
 #now add this LI
 allsum <- merge(allsum, Lsubjectf, by= "subject")
 lastcol<-length(colnames(allsum))
@@ -578,13 +580,13 @@ Note that this in effect adjusts for any overall differences in accuracy and RT,
 # Polarity is -1 or 1 and can be set to keep all LIs positive if in a given direction
 # Cutoff will create NA if level of performance is outside predetermined limits
 
-makeZ <- function(allsums,origdat,task,mycolname,polarity,mycutoff){
+makeZ <- function(allsum,origdat,task,mycolname,polarity,mycutoff){
 # we do this for accuracy first
 # reformat data frame
 keeps <- c("subject", "side", "X1") #X1 holds either accuracy or RT
 Zdf <- origdat[keeps]
 Zdf <- spread(Zdf, side, X1)
-# calculate each participants' lat index
+# calculate each participants' z score for laterality 
 Zdf <- 
   Zdf %>% 
   group_by(subject) %>%
@@ -603,14 +605,15 @@ Zdf$Z <- Zdf$Z*polarity #polarity can be set to reverse sign - eg for RT a large
 Zdf <- select(Zdf, "subject", "Z")
 # now merge with allsum
 # First check if this column already exists and delete it if so
-w<-which(colnames(allsums)==mycolname)
-allsums<-allsums[,-w]
+w<-which(colnames(allsum)==mycolname)
+if(length(w)>0){
+allsum<-allsum[,-w]} #delete cols that already exist with that name
 
-allsums <- merge(allsums, Zdf, by= "subject")
-lastcol<-length(colnames(allsums))
-colnames(allsums)[lastcol]<-mycolname
+allsum <- merge(allsum, Zdf, by= "subject")
+lastcol<-length(colnames(allsum))
+colnames(allsum)[lastcol]<-mycolname
 
-return(allsums)
+return(allsum)
 }
 ```
 
@@ -662,7 +665,7 @@ outliertable2<-table(CF_dat2$subject,CF_dat2$outlier)
 
 ```
 
-First, we judge participants' ability to correctly identify emotions using the "CF_same" dataframe. Participants are removed if their performance is below 75% as this indicates poor ability to identify emotions, which will inevitably influence performance on the Chimeric Face Task.
+First, we judge participants' ability to correctly identify emotions using the "CF_same" dataframe. Participants are flagged if their performance is below 75% as this indicates poor ability to identify emotions, which will inevitably influence performance on the Chimeric Face Task.
 
 ```{r emotions, warning=FALSE,message=FALSE}
 # this will mark correct responses as 1 or 0. It will be importantfor removing participants later on. 
@@ -674,31 +677,30 @@ for (d in 1:2){
     CF_same <- CF_same2
     CF_diff <- CF_dat2
   }
-
-# removed code to compute correct, as already done above
-# calculate participants average
+  
+  # removed code to compute correct, as already done above
+  # calculate participants average
   #update: do this for chimeric as well as Same trials
-emot_corr_Same <- aggregate(FUN= mean, data= CF_same, Correct~ subject)
-# add this to allsum 
-allsum <- merge(allsum, emot_corr_Same, by= "subject")
-emot_corr_Diff <- aggregate(FUN= mean, data= CF_diff, Correct~ subject)
-# add this to allsum 
-allsum <- merge(allsum, emot_corr_Diff, by= "subject")
+  emot_corr_Same <- aggregate(FUN= mean, data= CF_same, Correct~ subject)
+  # add this to allsum 
+  colnames(emot_corr_Same)[2]<-'Emot_corr_same'
+  allsum <- merge(allsum, emot_corr_Same, by= "subject")
+  emot_corr_Diff <- aggregate(FUN= mean, data= CF_diff, Correct~ subject)
+  # add this to allsum 
+  colnames(emot_corr_Diff)[2]<-'Emot_corr_diff'
+  allsum <- merge(allsum, emot_corr_Diff, by= "subject")
 }
 
 w<-which(colnames(allsum) %in% c("Emot.corr.same1","Emot.corr.diff1","Emot.corr.same2","Emot.corr.diff2"))
 if (length(w)>0){
-allsum<-allsum[,-w] #remove any columns already created with these names
+  allsum<-allsum[,-w] #remove any columns already created with these names
 }
 mycol <- length(colnames(allsum))
 
 colnames(allsum)[(mycol-3):mycol]<-c("Emot.corr.same1","Emot.corr.diff1","Emot.corr.same2","Emot.corr.diff2")
+```
 
-plot(jitter(allsum$Emot.corr.same1,10),jitter(allsum$Emot.corr.same2,10),pch=3,cex=.6,xlab='Nonchimeric emotion recog 1',ylab='Nonchimeric emotion recog 2')
-abline(h=.75)
-abline(v=.75)
-text(.6,.8,'drop if <75% on either run',cex=.8)
-
+```{r excludelowCFacc}
 #db modified to mark rather than drop cases with scores < .75
 allsum$exclude <- 0 #default is to exclude
 
@@ -706,6 +708,15 @@ allsum$exclude <- 0 #default is to exclude
 w <- union(which(allsum$Emot.corr.same1 < .75),which(allsum$Emot.corr.same2 < .75))
 allsum$exclude[w]<-1 #code exclude = 1 if excluded because poor emot recog
 print(paste('N excluded because < 75% on at least one trial:',length(w)))
+
+```
+
+```{r plotCFacc}
+plot(jitter(allsum$Emot.corr.same1,10),jitter(allsum$Emot.corr.same2,10),pch=3,cex=.6,xlab='Nonchimeric emotion recog 1',ylab='Nonchimeric emotion recog 2',col=(1+allsum$exclude))
+abline(h=.75)
+abline(v=.75)
+text(.6,.8,'red: exclude if <75% on either run',cex=.8)
+
 
 # Just for interest look also at % correct on chimeric.
 # Presumably the conflicting information makes this harder so we don't use this for exclusion
@@ -808,7 +819,7 @@ measure <- 'RT'
 dopirate(origdat,task,measure)
 ```
 
-Finally, a laterality index is calculated and plotted based on the equation [(R-L)/(R+L)] x 100, where L= left side and R= right side.
+Next, a laterality index is calculated and plotted based on the equation [(R-L)/(R+L)] x 100, where L= left side and R= right side.
 
 If the index is negative, emotion recognition is lateralised in the left hemisphere. If the index is positive, emotion recognition is lateralised in the right hemisphere
 
@@ -842,14 +853,14 @@ mycolname<-"Day2_CF_RT_LI"
 polarity <-1
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
-cor1 <- cor(allsum$Day1_CF_acc_LI,allsum$Day2_CF_acc_LI)
+cor1 <- cor(allsum$Day1_CF_acc_LI,allsum$Day2_CF_acc_LI,use='complete.obs')
 plot(allsum$Day1_CF_acc_LI,allsum$Day2_CF_acc_LI,main='Chimeric LI accuracy',col=(1+allsum$exclude))
 abline(v=0)
 abline(h=0)
 text(-50,75,paste0('r = ',round(cor1,3)))
 myn <- nrow(allsum)
 text(-50,85,paste0('N = ',myn))
-cor2<-cor(allsum$Day1_CF_RT_LI,allsum$Day2_CF_RT_LI)
+cor2<-cor(allsum$Day1_CF_RT_LI,allsum$Day2_CF_RT_LI,use='complete.obs')
 plot(allsum$Day1_CF_RT_LI,allsum$Day2_CF_RT_LI,main='Chimeric LI RT',col=(1+allsum$exclude)) #this would plot excluded as red, but they are now excluded at earlier stage so don't show up
 abline(v=0)
 abline(h=0)
@@ -876,7 +887,7 @@ origdat$X1 <- origdat$N
 mycolname<-"Day2_CF_acc_Z"
 polarity<- (-1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
-w<-which(allsum$excluded == 1)
+w<-which(allsum$exclude == 1)
 allsum$Day1_CF_acc_Z[w] <- NA #removes zscores for excluded cases
 allsum$Day2_CF_acc_Z[w] <- NA
 
@@ -897,16 +908,52 @@ text(5,18,paste('Those in top quadrant\n bounded by red are consistently\n R-lat
 #text(8,-8,'One outlier excluded',cex=.8)
 #Removal of the outlier does not have much influence on rs
 
+#Can also do sanity check: the Chimeric Z accuracy should be very highly correlated with the laterality index, but on a different scale
 
+plot(allsum$Day1_CF_acc_LI,allsum$Day1_CF_acc_Z,main='Day 1: LI vs zlat')
+plot(allsum$Day2_CF_acc_LI,allsum$Day2_CF_acc_Z,main='Da7 2: LI vs zlat')
 ```
 
-As we can see, we generally get a left side/right hemisphere advantage in our accuracy data. We would not expect a RT advantage for this type of measure, where the response is to a single stimulus with conflicting information from the 2 sides.
+As we can see, we generally get a left side/right hemisphere advantage in our accuracy data. We would not expect a RT advantage for this type of measure, where the response is to a single stimulus with conflicting information from the 2 sides. Nevertheless, there is a RT advantage - this is consistent with Bourne:Laterality 2008 Jan;13(1):92-103. doi: 10.1080/13576500701754315. (just read abstract so far).
+
+## Next Question: Does CF laterality relate to handedness?
+Chunk below indicates there is a significant difference, though plots show much overlap.
+
+```{r CFhanded}
+
+t.test(allsum$Day1_CF_acc_Z~allsum$handpch)
+t.test(allsum$Day2_CF_acc_Z~allsum$handpch)
+beeswarm(Day1_CF_acc_Z~handedness, data = allsum, 
+  pch = 16, cex=.5,col = rainbow(8),
+  main = 'Day 1')
+beeswarm(Day2_CF_acc_Z~handedness, data = allsum, 
+  pch = 16, cex=.5,col = rainbow(8),
+  main = 'Day 2')
+```
+## Next Question: Does CF laterality relate to task accuracy
+Just looks at correlations and plot scattergram.
+
+The scattergram shapes are a bit unusual - not sure if this is just because high levels of accuracy are more common. Does suggest high levels of lateralisation in either direction may be more accurate?
+```{r CFlat_acc}
+cor1 <- round(cor(allsum$Day1_CF_acc_Z,allsum$Emot.corr.diff1,use="complete.obs"),3)
+plot(allsum$Day1_CF_acc_Z,allsum$Emot.corr.diff1)
+text(15,.6,paste0('r = ',cor1))
+cor2 <- round(cor(allsum$Day2_CF_acc_Z,allsum$Emot.corr.diff2,use="complete.obs"),3)
+plot(allsum$Day2_CF_acc_Z,allsum$Emot.corr.diff2)
+text(15,.6,paste0('r = ',cor2))
+
+#These are correlations with unsigned z-scores: significant in large sample, but not much going on here
+cor1a <- round(cor(abs(allsum$Day1_CF_acc_Z),allsum$Emot.corr.diff1,use="complete.obs"),3)
+cor2a <- round(cor(abs(allsum$Day2_CF_acc_Z),allsum$Emot.corr.diff1,use="complete.obs"),3)
+```
 
 ## Bergen Dichotic listening
 
-This part of the R Markdown file prcoesses the "Dichotic listening task' implmented online via Gorilla.sc which aims to assess the lateralisation of receptive language lateralisation. In the task, participants hear a different CV sound in each ear. Participants respond to the sound they heard clearest
+This part of the notebook prcoesses the "Dichotic listening task' implmented online via Gorilla.sc which assesses the lateralisation of receptive language. In the task, participants hear a different CV syllable in each ear. Participants report the syllable they heard clearest
 
-This task is near identical to that reported in Karlsson, Johnstone, and Carey (2019) and were original described in Hugdahl, Westerhausen, Alho, Medvedev, Laine, & Hämäläinen (2009). Stimuli were kindly provided by Dr Emma Karlsson (https://research.bangor.ac.uk/portal/en/researchers/emma-karlsson(17f6f06c-8aa9-4d16-93ba-4f98f285297e).html) and permission to use these stimuli was given by Professor Kenneth Hughdahl (https://www.uib.no/en/persons/Kenneth.Hugdahl). 
+This task is near identical to that reported in Karlsson, Johnstone, and Carey (2019) and was original described in Hugdahl, Westerhausen, Alho, Medvedev, Laine, & Hämäläinen (2009). Stimuli were kindly provided by Dr Emma Karlsson (https://research.bangor.ac.uk/portal/en/researchers/emma-karlsson(17f6f06c-8aa9-4d16-93ba-4f98f285297e).html) and permission to use these stimuli was given by Professor Kenneth Hugdahl (https://www.uib.no/en/persons/Kenneth.Hugdahl). 
+
+Much of the processing parallels that of chimeric faces.
 
 ```{r read_dichotic_dat, warning=FALSE}
 for (d in 1:2){ #we will process day 1 and day 2 together
@@ -922,28 +969,41 @@ origfile$stimuli <- paste0(origfile$left_channel, "-", origfile$right_channel)
 task <- "Dichotic Listening"
 wanted <- c("subject", "stimuli", "Response", "RT", "left_channel", "right_channel") # select wanted columns
 disp <- "e_task"
-dichotic_dat2 <- procdata(origfile,wanted,task,disp) #use generic function (see above) to read in relevant columns
+dichotic_all <- procdata(origfile,wanted,task,disp) #use generic function (see above) to read in relevant columns
 
+dichotic_all$Correct <- 0 #default is error
+w<-union(which(dichotic_all$Response==dichotic_all$left_channel),which(dichotic_all$Response==dichotic_all$right_channel))
+dichotic_all$Correct[w] <-1
+print(paste0('Day ',d,': total Error (0) and Correct(1)'))
+print(table(dichotic_all$Correct))
 # count subjects
-nsub <-length(levels(dichotic_dat2$subject))
+nsub <-length(unique(dichotic_all$subject))
 print(paste('day',d,task,": subjects: ", nsub))
 
-dichotic_same2 <- dichotic_dat2[dichotic_dat2$left_channel == dichotic_dat2$right_channel,] # create data frame for non-chimeras
-dichotic_dat2 <- dichotic_dat2[dichotic_dat2$left_channel != dichotic_dat2$right_channel,] # remove items where same expression in both hemifaces
-dichotic_dat2 <- detect.outliers(dichotic_dat2,200,1.65) #use generic outlier removal function
-outliertable<-table(dichotic_dat2$subject,dichotic_dat2$outlier)
-#print(outliertable)
-
+dichotic_same2 <- dichotic_all[dichotic_all$left_channel == dichotic_all$right_channel,] # create data frame for trials with both ears same
+dichotic_dat2 <- dichotic_all[dichotic_all$left_channel != dichotic_all$right_channel,] # remove items where same expression in both hemifaces
 if (d==1)
 {dichotic_dat1 <- dichotic_dat2
  dichotic_same1 <- dichotic_same2}
 }
 ```
 
-First, we judge participants' ability to correctly identify sounds using the "dichotic_same" dataframe. Participants are marked as excluded if their performance is below 75%.
+Now remove outliers, using same function as for CF.
+```{r dichotic.outliers}
+dichotic_dat1 <- detect.outliers(dichotic_dat1,200,1.65) #use generic outlier removal function
+outliertable1<-table(dichotic_dat1$subject,dichotic_dat1$outlier)
+dichotic_dat2 <- detect.outliers(dichotic_dat2,200,1.65) #use generic outlier removal function
+outliertable2<-table(dichotic_dat2$subject,dichotic_dat2$outlier)
+#print(outliertable)
+
+
+```
+Inspection of outliertable1 and outliertable2 shows most are data as expected, with 120 trials. Outliers not v numerous. Occasional cases where test does not seem to be done, just one trial recorded.
+
+Now, we judge participants' ability to correctly identify sounds using the "dichotic_same" dataframe. Participants are marked as excluded if their performance is below 75%.
 
 ```{r soundsability, warning=FALSE,message=FALSE}
-# this will mark correct responses as 1 or 0. It will be importantfor removing participants later on. 
+# We consider how many errors there are when both ears have same sound. 
 # NB we loop through same process for day1 and day2
 for (d in 1:2){
   dichotic_same <- dichotic_same1
@@ -951,12 +1011,16 @@ for (d in 1:2){
     dichotic_same <- dichotic_same2
   }
 
-dichotic_same <- 
-  dichotic_same %>% 
-  mutate(sound_recog= ifelse(as.character(Response) == as.character(left_channel), 1, 0))
 # calculate participants average
-sound_mean <- aggregate(FUN= mean, data= dichotic_same, sound_recog~ subject)
+sound_mean <- aggregate(FUN= mean, data= dichotic_same, Correct~ subject)
 # add this to allsum 
+
+# Check if sound.recog columns already exist (ie if this chunk was run previously)
+w <- which(colnames(allsum) %in% c('sound.recog1','sound.recog2'))
+if (length(w)>0){
+  allsum<-allsum[,-w]
+}
+
 allsum <- merge(allsum, sound_mean, by= "subject")
 }
 mycol <- length(colnames(allsum))
