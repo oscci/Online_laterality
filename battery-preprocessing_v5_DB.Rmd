@@ -919,7 +919,7 @@ plot(allsum$Day2_CF_acc_LI,allsum$Day2_CF_acc_Z,main='Da7 2: LI vs zlat')
 
 As we can see, we generally get a left side/right hemisphere advantage in our accuracy data. We would not expect a RT advantage for this type of measure, where the response is to a single stimulus with conflicting information from the 2 sides. Nevertheless, there is a RT advantage - this is consistent with Bourne:Laterality 2008 Jan;13(1):92-103. doi: 10.1080/13576500701754315. (just read abstract so far).
 
-## Next Question: Does CF laterality relate to handedness?
+## Does CF laterality relate to handedness?
 Chunk below indicates there is a significant difference, though plots show much overlap.
 
 ```{r CFhanded}
@@ -1010,25 +1010,29 @@ Now, we judge participants' ability to correctly identify sounds using the "dich
 # NB we loop through same process for day1 and day2
 for (d in 1:2){
   dichotic_same <- dichotic_same1
+   dichotic_diff<- dichotic_dat1
   if (d==2){
     dichotic_same <- dichotic_same2
+     dichotic_diff <- dichotic_dat2
   }
   
   # calculate participants average
   sound_mean <- aggregate(FUN= mean, data= dichotic_same, Correct~ subject)
+  dichotic_acc <- aggregate(FUN= mean, data= dichotic_diff, Correct~ subject)
   # add this to allsum 
   
   # Check if sound.recog columns already exist (ie if this chunk was run previously)
-  w <- which(colnames(allsum) %in% c('sound.recog1','sound.recog2'))
+  w <- which(colnames(allsum) %in% c('sound.recog1','sound.recog2','dich_acc1','dich_acc2'))
   if (length(w)>0){
     allsum<-allsum[,-w]
   }
   
   allsum <- merge(allsum, sound_mean, by= "subject",all.x=T)
+  allsum <- merge(allsum, dichotic_acc, by= "subject",all.x=T)
 }
 
 mycol <- length(colnames(allsum))
-colnames(allsum)[(mycol-1):mycol]<-c('sound.recog1','sound.recog2')
+colnames(allsum)[(mycol-3):mycol]<-c('sound.recog1','sound.recog2','dichotic.acc1','dichotic.acc2')
 
 # once again, mark rather than remove those with poor performance on identical stimuli
 w<-union(which(allsum$sound.recog1 < .75), which(allsum$sound.recog2 < .75))
@@ -1227,112 +1231,123 @@ text(20,-15,paste('Those in bottom quadrant\n bounded by red are consistently\n 
 text(5,40,paste('Those in top quadrant\n bounded by red are consistently\n R-lateralised, N = ',length(RR)),cex=.8)
 
 ```
+## Does dichotic laterality relate to handedness?
+Chunk below indicates there is a significant difference, but v small effect size.
+
+```{r dichotic_handed}
+partsum <- allsum[allsum$subject %in% includesubs,]
+
+t.test(partsum$Day1_Dich_acc_Z~partsum$handpch)
+t.test(partsum$Day2_Dich_acc_Z~partsum$handpch)
+beeswarm(Day1_Dich_acc_Z~handedness, data = partsum, 
+  pch = 16, cex=.5,col = rainbow(8),
+  main = 'Day 1')
+beeswarm(Day2_Dich_acc_Z~handedness, data = partsum, 
+  pch = 16, cex=.5,col = rainbow(8),
+  main = 'Day 2')
+```
+## Next Question: Does Dichotic laterality relate to task accuracy
+Just looks at correlations and plot scattergram.
+No hint of any relationship.
+
+
+```{r Cdichotic_acc}
+cor1 <- round(cor(partsum$Day1_Dich_acc_Z,partsum$dichotic.acc1,use="complete.obs"),3)
+plot(partsum$Day1_Dich_acc_Z,partsum$dichotic.acc1)
+text(15,.6,paste0('r = ',cor1))
+cor2 <- round(cor(partsum$Day2_Dich_acc_Z,partsum$dichotic.acc2,use="complete.obs"),3)
+plot(partsum$Day2_Dich_acc_Z,partsum$dichotic.acc2)
+text(15,.6,paste0('r = ',cor2))
+
+
+```
+
 
 ## Rhyme Detection Task
 
-This portion of the R Markdown file prcoesses the "Rhyme Detection Task' implmented online via Gorilla.sc which aims to assess the lateralisation of language processing. In the task, participants are shown a word in the central visual field and different images in the left and right visual field. An arrow appears pointing to either image. Participants then respond by indicating whether the image and word rhyme. 
+This portion of the notebook prcoesses the "Rhyme Detection Task' implemented online via Gorilla.sc, which aims to assess the lateralisation of language processing. This is a new task devised for this project. In the task, participants are shown a word in the central visual field and two images in the left and right visual field. The task is to judge which of the two images has a name that rhymes with the central word.
 
-This reads in a csv file where each row represents a response to a trial. Participants, identified by random letter strings, are stacked on top of each other. We start by reading the data and cutting out unwanted information.
+ We start by reading the data and cutting out unwanted information.
 
 ```{r read_dat_RDT, warning=FALSE}
 for (d in 1:2){ #same script for days 1 and 2
   
-origfile <- all_dat1
-if(d==2)
+  origfile <- all_dat1
+  if(d==2)
   {origfile <- all_dat2}
-task <- "Rhyme Detection Task"
-disp <- "Task"
-
-# nb when creating new file, we default to name 'RDT_dat2', but this is reassigned to 'RDT_dat1' at end of processing for day 1.
-
-# new data
-wanted <- c("Trial","subject", "Correct", "RT", "ANSWER","Response") # select wanted columns
-RDT_dat2 <- procdata(origfile,wanted,task,disp) #Here we reuse the procdata function that we developed for processing Chimeric faces data - just does some generic processing
-
-# do some wrangling on the ANSWER variable to make it compatible with functions
-RDT_dat2<-filter(RDT_dat2,ANSWER %in% c('left','right'))
-c <- which(colnames(RDT_dat2)=="ANSWER")
-colnames(RDT_dat2)[c]<-'side'
-RDT_dat2$side<-as.factor(RDT_dat2$side)
+  task <- "Rhyme Detection Task"
+  disp <- "Task"
+  
+  # nb when creating new file, we default to name 'RDT_dat2', but this is reassigned to 'RDT_dat1' at end of processing for day 1.
+  
+  # new data
+  wanted <- c("Trial","subject", "Correct", "RT", "ANSWER","Response") # select wanted columns
+  RDT_dat2 <- procdata(origfile,wanted,task,disp) #Here we reuse the procdata function that we developed for processing Chimeric faces data - just does some generic processing
+  
+  # do some wrangling on the ANSWER variable to make it compatible with functions
+  RDT_dat2<-filter(RDT_dat2,ANSWER %in% c('left','right'))
+  c <- which(colnames(RDT_dat2)=="ANSWER")
+  colnames(RDT_dat2)[c]<-'side'
+  RDT_dat2$side<-as.factor(RDT_dat2$side)
   levels(RDT_dat2$side)<-c("Left","Right")
-RDT_dat2<-detect.outliers(RDT_dat2,200,1.65) #numbers specify min RT and zscore for Hoaglin-Iglewicz respectively
-
-# count subjects
-nsub <-length(levels(RDT_dat2$subject))
-print(paste0("Day 1 subjects: ", nsub))
-outliertable<-table(RDT_dat2$subject,RDT_dat2$outlier)
-#print(outliertable)
-
-# now remove the cases where there are too many or to few cases
-#remove.outlier <- as.data.frame(outliertable)
-#remove.outlier <- remove.outlier[remove.outlier$Freq >= 260 & remove.outlier$Freq <= 208,]
-#remove.p <- list(unique(remove.outlier$Var1))
-#allsum <- allsum[allsum$subject != remove.p,]
-
+  
+  # count subjects
+nsub <-length(unique(RDT_dat2$subject))
+print(paste0("Day ",d," subjects: ", nsub))
 if(d==1)
-{RDT_dat1 <- RDT_dat2}
-
+  {RDT_dat1 <- RDT_dat2}
 }
 ```
+Now use generic function to remove outliers.
+
+```{r rdt_outliers}
+RDT_dat1<-detect.outliers(RDT_dat1,200,1.65) #numbers specify min RT and 
+RDT_dat2<-detect.outliers(RDT_dat2,200,1.65) #numbers specify min RT and zscore for Hoaglin-Iglewicz respectively
+
+
+outliertable1<-table(RDT_dat1$subject,RDT_dat1$outlier)
+outliertable2<-table(RDT_dat2$subject,RDT_dat2$outlier)
+
+
+```
+
+Scrutiny of outliertable indicates a few problematic cases with far fewer than 260 trials in total. Seems related to glitches in Gorilla.
+Will need to exclude these
 
 Now the data is ready, create an empty data frame and populate this. It includes columns for the participant identifier, rhyme, acuracy, RT (RT only for correct answers).
 
-```{r makedataframeRDT, warning=F}
-#We create files for day1 and day 2
-# NB warnings created because of different Ns for time 1 and time 2, which means there are blanks in subjects
-# We deal with this below by removing rows with no subject code
-varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR - we will use these in the make.df function
-#We first need to remove rows where RT is coded NA - these seem cases where false recording led to excess trials with no RT
-w<-which(is.na(RDT_dat1$RT))
-RDT_dat1<-RDT_dat1[-w,]
-origdat <- RDT_dat1
-
+```{r makedf_rhyme}
+#We create chim_dat files for day1 and day 2
+varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR
 latlist <- c("Left","Right") #names of factor levels
-RDT_df1 <- make.df(origdat,varlist,latlist)
-w<-which(is.na(RDT_dat2$RT))
-RDT_dat1<-RDT_dat2[-w,]
-origdat <- RDT_dat2
-RDT_df2 <- make.df(origdat,varlist,latlist)
 
-# Remove blank rows 
-w<-which(is.na(RDT_df1$subject))
-if (length(w)>0) {RDT_df1<-RDT_df1[-w,]}
-w<-which(is.na(RDT_df2$subject))
-if (length(w)>0) {RDT_df2<-RDT_df2[-w,]}
+RDT_df1 <- make.df(RDT_dat1,varlist,latlist)
+RDT_df2 <- make.df(RDT_dat2,varlist,latlist)
 
-# Exclude cases with low % correct
-# NB something weird with these - seem to be ones with too many trials, suggesting some problem with multiple responses
-w<-which(RDT_df1$p.corr<50)
-if (length(w)>0)
-{RDT_df1$accurate[w]<-NA
-RDT_df1$RT[w]<-NA
-}
-w<-which(RDT_df2$p.corr<50)
-if (length(w)>=0)
-{RDT_df2$accurate[w]<-NA
-RDT_df2$RT[w]<-NA
-}
-
-# now remove the cases where there are NA for only one visual field
-# this will remove those who responded by pressing only one button.
-RDT_df1 <- na.omit(RDT_df1) %>% 
-  group_by(subject) %>%
-  mutate(no_rows = length(subject))
-RDT_df1 <- RDT_df1[RDT_df1$no_rows == 2,]
-
-RDT_df2 <- na.omit(RDT_df2) %>% 
-  group_by(subject) %>%
-  mutate(no_rows = length(subject))
-RDT_df2 <- RDT_df2[RDT_df2$no_rows == 2,]
 ```
 
-```{r checker, warning=FALSE}
+Next exclude those with less than 75% correct responses on either side
+
+```{r RDT_exclude}
+w1<-which(RDT_df1$p.corr < 75)
+w2<-which(RDT_df2$p.corr < 75)
+exRDT<-unique(c(RDT_df1$subject[w1],RDT_df2$subject[w2]))
+
+allsum$exRDT <- 0
+allsum$exRDT[allsum$subject %in% exRDT]<-1 #decided best to have separate column for exclusion for each task
+w<-which(allsum$exRDT==0)  
+incRDT <- allsum$subject[w]
+
+```
+
+Comparison shows that there is significant difference in RT. Accuracy is close to ceiling and does not show side difference (but it would be a bit odd for this task, - unlike CF and dichotic, there is no competing information and only one answer is correct).
+```{r rdtpirate}
 for (d in 1:2){
-origdat <-RDT_df1
+origdat <-RDT_df1[RDT_df1$subject %in% incRDT,]
 if (d==2)
-{origdat <- RDT_df2}
+{origdat <-RDT_df2[RDT_df2$subject %in% incRDT,]}
 measure <- 'Accuracy'
-origdat$X1 <- origdat$accurate
+origdat$X1 <- origdat$p.corr
 task <- 'Rhyme Detection'
 
 
@@ -1340,8 +1355,15 @@ dopirate(origdat,task,measure)
 origdat$X1 <- origdat$RT
 measure <- 'RT'
 dopirate(origdat,task,measure)
+}
+```
 
+```{r RDT.LI}
 #now create LI
+for (d in 1:2){
+origdat <-RDT_df1[RDT_df1$subject %in% incRDT,]
+if (d==2)
+{origdat <-RDT_df2[RDT_df2$subject %in% incRDT,]}
 origdat$X1 <- origdat$p.corr
 mycolname<-"RDT_p.corr_LI"
 polarity<- 1 #so LI is positive in predicted direction
@@ -1374,7 +1396,7 @@ text(-3,3,paste0('r = ',round(cor1,3)))
 plot(allsum$Day1.RDT_RT_LI,allsum$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
 abline(v=0)
 abline(h=0)
-text(-3,3,paste0('r = ',round(cor2,3)))
+text(-3,10,paste0('r = ',round(cor2,3)))
 ```
 
 ### T-test as alternative to LI for RDT
