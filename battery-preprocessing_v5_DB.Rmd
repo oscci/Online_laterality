@@ -450,10 +450,10 @@ return(origdat)
 This is a generic chunk of code that can be used for Chimeric faces and Rhyme Detection.
 
 ```{r maketaskdataframe, warning=FALSE}
-make.df <- function(origdat,varlist,latlist){
+make.df <- function(origdat,varlist,latlist,nloop){
 nsub<-length(unique(origdat$subject))
 # create compact data frame ; one row for each subject, subjects stacked, L above R
-temp_dat <- data.frame(matrix(ncol = 4, nrow = nsub*2))
+temp_dat <- data.frame(matrix(ncol = 4, nrow = nsub*nloop))
 colnames(temp_dat) <- varlist
 myrow <- 0 # start row counter
 for (i in 1:nsub) { # loop through subjects
@@ -463,7 +463,7 @@ for (i in 1:nsub) { # loop through subjects
   RTcol <- which(colnames(origdat) == varlist[4])
   tmp <- data.frame(origdat[myrows,]) #all trials from this subject
   
-  for (j in 1:2) { #make row for means for each side for this subject
+  for (j in 1:nloop) { #make row for means for each side for this subject
     myrow <- myrow+1
     w<- which(tmp[,latcol]== latlist[j]) # match on laterality
     tmp1 <- tmp[w,]
@@ -475,6 +475,7 @@ for (i in 1:nsub) { # loop through subjects
     temp_dat$p.corr[myrow] <- 100*mean(tmp1$Correct,na.rm=TRUE) # add row for %accurate responses - NB for chimeric only error is wrong emotion - measure is just a measure of choice. For RDT, can make error of selecting wrong sIDe, so % correct is meaningful
   
     temp_dat$RT[myrow] <- mean(as.numeric(tmp2$RT),na.rm=TRUE) # add row for mean RT
+    #NB for RDT task, also looked at medians, but it did not make much difference, presumably because v slow responses already omitted via outlier routine
     temp_dat$N[myrow] <- length(tmp1$RT) # add count of rows for this subject
   }
   #If there are no selections/trials for one side, then exclude L and R
@@ -768,9 +769,9 @@ Now the data is ready, create an empty data frame and populate this. It includes
 #We create chim_dat files for day1 and day 2
 varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR
 latlist <- c("Left","Right") #names of factor levels
-
-chim_dat1 <- make.df(CF_dat1,varlist,latlist)
-chim_dat2 <- make.df(CF_dat2,varlist,latlist)
+nloop=2 #same as levels of latlist
+chim_dat1 <- make.df(CF_dat1,varlist,latlist,nloop)
+chim_dat2 <- make.df(CF_dat2,varlist,latlist,nloop)
 
 # w<-which(is.na(chim_dat1$subject))
 # if (length(w)>0) {chim_dat1<-chim_dat1[-w,]}
@@ -1080,9 +1081,9 @@ Now the data is ready, create an empty data frame and populate this. It includes
 varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR
 origdat <- dichotic_dat1
 latlist <- c("Left","Right") #names of factor levels
-
-DL_dat1 <- make.df(dichotic_dat1,varlist,latlist)
-DL_dat2 <- make.df(dichotic_dat2,varlist,latlist)
+nloop=2 #same as levels of latlist
+DL_dat1 <- make.df(dichotic_dat1,varlist,latlist,nloop)
+DL_dat2 <- make.df(dichotic_dat2,varlist,latlist,nloop)
 
 w<-which(is.na(DL_dat1$subject))
 if (length(w)>0) {DL_dat1<-DL_dat1[-w,]}
@@ -1295,6 +1296,32 @@ for (d in 1:2){ #same script for days 1 and 2
   RDT_dat2$Left_image<-tools::file_path_sans_ext(RDT_dat2$Left_image)
    RDT_dat2$Right_image<-tools::file_path_sans_ext(RDT_dat2$Right_image)
    
+   RDT_dat2$picpair <- paste0(RDT_dat2$Left_image,'_',RDT_dat2$Right_image)
+   w<-which(RDT_dat2$side=='right')
+   RDT_dat2$picpair[w]<- paste0(RDT_dat2$Right_image[w],'_',RDT_dat2$Left_image[w])
+  
+   RDT_dat2$item <- paste0(RDT_dat2$word,'_',RDT_dat2$picpair) 
+   #Check all OK
+   t<-table(RDT_dat2$item,RDT_dat2$side)
+   t
+   write.csv(t,'items.csv')
+   
+   #Reveals one item miscoded, so we will correct it here.
+   w<-which(RDT_dat2$item=='bite_Door_Kite')
+   temp<-RDT_dat2[w,]
+   #This shows that 'no response' was treated as correct, when it should have been 'right'
+   
+   w2 <- intersect(w,which(RDT_dat2$Response=='right'))
+   RDT_dat2$Correct[w2]<-1
+   RDT_dat2$item[w2]<-'bite_Kite_Door'
+   RDT_dat2$side[w2]<-'right'
+   
+   
+   #Also reveals occasional trials where Response shows 'Could not set screen ...' These were coded as errors, so need removing
+   s <- "Could not set image to requested size.  Either the participants screen or the containing zone is too small."
+   w<-which (RDT_dat2$Response==s)
+   RDT_dat2<-RDT_dat2[-w,]
+   
   # count subjects
 nsub <-length(unique(RDT_dat2$subject))
 print(paste0("Day ",d," subjects: ", nsub))
@@ -1323,25 +1350,31 @@ Now the data is ready, create an empty data frame and populate this. It includes
 ```{r makedf_rhyme}
 #We create chim_dat files for day1 and day 2
 varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR
-latlist <- c("Left","Right") #names of factor levels
+latlist <- c("left","no rhyme","right") #names of factor levels
+nloop<-length(latlist)
+RDT_df1 <- make.df(RDT_dat1,varlist,latlist,nloop)
+RDT_df2 <- make.df(RDT_dat2,varlist,latlist,nloop)
 
-RDT_df1 <- make.df(RDT_dat1,varlist,latlist)
-RDT_df2 <- make.df(RDT_dat2,varlist,latlist)
-
+#Scrutiny of these reveal a few cases who missed all 'no rhyme' cases.
+#Qu of whether to remove these: think so - this was included to ensure thoughtful responding.
 ```
 
-Next exclude those with less than 75% correct responses on either side
+Next exclude those who never get 'no rhyme' items correct, and those with less than 75% correct responses on either side
 
 ```{r RDT_exclude}
+wn <-unique(which(RDT_df1$accurate ==0),which(RDT_df2$accurate ==0)) #this catches those who were always wrong on 'no rhyme' trials, and possibly others where presentation messed up for technical reasons
+
 w1<-which(RDT_df1$p.corr < 75)
 w2<-which(RDT_df2$p.corr < 75)
-exRDT<-unique(c(RDT_df1$subject[w1],RDT_df2$subject[w2]))
+
+exRDT<-unique(c(RDT_df1$subject[w1],RDT_df2$subject[w2],RDT_df2$subject[wn]))
 
 allsum$exRDT <- 0
 allsum$exRDT[allsum$subject %in% exRDT]<-1 #decided best to have separate column for exclusion for each task
 w<-which(allsum$exRDT==0)  
 incRDT <- allsum$subject[w]
-
+ninc <- length(incRDT)
+print(paste0('RDT: number remaining after exclusions = ',ninc))
 ```
 
 Comparison shows that there is significant difference in RT. Accuracy is close to ceiling and does not show side difference (but it would be a bit odd for this task, - unlike CF and dichotic, there is no competing information and only one answer is correct).
@@ -1350,6 +1383,7 @@ for (d in 1:2){
 origdat <-RDT_df1[RDT_df1$subject %in% incRDT,]
 if (d==2)
 {origdat <-RDT_df2[RDT_df2$subject %in% incRDT,]}
+origdat <-origdat[origdat$side %in% c('left','right'),]
 measure <- 'Accuracy'
 origdat$X1 <- origdat$p.corr
 task <- 'Rhyme Detection'
@@ -1369,6 +1403,8 @@ origdat <-RDT_df1[RDT_df1$subject %in% incRDT,]
 if (d==2)
 {origdat <-RDT_df2[RDT_df2$subject %in% incRDT,]}
 origdat$X1 <- origdat$p.corr
+origdat$side <- as.factor(origdat$side)
+levels(origdat$side) <-c('Left','No rhyme','Right') #function assumes capitalised
 mycolname<-"RDT_p.corr_LI"
 polarity<- 1 #so LI is positive in predicted direction
 mycutoff <- 75
@@ -1404,67 +1440,67 @@ text(-3,3,paste0('r = ',round(cor1,3)))
 plot(partsum$Day1.RDT_RT_LI,partsum$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
 abline(v=0)
 abline(h=0)
-text(-3,10,paste0('r = ',round(cor2,3)))
+text(-3,9,paste0('r = ',round(cor2,3)))
 ```
+## Does RDT relate to handedness?
+Answer is convincing nope!
 
+```{r RDThand}
+t.test(Day1.RDT_RT_LI~handpch,data=partsum)
+t.test(Day2.RDT_RT_LI~handpch,data=partsum)
+```
 ### T-test as alternative to LI for RDT
 
-The LI results are not encouraging - reliability well below acceptable level.
+The LI results are not encouraging - reliability well below acceptable level, and although RT shows lateralised bias, it is tiny. Also, many subjects dropped.
 Previously I also did a t-test that was analogous to the z-test for CF/dichotic, i.e. showed if the individual had a significant RT difference between L and R stimuli. But that is v highly correlated with LI. The only way to make it more sensitive would be to try a pairwise t-test that compares RTs for the same items presented on L and R. So the next bit of code is designed to compute that.
 
 
-
-```{r do.ttest}
+```{r RDTaggregate}
+#remove 'no rhyme' trials
 for (d in 1:2){
-  myfile<-RDT_dat1
-  if(d==2){
-    myfile<-RDT_dat2}
-
-
-  nsubs <- nrow(allsum)
-  allsum$tlat_RDT<-NA
-   allsum$plat_RDT<-NA
-  for (i in 1:nsubs) {
-    w<-which(myfile$subject==allsum$subject[i])
-    if(length(w)>0)
-    {
-      myt<-t.test(myfile$RT[w]~myfile$side[w])
-      allsum$tlat_RDT[i]<-myt$statistic
-      allsum$plat_RDT[i]<-myt$p.value
+  thisdat<-RDT_dat2[RDT_dat2$side %in% c('left','right'),]
+  if(d==1){
+    thisdat<-RDT_dat1[RDT_dat1$side %in% c('left','right'),]
+  }
+  
+  thisdat <- thisdat[thisdat$outlier==0,] #remove outliers
+  aggdata <- aggregate(thisdat$RT,by=list(thisdat$side,thisdat$item,thisdat$subject),
+                       FUN=mean,na.rm=TRUE)
+  colnames(aggdata)<-c('side','item','subject','RT')
+  mysubs<-unique(aggdata$subject)
+  if(d==1){
+  pairedt <- data.frame(matrix(NA,nrow=length(mysubs),ncol=5))
+  colnames(pairedt) <- c('subject','t1','p1','t2','p2')
+  }
+  nsubs<-length(mysubs)
+  for (i in 1:nsubs){
+    myt<-NA
+    myp<-NA
+    thisdat <- aggdata[aggdata$subject==mysubs[i],]
+    pairedt$subject[i]<- mysubs[i]
+    #check there are data for both left and right on all items
+    checkdat <-table(thisdat$item)
+    w<-which(checkdat<2)
+    if(length(w)==0){
+      t<-t.test(thisdat$RT[thisdat$side=='left'],thisdat$RT[thisdat$side=='right'],paired=T)
+      myt<-t$statistic
+      myp<-t$p.value
+    }
+    if(d==1){
+      pairedt$t1[i] <- myt
+      pairedt$p1[i] <-myp
+    }
+    if(d==2){
+      pairedt$t2[i] <-myt
+      pairedt$p2[i] <-myp
     }
   }
-   if (d==1){
-     maxcol <-length(colnames(allsum))
-     colnames(allsum)[(maxcol-1):maxcol]<-c('tlat_RDT_1','plat_RDT_1')
-   }
-   if (d==2){
-     maxcol <-length(colnames(allsum))
-     colnames(allsum)[(maxcol-1):maxcol]<-c('tlat_RDT_2','plat_RDT_2')
-   }
 }
-colcount<-length(colnames(allsum))
-# Remove values for cases that are excluded for low acc: do this for both times by just blitzing last 4 columns of allsum
-w<-which(is.na(allsum$Day1.RDT_RT_LI))
-allsum[w,(colcount-3):colcount]<-NA
-w<-which(is.na(allsum$Day2.RDT_RT_LI))
-allsum[w,(colcount-3):colcount]<-NA
-
-# compare t-value with LI : use t = 1.65 as cutoff for sig lateralised
- plot(allsum$tlat_RDT_1,allsum$Day1.RDT_RT_LI)
- abline(v=1.65)
-  plot(allsum$tlat_RDT_2,allsum$Day2.RDT_RT_LI)
-   abline(v=1.65)
-# compare t-value from day 1 and day 2 
-     myr <- cor(allsum$tlat_RDT_1,allsum$tlat_RDT_2,use='complete.obs')
-    plot(allsum$tlat_RDT_1,allsum$tlat_RDT_2)
-    abline(v=0)
-    abline(h=0)
-   abline(v=1.65) 
-   abline(h=1.65)
-      abline(v=-1.65) 
-   abline(h=-1.65)
-   text(-3,4,paste0('r = ',round(myr,3)))
+cor(pairedt$t1,pairedt$t2,use='complete.obs')
 ```
+
+So the paired items analysis gives a totally nonsignificant correlation between time 1 and time 2. Alas, the RDT task has to be ditched!
+
 
 ## Finger Tapping Task
 
