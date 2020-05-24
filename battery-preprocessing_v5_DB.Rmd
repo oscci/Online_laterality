@@ -388,7 +388,7 @@ This is a function that can apply to all tasks; user specifies the original file
   nufile <- origfile[origfile$Task.Name==task,] #restrict consideration to this task
   nufile <- origfile[origfile$display==disp,] #restrict consideration to the correct display
 
-  c<-which(names(origfile) %in% wanted) #find colnumbers of wanted
+  c<-which(names(nufile) %in% wanted) #find colnumbers of wanted
   #NB beware that the columns may not be in the same order as in the wanted list
   nufile <- nufile[,c]#select only wanted columns
   nufile <- na.omit(nufile) # remove NAs
@@ -1267,7 +1267,7 @@ text(15,.6,paste0('r = ',cor2))
 
 This portion of the notebook prcoesses the "Rhyme Detection Task' implemented online via Gorilla.sc, which aims to assess the lateralisation of language processing. This is a new task devised for this project. In the task, participants are shown a word in the central visual field and two images in the left and right visual field. The task is to judge which of the two images has a name that rhymes with the central word.
 
- We start by reading the data and cutting out unwanted information.
+ We start by reading the data and cutting out unwanted information. Here we are including item-specific information as it may be used for later analysis.
 
 ```{r read_dat_RDT, warning=FALSE}
 for (d in 1:2){ #same script for days 1 and 2
@@ -1281,16 +1281,20 @@ for (d in 1:2){ #same script for days 1 and 2
   # nb when creating new file, we default to name 'RDT_dat2', but this is reassigned to 'RDT_dat1' at end of processing for day 1.
   
   # new data
-  wanted <- c("Trial","subject", "Correct", "RT", "ANSWER","Response") # select wanted columns
+  wanted <- c("Trial","subject", "Correct", "RT", "ANSWER","Response","word","Left_image","Right_image") # select wanted columns
   RDT_dat2 <- procdata(origfile,wanted,task,disp) #Here we reuse the procdata function that we developed for processing Chimeric faces data - just does some generic processing
   
   # do some wrangling on the ANSWER variable to make it compatible with functions
-  RDT_dat2<-filter(RDT_dat2,ANSWER %in% c('left','right'))
+  RDT_dat2<-filter(RDT_dat2,ANSWER %in% c('left','right','no rhyme'))
   c <- which(colnames(RDT_dat2)=="ANSWER")
   colnames(RDT_dat2)[c]<-'side'
   RDT_dat2$side<-as.factor(RDT_dat2$side)
-  levels(RDT_dat2$side)<-c("Left","Right")
+  levels(RDT_dat2$side)<-c("left","no rhyme","right")
   
+  #get rid of .png extensions
+  RDT_dat2$Left_image<-tools::file_path_sans_ext(RDT_dat2$Left_image)
+   RDT_dat2$Right_image<-tools::file_path_sans_ext(RDT_dat2$Right_image)
+   
   # count subjects
 nsub <-length(unique(RDT_dat2$subject))
 print(paste0("Day ",d," subjects: ", nsub))
@@ -1380,26 +1384,35 @@ w<-which(is.na(allsum$RDT_acc_LI))
 if(length(w)>0)
 {allsum$RDT_RT_LI[w]<-NA}
 #t.test to test if laterality index differs from zero
-t.test(allsum$RDT_p.corr_LI)
-t.test(allsum$RDT_RT_LI)
+partsum <- allsum[allsum$exRDT==0,]
+print('Testing for difference of single mean from zero')
+t.test(partsum$Day1.RDT_p.corr_LI)
+t.test(partsum$Day1.RDT_RT_LI)
+t.test(partsum$Day2.RDT_p.corr_LI)
+t.test(partsum$Day2.RDT_RT_LI)
 #rename column to identify day
 myncol <- length(colnames(allsum))
 colnames(allsum)[(myncol-1):myncol] <- paste0('Day',d,'.',colnames(allsum)[(myncol-1):myncol])
 
 }
-cor1<-cor(allsum$Day1.RDT_p.corr_LI,allsum$Day2.RDT_p.corr_LI,use='complete.obs')
-cor2<-cor(allsum$Day1.RDT_RT_LI,allsum$Day2.RDT_RT_LI,use='complete.obs')
-plot(allsum$Day1.RDT_p.corr_LI,allsum$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
+cor1<-cor(partsum$Day1.RDT_p.corr_LI,partsum$Day2.RDT_p.corr_LI,use='complete.obs')
+cor2<-cor(partsum$Day1.RDT_RT_LI,partsum$Day2.RDT_RT_LI,use='complete.obs')
+plot(partsum$Day1.RDT_p.corr_LI,partsum$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
 abline(v=0)
 abline(h=0)
 text(-3,3,paste0('r = ',round(cor1,3)))
-plot(allsum$Day1.RDT_RT_LI,allsum$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
+plot(partsum$Day1.RDT_RT_LI,partsum$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
 abline(v=0)
 abline(h=0)
 text(-3,10,paste0('r = ',round(cor2,3)))
 ```
 
 ### T-test as alternative to LI for RDT
+
+The LI results are not encouraging - reliability well below acceptable level.
+Previously I also did a t-test that was analogous to the z-test for CF/dichotic, i.e. showed if the individual had a significant RT difference between L and R stimuli. But that is v highly correlated with LI. The only way to make it more sensitive would be to try a pairwise t-test that compares RTs for the same items presented on L and R. So the next bit of code is designed to compute that.
+
+
 
 ```{r do.ttest}
 for (d in 1:2){
