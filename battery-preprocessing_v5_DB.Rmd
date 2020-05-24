@@ -1266,7 +1266,8 @@ text(15,.6,paste0('r = ',cor2))
 
 ## Rhyme Detection Task
 
-This portion of the notebook prcoesses the "Rhyme Detection Task' implemented online via Gorilla.sc, which aims to assess the lateralisation of language processing. This is a new task devised for this project. In the task, participants are shown a word in the central visual field and two images in the left and right visual field. The task is to judge which of the two images has a name that rhymes with the central word.
+This portion of the notebook prcoesses the "Rhyme Detection Task' implemented online via Gorilla.sc, which aims to assess the lateralisation of language processing. This is a new task devised for this project. In the task, participants are shown a word in the central visual field and two images in the left and right visual field. The task is to judge which of the two images has a name that rhymes with the central word. The logic of the task is that to perform one must generate the phonology of a pictured word's name, which is a classic left-hemisphere task - it is assumed this will be easier for pictures the are projected to the left hemisphere (ie RVF). 
+A small proportion of trials are 'no rhyme' cases, which are designed to assess attention to the task.
 
  We start by reading the data and cutting out unwanted information. Here we are including item-specific information as it may be used for later analysis.
 
@@ -1405,20 +1406,18 @@ if (d==2)
 origdat$X1 <- origdat$p.corr
 origdat$side <- as.factor(origdat$side)
 levels(origdat$side) <-c('Left','No rhyme','Right') #function assumes capitalised
-mycolname<-"RDT_p.corr_LI"
+mycolname<-"Day1.RDT_p.corr_LI"
+if(d==2){mycolname<-"Day2.RDT_p.corr_LI"}
 polarity<- 1 #so LI is positive in predicted direction
 mycutoff <- 75
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat$X1 <- origdat$RT
-mycolname<-"RDT_RT_LI"
+mycolname<-"Day1.RDT_RT_LI"
+if(d==2){mycolname<-"Day2.RDT_RT_LI"}
 polarity <- (-1)
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
+}
 
-#Cutoff has removed those with low accuracy, but we should also remove their RT LIs
-#We do this by finding those with NA in accuracy LI
-w<-which(is.na(allsum$RDT_acc_LI))
-if(length(w)>0)
-{allsum$RDT_RT_LI[w]<-NA}
 #t.test to test if laterality index differs from zero
 partsum <- allsum[allsum$exRDT==0,]
 print('Testing for difference of single mean from zero')
@@ -1426,11 +1425,9 @@ t.test(partsum$Day1.RDT_p.corr_LI)
 t.test(partsum$Day1.RDT_RT_LI)
 t.test(partsum$Day2.RDT_p.corr_LI)
 t.test(partsum$Day2.RDT_RT_LI)
-#rename column to identify day
-myncol <- length(colnames(allsum))
-colnames(allsum)[(myncol-1):myncol] <- paste0('Day',d,'.',colnames(allsum)[(myncol-1):myncol])
 
-}
+
+
 cor1<-cor(partsum$Day1.RDT_p.corr_LI,partsum$Day2.RDT_p.corr_LI,use='complete.obs')
 cor2<-cor(partsum$Day1.RDT_RT_LI,partsum$Day2.RDT_RT_LI,use='complete.obs')
 plot(partsum$Day1.RDT_p.corr_LI,partsum$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
@@ -1499,50 +1496,34 @@ for (d in 1:2){
 cor(pairedt$t1,pairedt$t2,use='complete.obs')
 ```
 
-So the paired items analysis gives a totally nonsignificant correlation between time 1 and time 2. Alas, the RDT task has to be ditched!
+So the paired items analysis gives a totally nonsignificant correlation between time 1 and time 2. This is much worse than the overall LI reliability.
+
+The failure of this task led to further thoughts about why it is barely lateralised, given that it does implicate language-specific word generation. 
+A noteworthy feature of the other two tasks (CF and dichotic) is that they measure side preference rather than accuracy - i.e. a response from either L or R is correct, but two potential responses are put in competition. That contrasts with this task where only one side has the correct answer.  
+We used pictures because with written words there is a concern that  preference may be confounded by the fact we read words from L to R. That could potentially dilute the RVF advantage that is expected from L hem language.
+
 
 
 ## Finger Tapping Task
 
-This portion of the R Markdown file prcoesses the "Finger Tapping Task' implmented in Gorilla.sc which aims to quantify handedness. In the task, participants are required to press a sequence of buttons twice for each hand (Left: W, R, V, X; Right: T, U, M, B) as many times as possible within a 30 ms. There is a version that requires more precise movements.
+This portion of the notebook processes the "Finger Tapping Task' implmented in Gorilla.sc, which aims to provide a quantified measure of hand skill. In the task, participants are required to press a sequence of buttons for each hand (Left: W, R, V, X; Right: T, U, M, B) as many times as possible within 30 ms. We have also devised is a version that requires more complex movements, but early data suggested that does not achieve our aim of emphasising lateral differences.
 
-A score of 1 is given each time that a participants completes the sequence. 
+A score of 1 is given for each sequence completed within the time interval. 
 
-This reads in a csv file where each row represents a button press. Participants, identified by random letter strings, are stacked on top of each other. We start by reading the data and cutting out unwanted information.
+In the raw data file, farticipants, identified by random letter strings, are stacked on top of each other. We start by reading the data and cutting out unwanted information.
 
 NOTE. The create data frame function disrupts order here.
 
 In this section, the correct sequences are marked (e.g. pressing Y, U, J, H, in order will correspond to a score of 1).
 
 ```{r readdataFinger, warning=FALSE}
-
-finger <- read.csv("day1_combined.csv", na.strings = "NA")
-
+for (d in 1:2){
+finger <- all_dat2[all_dat2$Task.Name=='Finger Tapping',]
+if(d==1){
+finger <- all_dat1[all_dat1$Task.Name=='Finger Tapping',]}
 # cleaning
 finger <- finger[finger$Attempt >= 1,] # only answers 
 finger <- finger[finger$display == "right hand" | finger$display == "left hand",] # only for task
-# write as factors
-finger$display <- as.factor(finger$display) 
-finger$subject <- as.factor(finger$Participant.Public.ID)
-finger$RT <- as.numeric(as.character(finger$Reaction.Time))
-
-# new data
-wanted <- c("subject", "display", "Response", "RT") # select wanted columns
-c<-which(names(finger) %in% wanted) #find colnumbers of unwanted
-finger <-finger[,c] #remove unwanted columns
-finger <- na.omit(finger) # remove NAs
-
-all_finger1<- finger 
-
-finger <- read.csv("day2_combined.csv", na.strings = "NA")
-
-# cleaning
-finger <- finger[finger$Attempt >= 1,] # only answers 
-finger <- finger[finger$display == "right hand" | finger$display == "left hand",] # only for task
-# write as factors
-finger$display <- as.factor(finger$display) 
-finger$subject <- as.factor(finger$Participant.Public.ID)
-finger$RT <- as.numeric(as.character(finger$Reaction.Time))
 
 # new data
 wanted <- c("subject", "display", "Response", "RT") # select wanted columns
@@ -1552,6 +1533,8 @@ finger <- na.omit(finger) # remove NAs
 
 all_finger2<- finger 
 
+if(d==1){all_finger1 <- finger}
+}
 ```
 
 ```{r readdataFinger2, warning=FALSE}
@@ -1582,37 +1565,42 @@ Added exploratory analysis of SDs of RTs for keypress rather than means, but thi
 
 myseq <-c('tumb','wrvx') # R, # L
 
-subids <- levels(finger1$subject) #just look at data for those doing time1 and
+subids <- unique(finger1$subject) #just look at data for those doing time1 and
 nsub <- length(subids)
 
 finger.df <- data.frame(matrix(NA,nrow=nsub,ncol=9))
 colnames(finger.df)<-c('subject', 'R1', 'R2', 'L1', 'L2', 'R1sd', 'R2sd', 'L1sd', 'L2sd')
 for (n in 1:nsub){
   finger.df$subject[n] <- subids[n]
-  myc <- 1 #will be incremented so sums written to correct columns
+  myc <- 1 #column index: will be incremented so sums written to correct columns
+  mycols<-matrix(c(2,4,
+                 3,5),nrow=2,byrow=T)
+  #makes a matrix for looking up column to write to : rows are days, cols are R then L
+  
   for (d in 1:2){ #each day data
     myfinger <- finger1
     if(d==2){
       myfinger<- finger2}
-      tempfinger <- filter(myfinger,subject==subids[n],Response %in% c('t', 'u', 'm', 'b', 'w', 'r', 'v', 'x')) 
-      #exclude rows with other stuff in Response
-      #(this is not essential as nonsequences will just get ignored)
-
-      wholeseq <-paste0(tempfinger$Response,collapse='') #make a long string of responses
-      for (s in 1:2){
-        myc<-myc+1 #increment column counter
-        target <- myseq[s]
-        finger.df[n,myc]<-str_count(wholeseq,target) 
-        #count how many target sequences are in the long string that contains all responses
-        
-      }
-      righth<-filter(tempfinger,display=='right hand')
-      lefth<-filter(tempfinger,display=='left hand')
-      startcol<-6
-      if(d==2){startcol<-8}
-      finger.df[n,startcol]<-sd(righth$RTa,na.rm=T)
-      finger.df[n,(startcol+1)]<-sd(lefth$RTa,na.rm=T)
+    tempfinger <- filter(myfinger,subject==subids[n],
+                         Response %in% c('t', 'u', 'm', 'b', 'w', 'r', 'v', 'x'))  
+    #all rows with these keypresses for this subject
+    
+    wholeseq <-paste0(tempfinger$Response,collapse='') #make a long string of responses
+    for (s in 1:2){
+      myc<-mycols[d,s] #select column
+      target <- myseq[s] #tumb then wrvx, ie right then left
+      finger.df[n,myc]<-str_count(wholeseq,target) 
+      #count how many target sequences are in the long string that contains all responses
+      
     }
+    #We then add the SD of the RT - this indicates variability in pace of keypressing
+    righth<-filter(tempfinger,display=='right hand')
+    lefth<-filter(tempfinger,display=='left hand')
+    myc<-mycols[d,1]+4
+  
+    finger.df[n,myc]<-sd(righth$RTa,na.rm=T)
+    finger.df[n,(myc+2)]<-sd(lefth$RTa,na.rm=T)
+  }
 }
 # Substitute NA for any totals less than 5 - suggest using wrong keys perhaps
 
@@ -1691,7 +1679,7 @@ text(-20,10,paste0('r = ',round(cor1,3)))
 Here we use the Z score version. 
 
 ```{r domakeZ_finger}
-#We add Chimeric faces LIs to allsum for day 1 and then day2
+
 task<-'Finger'
 origdat<-finger.long
 origdat$X1 <- origdat$`1`
@@ -1703,14 +1691,14 @@ allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat<-finger.long
 origdat$X1 <- origdat$`2`
 mycolname<-"Day2_Finger_acc_Z"
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
-cor1 <- cor(allsum$Day1_Finger_acc_Z,allsum$Day2_Finger_acc_Z)
-plot(allsum$Day1_Finger_acc_Z,allsum$Day2_Finger_acc_Z,main='Finger Z accuracy')
+cor1 <- cor(allsum$Day1_Finger_acc_Z,allsum$Day2_Finger_acc_Z,use='complete.obs')
+plot(allsum$Day1_Finger_acc_Z,allsum$Day2_Finger_acc_Z,main='Finger Z accuracy',col=allsum$handpch,pch=15)
 abline(v=0)
 abline(h=0)
-text(-2.5,2.5,paste0('r = ',round(cor1,3)))
+text(-2.5,4,paste0('r = ',round(cor1,3)))
 
 write.csv(allsum, "LIs.csv")
 ```
@@ -1808,7 +1796,7 @@ ggplot(allsum, aes(x = handedness, y = lexTALE)) +
 ```
 
 ```{r corr_between_tasks}
-mycols <- c('Day1_CF_acc_Z','Day2_CF_acc_Z','Day1_Dich_acc_Z','Day2_Dich_acc_Z','tlat_RDT_1','tlat_RDT_2','Day1_Finger_acc_Z','Day2_Finger_acc_Z')
+mycols <- c('Day1_CF_acc_Z','Day2_CF_acc_Z','Day1_Dich_acc_Z','Day2_Dich_acc_Z','Day1_Finger_acc_Z','Day2_Finger_acc_Z')
 colnums<- which(colnames(allsum) %in% mycols)
 mycorrs<-correlate(allsum[,colnums],method='spearman')
 
