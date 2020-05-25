@@ -94,7 +94,7 @@ for (i in 1:nsub) { # loop through subjects
     myrow <- i
 
     allsum$subject[myrow] <- subname
-    allsum$age[myrow] <- tmp[tmp$Question.Key == "Age",]$Response
+    allsum$age[myrow] <- as.numeric( tmp[tmp$Question.Key == "Age",]$Response)
     allsum$gender[myrow] <- tmp[tmp$Question.Key == "Gender",]$Response
     allsum$footedness[myrow] <- tmp[tmp$Question.Key == "footedness",]$Response
     allsum$handedness[myrow] <- tmp[tmp$Question.Key == "categorical_hand",]$Response
@@ -105,6 +105,10 @@ for (i in 1:nsub) { # loop through subjects
     allsum$bilingual <- gsub('. My strongest language is:', '', allsum$bilingual)
 }
 
+# Previously found one person aged over 200, who should be 21
+# Correct that here
+w <- which (allsum$age>200)
+allsum$age[w]<-21
 #Check ages
 range(allsum$age)
 # Here we summarise the age broken down by handedness and gender. This will be important for any write up. 
@@ -117,6 +121,16 @@ allsum %>%
 #create a numerical code for handedness - can be used in plots to distinguish handedness groups (eg if pch set to handpch, get circles and triangles)
 allsum$handpch <-1  #numeric code for plotting handedness
 allsum$handpch[allsum$handedness=='Left'] <-2
+
+#numerical code for gender - as we have only one 'prefer not to say' we will assign to NA 
+
+allsum$genderpch <-2
+w<-which(allsum$gender=='Male')
+allsum$genderpch[w] <-1
+w<-which(allsum$gender=='Prefer not to say')
+allsum$genderpch[w]<-NA
+
+
 ```
 
 Now we import and append the Porta and Miles Test to the allsum data frame. 
@@ -1706,6 +1720,7 @@ write.csv(allsum, "LIs.csv")
 ## Final sample summary
 
 Here we report the descriptives for the participants who had full datasets. 
+(Some of these tests etc have been incorporated in analyses above, so can be pruned from script)
 
 ```{r Finalallsum, warning=FALSE}
 # first, describe age for the whole sample and plot
@@ -1738,60 +1753,66 @@ allsum %>%
 # eigth, show LexTALE
 allsum %>%
     summarize(avg = mean(lexTALE), n = n(), sd = sd(lexTALE))
+```
 
+
+
+```{r finalplots}
 # Now that we have the basic scores, let's look at how this looks with regards to handedness
 # first, describe age for the whole sample and plot
-ggplot(allsum, aes(x = handedness, y = age)) +
-  geom_pirate(aes(colour = handedness), bars = FALSE) + theme_classic() + 
-  ylim(10, 60) + ggtitle("Age by handedness") + ylab("Age (years)") + xlab("")
-# second, show gender count for the whole population
+plot(data=allsum, index_EHI ~ age,col=handpch,xlim=c(18,50),pch=(14+allsum$genderpch))
+
+allsum$handfac <- as.factor(allsum$handedness)
+allsum$genderfac <- as.factor(allsum$genderpch)
+levels(allsum$genderfac)<-c('male','female')
+
 a <- allsum %>%
-  group_by(gender, handedness) %>%
+  group_by(genderfac, handfac) %>%
     summarize(n = n())
-ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
+
+
+ggplot(data=a, aes(x=handfac, y=n, fill= handfac)) +
   geom_bar(stat="identity")+
   geom_text(aes(label=n), vjust=1.6, color="white", size=3.5)+
-  theme_classic() + facet_wrap(.~ gender) + ggtitle("Gender by handedness") + 
-  ylab("Count") + xlab("")
+  theme_classic() + facet_wrap(.~ genderfac) + ggtitle("Gender by handedness") +   ylab("Count") + xlab("")
+
 # third, show footedness
 a <- allsum %>%
-  group_by(handedness, footedness) %>%
+  group_by(handfac, footedness) %>%
     summarize(n = n())
-ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
+ggplot(data=a, aes(x=handfac, y=n, fill= handfac)) +
   geom_bar(stat="identity")+
   geom_text(aes(label=n), vjust=1.6, color="white", size=3.5)+
   theme_classic() + facet_wrap(.~ footedness) + ggtitle("Footedness by handedness") + 
   ylab("Count") + xlab("")
+
 # fourth, show bilingualism
 a <- allsum %>%
-  group_by(bilingual, handedness) %>%
+  group_by(bilingual,handfac) %>%
     summarize(n = n())
-ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
-  geom_bar(stat="identity")+
-  geom_text(aes(label=n), vjust=1.6, color="white", size=3.5)+
-  theme_classic() + facet_wrap(.~ bilingual) + ggtitle("Bilingualism by handedness") + 
-  ylab("Count") + xlab("")
+
+
 # fifth, show miles
 a <- allsum %>%
-  group_by(miles, handedness) %>%
+  group_by(miles, handfac) %>%
     summarize(n = n())
-ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
+ggplot(data=a, aes(x=handfac, y=n, fill= handfac)) +
   geom_bar(stat="identity")+
   geom_text(aes(label=n), vjust=1.6, color="white", size=3.5)+
   theme_classic() + facet_wrap(.~ miles) + ggtitle("Mile test by handedness") + 
   ylab("Count") + xlab("")
 # six, show porta
 a <- allsum %>%
-  group_by(porta, handedness) %>%
+  group_by(porta, handfac) %>%
     summarize(n = n())
-ggplot(data=a, aes(x=handedness, y=n, fill= handedness)) +
+ggplot(data=a, aes(x=handfac, y=n, fill= handfac)) +
   geom_bar(stat="identity")+
   geom_text(aes(label=n), vjust=1.6, color="white", size=3.5)+
   theme_classic() + facet_wrap(.~ porta) + ggtitle("Porta test by handedness") + 
   ylab("Count") + xlab("")
 # seventh, show LexTALE
-ggplot(allsum, aes(x = handedness, y = lexTALE)) +
-  geom_pirate(aes(colour = handedness), bars = FALSE) + theme_classic() + 
+ggplot(allsum, aes(x = handfac, y = lexTALE)) +
+  geom_pirate(aes(colour = handfac), bars = FALSE) + theme_classic() + 
   ylim(70, 110) + ggtitle("LexTALE by handedness") + ylab("Standardised score") + xlab("")
 ```
 
@@ -1810,7 +1831,7 @@ for (i in colnums){
  print(t.test(allsum[,i]~allsum$handedness))
 }
 
-#check lateralisaiton with single group t vs zero
+#check lateralisation with single group t vs zero
 for (i in colnums){
   print(names(allsum)[i])
  print(t.test(allsum[,i]))
