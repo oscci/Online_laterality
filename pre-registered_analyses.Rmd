@@ -446,11 +446,42 @@ The test of this hypothesis will be complicated by having to decide how to defin
 
 As our rhyme task was not relibale, we drop this task here and focus only on the dichotic and faces.
 
-```{r H2, include=TRUE}
+**Rhyme**
+
+```{r H2 dichotic, include=TRUE}
 # create new variable for atypicality 
 LIs <- 
   LIs %>% 
-  mutate(atypicality= ifelse(Day1_CF_acc_Z > 1.96 & Day1_Dich_acc_Z < -1.96, "typical",
+  mutate(atypicality_rhyme= ifelse(Day1_CF_acc_Z > 1 & t1 < -1, "typical",
+                          ifelse(Day1_CF_acc_Z > 1 & t1 > 1, "atypical rhyme",
+                                 ifelse(Day1_CF_acc_Z < -1 & t1 < -1, "atypical face",
+                                        ifelse(Day1_CF_acc_Z < -1 & t1 > 1, "atypical both", NA)))))
+# create handedness for handedness on EHI 
+LIs <- 
+  LIs %>% 
+  mutate(hand_90= ifelse(index_EHI >= 90, "right handed",
+                         ifelse(index_EHI <= -9, "left handed", NA)))
+# create a table for chi-squared
+tbl <- table(LIs$atypicality_rhyme, LIs$hand_90)
+tbl
+# run chi squared
+chisq.test(tbl)
+p <- chisq.test(tbl)[3]
+p.adjust(p, "bonferroni", n=2)
+# use balloon plot to visualise
+gplots::balloonplot(t(tbl), main ="Association of EHI handeness and atypical laterality (faces and rhyme)", xlab ="", ylab="",
+            label = FALSE, show.margins = FALSE)
+```
+
+With the rhyme task, the reliability is low. Because of this we have to use a t value that is less than 1.96 (i.e. larger than 0.05). This produces no association. But, this isn't a big deal as we can't be sure that the task is measuring language lateralisation. 
+
+**Dichotic**
+
+```{r H2 dichotic, include=TRUE}
+# create new variable for atypicality 
+LIs <- 
+  LIs %>% 
+  mutate(atypicality_dichotic= ifelse(Day1_CF_acc_Z > 1.96 & Day1_Dich_acc_Z < -1.96, "typical",
                           ifelse(Day1_CF_acc_Z > 1.96 & Day1_Dich_acc_Z > 1.96, "atypical dichotic",
                                  ifelse(Day1_CF_acc_Z < -1.96 & Day1_Dich_acc_Z < -1.96, "atypical face",
                                         ifelse(Day1_CF_acc_Z < -1.96 & Day1_Dich_acc_Z > 1.96, "atypical both", NA)))))
@@ -460,12 +491,14 @@ LIs <-
   mutate(hand_90= ifelse(index_EHI >= 90, "right handed",
                          ifelse(index_EHI <= -9, "left handed", NA)))
 # create a table for chi-squared
-tbl <- table(LIs$atypicality, LIs$hand_90)
+tbl <- table(LIs$atypicality_dichotic, LIs$hand_90)
 tbl
 # run chi squared
 chisq.test(tbl)
+p <- chisq.test(tbl)[3]
+p.adjust(p, "bonferroni", n=2)
 # use balloon plot to visualise
-gplots::balloonplot(t(tbl), main ="Association of EHI handeness and atypical laterality", xlab ="", ylab="",
+gplots::balloonplot(t(tbl), main ="Association of EHI handeness and atypical laterality (faces and dichotic)", xlab ="", ylab="",
             label = FALSE, show.margins = FALSE)
 ```
 
