@@ -366,7 +366,7 @@ combotable<-densplots(t1,t2,name1,name2,scattername, combotable,combocolumn)
 ```
 ### Table 1
 
-```{r Table1,echo=FALSE,include=TRUE}
+```{r Table1,echo=FALSE}
 #Needs more formatting. For word output may need to use flextable. See https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
 combotable%>%
   kable() %>%
@@ -408,7 +408,7 @@ According to the pre-registration, we omit non-extreme left-handers, but we show
 
 
 
-```{r makecontingencies,echo=FALSE,include=TRUE}
+```{r makecontingencies,echo=FALSE}
 #We start by using z-scores to make a 3-way categorisation into:
 #1 sig bias in typical direction; 2: NS bias 3: in atypical direction with sig bias.
 #
@@ -453,22 +453,26 @@ chi.c<-chisq.test(tabc[c(1,3),c(1,3)])
 ```
 
 Table 2: Rhyme judgement
-```{r showtabr,echo=FALSE,include=TRUE}
+```{r showtabr,echo=FALSE}
 tabr%>%
   kable() %>%
   kable_styling("condensed")
 ```
 Table 3: Dichotic listening
-```{r showtabd,echo=FALSE,include=TRUE}
+```{r showtabd}
 tabd%>%
   kable() %>%
   kable_styling("condensed")
+
 ```
+
+
 Table 4: Chimeric faces
-```{r showtabc,echo=FALSE,include=TRUE}
+```{r showtabc,echo=FALSE}
 tabc%>%
   kable() %>%
   kable_styling("condensed")
+
 ```
 It is evident that the Rhyme Judgement task has few individuals who are significantly lateralised in either direction. We will therefore not consider it further, as our analyses are only justified if the task is an indicator of cerebral lateralisation. Both Dichotic Listening and Chimeric Faces, on the other hand, are strongly lateralised.  The planned analyses, just comparing typically lateralised with atypically lateralised individuals, and extreme left vs right-handed individuals, show significant association between extreme left-handedness and atypical laterality on chi square test. For dichotic listening, chi squared = `r round(chi.d$statistic,2)`, d.f. = 1, p = `r round(chi.d$p.value,3)`; for chimeric faces, chi squared = `r round(chi.c$statistic,2)`, d.f. = 1, p = `r round(chi.c$p.value,3)`.  
 
@@ -498,7 +502,7 @@ This analysis was handicapped by the fact that one of the language indices, the 
 We had planned to use a structural equation modelling framework to compare the covariances of the laterality statistics between the two language tasks and chimeric faces to test between three models, separately for left- and right-handers. However, in neither handedness group were there any meaningful correlations between laterality indices.
 
 
-```{r prep_dat,echo=FALSE,include=TRUE}
+```{r prep_dat,echo=FALSE}
 # now create subset of data frame for analysis
 mycols <- c('Day1.RDT_RT_LI', 'Day2.RDT_RT_LI',
             'Day1_CF_acc_LI', 'Day2_CF_acc_LI',
@@ -522,7 +526,7 @@ left_dat <- subset(M, handedness== "Left")
 right_dat <- subset(M, handedness== "Right")
 ```
 
-```{r showcorrs,echo=FALSE,include=TRUE}
+```{r showcorrs,echo=FALSE}
 #Will focus just on Day1
 #Had considered showing as correlation heatmap - but values so small it wouldn't be worth doing!
 
@@ -535,14 +539,14 @@ corrR<-round(cor(right_dat[,c(2,4,6,8)],use='complete.obs'),2)
 ```
 
 ### Table 5: Intratask correlations for Left handers
-```{r dotab5,echo=FALSE,include=TRUE}
+```{r dotab5,echo=FALSE}
 corrL%>%
   kable() %>%
   kable_styling("condensed")
 ```
 
 ### Table 6: Intratask correlations for Right handers
-```{r dotab6,echo=FALSE,include=TRUE}
+```{r dotab6,echo=FALSE}
 corrR%>%
   kable() %>%
   kable_styling("condensed")
@@ -558,24 +562,26 @@ corrR2<-round(cor(right_dat[,c(3,5,7,9)],use='complete.obs'),2)
 The correlations between tasks are all very low. To check if this pattern is robust, this analysis was repeated for time 2 data.
 
 ### Table 7: Intratask correlations time 2, for Left handers
-```{r dotab7,echo=FALSE,include=TRUE}
-corrL%>%
+```{r dotab7,echo=FALSE}
+corrL2%>%
   kable() %>%
   kable_styling("condensed")
 ```
 
 ### Table 8: Intratask correlations time 2 ,for Right handers
-```{r dotab8,echo=FALSE,include=TRUE}
-corrR%>%
+```{r dotab8,echo=FALSE}
+corrR2%>%
   kable() %>%
   kable_styling("condensed")
+```
 
 ## SEM model 
+
 Here we model left hander data with three prespecified covariance structures, then compare using AIC weights.
 
 This is a subset of SEM that dos not include any latent variables or directional paths. It only looks to constrain particular covariance patterns and report 'best' model according AIC weights.
 
-```{r Roger_mod_left,echo=FALSE,include=TRUE}
+```{r Roger_mod_left,echo=FALSE}
 model1<-"
 dichotic1~~0*rhyme1
 dichotic1~~0*chimeric1 
@@ -615,7 +621,7 @@ ggplot(IC_objectweights1,aes(Model,values,fill=Model))+
 
 
 
-```{r Roger_mod_right,echo=FALSE,include=TRUE}
+```{r Roger_mod_right,echo=FALSE}
 #We now repeat this for right handers. 
 fit1B <- cfa(model1, data=right_dat)
 fit2B <- cfa(model2, data=right_dat)
