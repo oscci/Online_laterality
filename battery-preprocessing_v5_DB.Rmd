@@ -2,9 +2,20 @@
 title: "Online Laterality Battery Pre-Processing - short version"
 author: "Adam Parker + Dorothy Bishop"
 date: "updated May 21st 2020 (now notebook format)"
-output: html_notebook
+output:
+  pdf_document: default
+  html_notebook: default
 ---
+
+## Updates
+
+09 June 2020: AP made changes to calcultaions of rhyme
+(1) Added t scores to output
+(2) computed LIs for log-RT
+(3) changed polariies so that a negative value was indicative of left lateralisation in the brain.
+
 23 May 2020: Created subject number for those included in final analysis. CF outlier detection needed updating to ensure only correct trials used for outliers - Correct had not been coded at that point in prior version
+
 22 May 2020: AP made changes to N trials needed for inclusion  
 NB. 2 changes Apr 22nd by DB: 
 a) all data now in a Data folder, so when reading need to specify that; 
@@ -32,7 +43,6 @@ And then produces summary of demog and results for the final sample
 
 NB. Just also putting here relevant references that need to be looked at!
 Bourne on RT in chimeric faces: https://pubmed.ncbi.nlm.nih.gov/18050003/
-
 
 # Questionnaires
 
@@ -73,7 +83,7 @@ First, the demographics is processed.This gives us a participant subject, age, g
 ```{r demograhics, warning=FALSE}
 #Reading from OSF - this only works if files are public
 
-demo_dat <- read.csv('https://osf.io/7smj6/download',stringsAsFactor=F)
+demo_dat <- read.csv('./data/Demographics.csv',stringsAsFactor=F)
 
 # relabel 
 demo_dat$subject <- demo_dat$Participant.Public.ID
@@ -136,8 +146,8 @@ allsum$genderpch[w]<-NA
 Now we import and append the Porta and Miles Test to the allsum data frame. 
 
 ```{r sightednesss, warning=FALSE}
-porta_dat <- read.csv("https://osf.io/zmqkt/download",stringsAsFactors = F)
-miles_dat <-  read.csv("https://osf.io/ekqsp//download",stringsAsFactors = F)
+porta_dat <- read.csv("./data/Porta.csv",stringsAsFactors = F)
+miles_dat <-  read.csv("./data/Miles.csv",stringsAsFactors = F)
 
 miles_dat$test_subject <- "miles"
 porta_dat$test_subject <- "porta"
@@ -176,7 +186,7 @@ Now we add the EHI. Here we score and plot the Edinburgh handedness inventory (O
 
 ```{r EHI, warning=FALSE}
 
-EHI <- read.csv("https://osf.io/kfdma/download",stringsAsFactors = F)
+EHI <- read.csv("./data/EHI.csv",stringsAsFactors = F)
 
 # select only responses
 EHI <- EHI[EHI$Question.Key == "response-2-quantised" | EHI$Question.Key == "response-3-quantised" | 
@@ -282,7 +292,7 @@ Next, the lexTale is preprocesssed. This is done using the weighted average for 
 
 ```{r lexTALE, warning=FALSE}
 # read data
-lexTALE <- read.csv("https://osf.io/h4btp/download",stringsAsFactors = F)
+lexTALE <- read.csv("./data/LexTALE.csv",stringsAsFactors = F)
 
 # filter
 lexTALE <- lexTALE[lexTALE$Attempt == 1,]
@@ -345,10 +355,10 @@ NB This step is quite slow (slower if reading from OSF than from drive).
 ```{r readraw,include= FALSE, warning=FALSE}
 # Set directory
 for (d in 1:2){
-  data_file <- "https://osf.io/mhk29/download" #day 1 data
+  data_file <- "./data/combined/day1_combined.csv" #day 1 data
   
   if (d ==2){
-    data_file <-  "https://osf.io/ebm6s/download"
+    data_file <-  "./data/combined/day2_combined.csv"
   }
   #we will assign raw data to all_dat2 (day2), but then reassign to all_dat1 on first run through loop, so we have correct data for each day
 all_dat2 <- read.csv(data_file, na.strings = "NA",stringsAsFactors=F)
@@ -791,13 +801,6 @@ chim_dat2 <- make.df(CF_dat2,varlist,latlist,nloop)
 # if (length(w)>0) {chim_dat1<-chim_dat1[-w,]}
 # w<-which(is.na(chim_dat2$subject))
 # if (length(w)>0) {chim_dat2<-chim_dat2[-w,]}
-
-
-
-
-
-
-
 ```
 
 The data is visualised using the pirate plot function and t.test conducted.
@@ -1350,11 +1353,8 @@ Now use generic function to remove outliers.
 RDT_dat1<-detect.outliers(RDT_dat1,200,1.65) #numbers specify min RT and 
 RDT_dat2<-detect.outliers(RDT_dat2,200,1.65) #numbers specify min RT and zscore for Hoaglin-Iglewicz respectively
 
-
 outliertable1<-table(RDT_dat1$subject,RDT_dat1$outlier)
 outliertable2<-table(RDT_dat2$subject,RDT_dat2$outlier)
-
-
 ```
 
 Scrutiny of outliertable indicates a few problematic cases with far fewer than 260 trials in total. Seems related to glitches in Gorilla.
@@ -1369,6 +1369,16 @@ latlist <- c("left","no rhyme","right") #names of factor levels
 nloop<-length(latlist)
 RDT_df1 <- make.df(RDT_dat1,varlist,latlist,nloop)
 RDT_df2 <- make.df(RDT_dat2,varlist,latlist,nloop)
+
+# remove NaN
+is.nan.data.frame <- function(x)
+  do.call(cbind, lapply(x, is.nan))
+RDT_df1[is.nan(RDT_df1)] <- NA
+RDT_df2[is.nan(RDT_df2)] <- NA
+
+# add log RT
+RDT_df1$logRT <- log10(RDT_df1$RT)
+RDT_df2$logRT <- log10(RDT_df2$RT)
 
 #Scrutiny of these reveal a few cases who missed all 'no rhyme' cases.
 #Qu of whether to remove these: think so - this was included to ensure thoughtful responding.
@@ -1399,14 +1409,21 @@ origdat <-RDT_df1[RDT_df1$subject %in% incRDT,]
 if (d==2)
 {origdat <-RDT_df2[RDT_df2$subject %in% incRDT,]}
 origdat <-origdat[origdat$side %in% c('left','right'),]
+
+# accuracy
 measure <- 'Accuracy'
 origdat$X1 <- origdat$p.corr
 task <- 'Rhyme Detection'
-
-
 dopirate(origdat,task,measure)
+
+# RT
 origdat$X1 <- origdat$RT
 measure <- 'RT'
+dopirate(origdat,task,measure)
+
+# log RT
+origdat$X1 <- origdat$logRT
+measure <- 'logRT'
 dopirate(origdat,task,measure)
 }
 ```
@@ -1417,6 +1434,8 @@ for (d in 1:2){
 origdat <-RDT_df1[RDT_df1$subject %in% incRDT,]
 if (d==2)
 {origdat <-RDT_df2[RDT_df2$subject %in% incRDT,]}
+
+# accuracy
 origdat$X1 <- origdat$p.corr
 origdat$side <- as.factor(origdat$side)
 levels(origdat$side) <-c('Left','No rhyme','Right') #function assumes capitalised
@@ -1425,10 +1444,20 @@ if(d==2){mycolname<-"Day2.RDT_p.corr_LI"}
 polarity<- 1 #so LI is positive in predicted direction
 mycutoff <- 75
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
+
+# RT
 origdat$X1 <- origdat$RT
 mycolname<-"Day1.RDT_RT_LI"
 if(d==2){mycolname<-"Day2.RDT_RT_LI"}
 polarity <- (-1)
+allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
+
+# log-RT
+origdat$X1 <- origdat$logRT
+mycolname<-"Day1.RDT_logRT_LI"
+if(d==2){mycolname<-"Day2.RDT_logRT_LI"}
+polarity <- (-1)
+mycutoff <- 0
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 }
 
@@ -1437,21 +1466,30 @@ partsum <- allsum[allsum$exRDT==0,]
 print('Testing for difference of single mean from zero')
 t.test(partsum$Day1.RDT_p.corr_LI)
 t.test(partsum$Day1.RDT_RT_LI)
+t.test(partsum$Day1.RDT_logRT_LI)
 t.test(partsum$Day2.RDT_p.corr_LI)
 t.test(partsum$Day2.RDT_RT_LI)
+t.test(partsum$Day2.RDT_logRT_LI)
 
-
-
+# correlate
 cor1<-cor(partsum$Day1.RDT_p.corr_LI,partsum$Day2.RDT_p.corr_LI,use='complete.obs')
 cor2<-cor(partsum$Day1.RDT_RT_LI,partsum$Day2.RDT_RT_LI,use='complete.obs')
+cor3<-cor(partsum$Day1.RDT_logRT_LI,partsum$Day2.RDT_logRT_LI,use='complete.obs')
+# acc plot
 plot(partsum$Day1.RDT_p.corr_LI,partsum$Day2.RDT_p.corr_LI,main='Rhyme detect: LI for accuracy (%correct)')
 abline(v=0)
 abline(h=0)
 text(-3,3,paste0('r = ',round(cor1,3)))
+# raw plot
 plot(partsum$Day1.RDT_RT_LI,partsum$Day2.RDT_RT_LI,main='Rhyme detect: LI for RT')
 abline(v=0)
 abline(h=0)
 text(-3,9,paste0('r = ',round(cor2,3)))
+# log plot
+plot(partsum$Day1.RDT_logRT_LI,partsum$Day2.RDT_logRT_LI,main='Rhyme detect: LI for log-RT')
+abline(v=0)
+abline(h=0)
+text(2,1,paste0('r = ',round(cor3,3)))
 ```
 ## Does RDT relate to handedness?
 Answer is convincing nope!
@@ -1460,11 +1498,11 @@ Answer is convincing nope!
 t.test(Day1.RDT_RT_LI~handpch,data=partsum)
 t.test(Day2.RDT_RT_LI~handpch,data=partsum)
 ```
+
 ### T-test as alternative to LI for RDT
 
 The LI results are not encouraging - reliability well below acceptable level, and although RT shows lateralised bias, it is tiny. Also, many subjects dropped.
 Previously I also did a t-test that was analogous to the z-test for CF/dichotic, i.e. showed if the individual had a significant RT difference between L and R stimuli. But that is v highly correlated with LI. The only way to make it more sensitive would be to try a pairwise t-test that compares RTs for the same items presented on L and R. So the next bit of code is designed to compute that.
-
 
 ```{r RDTaggregate}
 #remove 'no rhyme' trials
@@ -1507,6 +1545,12 @@ for (d in 1:2){
     }
   }
 }
+
+# add t score to the data
+t_dat <- select(pairedt, -3, -5)
+# merge to allsum for analysis
+allsum <- merge(allsum, t_dat)
+
 cor(pairedt$t1,pairedt$t2,use='complete.obs')
 ```
 
@@ -1515,8 +1559,6 @@ So the paired items analysis gives a totally nonsignificant correlation between 
 The failure of this task led to further thoughts about why it is barely lateralised, given that it does implicate language-specific word generation. 
 A noteworthy feature of the other two tasks (CF and dichotic) is that they measure side preference rather than accuracy - i.e. a response from either L or R is correct, but two potential responses are put in competition. That contrasts with this task where only one side has the correct answer.  
 We used pictures because with written words there is a concern that  preference may be confounded by the fact we read words from L to R. That could potentially dilute the RVF advantage that is expected from L hem language.
-
-
 
 ## Finger Tapping Task
 
@@ -1676,7 +1718,7 @@ origdat<-finger.long
 origdat$X1 <- origdat$`1`
 mycolname<-"Day1_finger_LI"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
-polarity<- (1)#so LI is positive in predicted direction
+polarity<- (-1)#so LI is positive in predicted direction
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat$X1 <- origdat$`2`
@@ -1699,7 +1741,7 @@ origdat<-finger.long
 origdat$X1 <- origdat$`1`
 mycolname<-"Day1_Finger_acc_Z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
-polarity<- (1)#so LI is positive in predicted direction
+polarity<- (-1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-finger.long
