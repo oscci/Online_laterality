@@ -1300,7 +1300,7 @@ for (d in 1:2){ #same script for days 1 and 2
   # nb when creating new file, we default to name 'RDT_dat2', but this is reassigned to 'RDT_dat1' at end of processing for day 1.
   
   # new data
-  wanted <- c("Trial","subject", "Correct", "RT", "ANSWER","Response","word","Left_image","Right_image") # select wanted columns
+  wanted <- c("Trial","subject", "Participant.Public.ID", "Correct", "RT", "ANSWER","Response","word","Left_image","Right_image") # select wanted columns
   RDT_dat2 <- procdata(origfile,wanted,task,disp) #Here we reuse the procdata function that we developed for processing Chimeric faces data - just does some generic processing
   
   # do some wrangling on the ANSWER variable to make it compatible with functions
@@ -1513,8 +1513,9 @@ for (d in 1:2){
   }
   
   thisdat <- thisdat[thisdat$outlier==0,] #remove outliers
-  aggdata <- aggregate(thisdat$RT,by=list(thisdat$side,thisdat$item,thisdat$subject),
+  aggdata <- aggregate(thisdat$RT,by=list(thisdat$side,thisdat$item,thisdat$Participant.Public.ID),
                        FUN=mean,na.rm=TRUE)
+  aggdata$subject <- aggdata$Participant.Public.ID
   colnames(aggdata)<-c('side','item','subject','RT')
   mysubs<-unique(aggdata$subject)
   if(d==1){
@@ -1548,8 +1549,9 @@ for (d in 1:2){
 
 # add t score to the data
 t_dat <- select(pairedt, -3, -5)
+t_dat <- na.omit(t_dat)
 # merge to allsum for analysis
-allsum <- merge(allsum, t_dat)
+allsum <- merge(allsum, t_dat, by.x = "origID", by.y = "subject", all.x=T)
 
 cor(pairedt$t1,pairedt$t2,use='complete.obs')
 ```
