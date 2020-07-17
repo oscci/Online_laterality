@@ -356,10 +356,10 @@ NB This step is quite slow (slower if reading from OSF than from drive).
 ```{r readraw,include= FALSE, warning=FALSE}
 # Set directory
 for (d in 1:2){
-  data_file <- "https://osf.io/mhk29/download" #day 1 data
+  data_file <- "https://osf.io/mhk29/download" # day 1 data
   
   if (d ==2){
-    data_file <-  "https://osf.io/ebm6s/download"
+    data_file <-  "https://osf.io/ebm6s/download" # day 2 data
   }
   #we will assign raw data to all_dat2 (day2), but then reassign to all_dat1 on first run through loop, so we have correct data for each day
 all_dat2 <- read.csv(data_file, na.strings = "NA",stringsAsFactors=F)
@@ -1852,7 +1852,7 @@ allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat<-finger.long
 origdat$X1 <- origdat$`2`
 mycolname<-"Day2_Finger_acc_Z"
-polarity<- (1)#so LI is positive in predicted direction
+polarity<- (-1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 cor1 <- cor(allsum$Day1_Finger_acc_Z,allsum$Day2_Finger_acc_Z,use='complete.obs')
@@ -1944,6 +1944,12 @@ plot.data <- merge(plot.data, excludeLOOK, by= "subject")
 # make style conistent
 plot.data$side <- tolower(plot.data$side)
 
+# now calculate % correct
+plot.data <- plot.data %>%
+  mutate(remove= if_else(plot.data$task== "RD" & plot.data$p.corr < .75,1,
+                         if_else(plot.data$accurate <= 10,1,0)))
+plot.data <- plot.data[plot.data$remove== 0,]
+
 # save data frame
 write.csv(plot.data, "./data/for_figs.csv")
 ```
@@ -2003,7 +2009,7 @@ myrow.2 <- 0 # start row counter
 CF.corrs <- data.frame(matrix(ncol = 2, nrow=200))
   colnames(CF.corrs) <- c("trial", "cor")
 # LOOP THROUGH TRIAL SIZE
-for (y in 2:trial) {
+for (y in 1:trial) {
 # task
 task<-'Chimeric faces'  
 # now identify the data frame
@@ -2032,9 +2038,8 @@ move_corr <- cor(move[move$lexTALE <= 80,]$Day1_CF_moving, move[move$lexTALE <= 
 }
 # plot
 CF.corrs <- na.omit(CF.corrs)
-CF.cor.plot <- ggplot(CF.corrs, aes(x=trial, y=cor)) +
-  geom_hline(yintercept=.65, linetype="dashed", color = "blue") +
-  geom_hline(yintercept=.75, linetype="dashed", color = "red") +
+CF.cor.plot <- ggplot(abs(CF.corrs), aes(x=trial, y=cor)) +
+  geom_hline(yintercept=.65, linetype="dashed", color = "red") +
   geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_classic() +
   xlab("No. of trials") + ylab("Test-retest reliability") + ggtitle("B") + theme(plot.title = element_text(hjust = 0.5))
 # print number of trials needed
@@ -2043,12 +2048,12 @@ print(paste0("Number of chimeric faces required for at least .75 test-retest: ",
 }
 ```
 
-Based on a couple of rounds with this, removing a lower limit on trials correct here is the only way to examine if less than 1 block would be enough to achieve r= .75. From this analysis, it appears that 27 trials would be sufficient to run the chimeric faces wirth reasonable reliability. Three repetitions of all combinations would lead to 48 trials (36 with different emotions in each hemifield, 12 same-same trials). This would ensure full balancing as 27 items would not allow an equal presentation of each of the four emotions across hemifaces.
+Based on a couple of rounds with this, removing a lower limit on trials correct here is the only way to examine if less than 1 block would be enough to achieve r= .75. From this analysis, it appears that 25 trials would be sufficient to run the chimeric faces wirth reasonable reliability. Three repetitions of all combinations would lead to 48 trials (36 with different emotions in each hemifield, 12 same-same trials). This would ensure full balancing as 25 items would not allow an equal presentation of each of the four emotions across hemifaces.
 
 #### Dichotic listening
 
 ```{r reducerDL}
-{for (d in 1:2){ #we will process day 1 and day 2 together
+for (d in 1:2){ #we will process day 1 and day 2 together
   dat <- dichotic_dat1
   if (d==2)
   {dat <- dichotic_dat2}
@@ -2103,7 +2108,7 @@ myrow.2 <- 0 # start row counter
 DL.corrs <- data.frame(matrix(ncol = 2, nrow=400))
   colnames(DL.corrs) <- c("trial", "cor")
 # LOOP THROUGH TRIAL SIZE
-for (y in 2:trial) {
+for (y in 1:trial) {
 # task
 task<-'Dichotic listening'  
 # now identify the data frame
@@ -2133,15 +2138,14 @@ move_corr <- cor(move$Day1_DL_moving, move$Day2_DL_moving, use= "complete.obs")
 }
 # plot
 DL.corrs <- na.omit(DL.corrs)
-DL.cor.plot <- ggplot(DL.corrs, aes(x=trial, y=cor)) +
-  geom_hline(yintercept=.65, linetype="dashed", color = "blue") +
-  geom_hline(yintercept=.75, linetype="dashed", color = "red") +
+DL.cor.plot <- ggplot(abs(DL.corrs), aes(x=trial, y=cor)) +
+  geom_hline(yintercept=.65, linetype="dashed", color = "red") +
   geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_classic() +
   xlab("No. of trials") + ylab("Test-retest reliability") + ggtitle("A") + theme(plot.title = element_text(hjust = 0.5))
 # print number of trials needed
-print(paste0("Number of chimeric faces required for at least .65 test-retest: ", min(DL.corrs[DL.corrs$cor >= .65,]$trial)))
-print(paste0("Number of chimeric faces required for at least .75 test-retest: ", min(DL.corrs[DL.corrs$cor >= .75,]$trial)))
-}
+print(paste0("Number of dichotic required for at least .65 test-retest: ", min(DL.corrs[DL.corrs$cor >= .65,]$trial)))
+print(paste0("Number of dichotic required for at least .75 test-retest: ", min(DL.corrs[DL.corrs$cor >= .75,]$trial)))
+
 
 
 all.cor.plot <- suppressMessages(suppressWarnings(ggpubr::ggarrange(DL.cor.plot, CF.cor.plot)))
