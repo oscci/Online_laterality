@@ -87,6 +87,7 @@ require(stringr) # string matching
 library(ggpirate)
 library(corrr) #easier correlations!
 library(beeswarm) #just a kind of plot Dorothy likes
+library(BSDA) #for ztest
 ```
 
 First, the demographics is processed.This gives us a participant subject, age, gender, footedness, and handedness.
@@ -562,6 +563,8 @@ Another generic function that can be used for different tasks to make a laterali
 # Polarity is -1 or 1 and can be set to keep all LIs positive if in a given direction
 # Cutoff will create NA if level of performance is outside predetermined limits
 
+# 19 Jul 2020:settled on setting polarity so that L hemisphere advantage is positive
+
 makeLI <- function(allsum,origdat,task,mycolname,polarity,mycutoff){
 # we do this for accuracy first
 # reformat data frame so left and right are side by side
@@ -876,13 +879,13 @@ origdat<-chim_dat1
 origdat$X1 <- origdat$accurate
 mycolname<-"Day1_CF_acc_LI"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 # now do RT
 origdat$X1 <- origdat$RT
 mycolname<-"Day1_CF_RT_LI"
-polarity <-1
+polarity <-(-1)
 
 #if we don't specify mycutoff, it will remain at level set for accuracy, which means it should not trap any RT values as they will all be much bigger
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
@@ -890,11 +893,11 @@ allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat<-chim_dat2
 origdat$X1 <- origdat$accurate
 mycolname<-"Day2_CF_acc_LI"
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat$X1 <- origdat$RT
 mycolname<-"Day2_CF_RT_LI"
-polarity <-1
+polarity <-(-1)
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 cor1 <- cor(allsum$Day1_CF_acc_LI,allsum$Day2_CF_acc_LI,use='complete.obs')
@@ -1206,13 +1209,13 @@ origdat<-DL_dat1
 origdat$X1 <- origdat$accurate
 mycolname<-"Day1_DL_acc_LI"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 # now do RT
 origdat$X1 <- origdat$RT
 mycolname<-"Day1_DL_RT_LI"
-polarity <-1
+polarity <-(-1)
 
 #if we don't specify mycutoff, it will remain at level set for accuracy, which means it should not trap any RT values as they will all be much bigger
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
@@ -1220,11 +1223,11 @@ allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat<-DL_dat2
 origdat$X1 <- origdat$accurate
 mycolname<-"Day2_DL_acc_LI"
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat$X1 <- origdat$RT
 mycolname<-"Day2_DL_RT_LI"
-polarity <-1
+polarity <-(-1)
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 w<-which(allsum$exclude==2) #substitute NA for those who were excluded
@@ -1279,13 +1282,13 @@ origdat<-DL_dat1
 origdat$X1 <- origdat$N
 mycolname<-"Day1_Dich_acc_Z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-DL_dat2
 origdat$X1 <- origdat$N
 mycolname<-"Day2_Dich_acc_Z"
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 #convert excluded cases with code 2 or 12 to NA
@@ -1516,7 +1519,7 @@ origdat$side <- as.factor(origdat$side)
 levels(origdat$side) <-c('Left','No rhyme','Right') #function assumes capitalised
 mycolname<-"Day1.RDT_p.corr_LI"
 if(d==2){mycolname<-"Day2.RDT_p.corr_LI"}
-polarity<- 1 #so LI is positive in predicted direction
+polarity<- (-1) #so LI is positive in predicted direction
 mycutoff <- 75
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 
@@ -1524,7 +1527,7 @@ allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 origdat$X1 <- origdat$RT
 mycolname<-"Day1.RDT_RT_LI"
 if(d==2){mycolname<-"Day2.RDT_RT_LI"}
-polarity <- (1)
+polarity <- (-1)
 mycutoff <- 0 #no cutoff for logRT data
 allsum <- makeLI(allsum,origdat,task,mycolname,polarity,mycutoff)
 }
@@ -1561,35 +1564,28 @@ for (d in 1:2){
   if(d==2){
     myfile<-RDT_dat2}
   
-  myfile<-filter(myfile,side %in% c('left','right'))
-  
   nsubs <- nrow(allsum)
-  allsum$tlat_RDT<-NA
+  allsum$tempt<-NA #initialise a new column
   
   for (i in 1:nsubs) {
-    w<-which(myfile$subject==allsum$subject[i])
-    if(length(w)>10)
+    mysub<-filter(myfile,side %in% c('left','right'),subject==allsum$subject[i])
+    if(nrow(mysub)>10)
     {
-      myt<-t.test(myfile$RT[w]~myfile$side[w]) #this is based on logRT
-      allsum$tlat_RDT[i]<-myt$statistic
+      myt<-t.test(mysub$RT~mysub$side) #this is based on logRT
+      allsum$tempt[i]<-myt$statistic
     }
   }
-  if (d==1){
-    maxcol <-length(colnames(allsum))
-    colnames(allsum)[maxcol]<-c('tlat_RDT_1')
-  }
-  if (d==2){
-    maxcol <-length(colnames(allsum))
-    colnames(allsum)[maxcol]<-c('tlat_RDT_2')
-  }
+  wc<-which(colnames(allsum)=='tempt')
+  colnames(allsum)[wc]<-paste0('tlat_RDT_',d)
+
 }
 
-colcount<-length(colnames(allsum))
+
 
 w<-which(is.na(allsum$Day1.RDT_RT_LI)) #remove those with NA in LI
-allsum[w,(colcount-1):colcount]<-NA
+allsum$tlat_RDT_1[w]<-NA
 w<-which(is.na(allsum$Day2.RDT_RT_LI))
-allsum[w,(colcount-1):colcount]<-NA
+allsum$tlat_RDT_2[w]<-NA
 
 #compare t-value from day 1 and day 2 
 myr <- cor(allsum$tlat_RDT_1,allsum$tlat_RDT_2,use='complete.obs')
@@ -1605,7 +1601,60 @@ text(-3,3,paste0('r = ',round(myr,3)))
 plot(allsum$Day1.RDT_RT_LI,allsum$tlat_RDT_1,xlim=c(-1.5,1.5),ylim=c(-5,5))
 ```
 
+In fact, for better consistency with the other measures, could do z-test instead of t-test. These converge to the same thing with samples > around 30, which we have here.  So here is that calculation.
 
+```{r make.zlatRDT}
+for (d in 1:2){
+  myfile<-RDT_dat1
+  if(d==2){
+    myfile<-RDT_dat2}
+  
+  nsubs <- nrow(allsum)
+  allsum$tempt<-NA #initialise a new column
+  
+  for (i in 1:nsubs) {
+    mysub<-filter(myfile,side %in% c('left','right'),subject==allsum$subject[i])
+    if(nrow(mysub)>10)
+    {
+
+      mymean<-aggregate(RT~side,mysub,FUN = mean)
+      mysd<-aggregate(RT~side,mysub,FUN = sd)
+        myN<-aggregate(RT~side,mysub,FUN = length)
+      se1<-mysd[1,2]/sqrt(myN[1,2])
+      se2<-mysd[2,2]/sqrt(myN[2,2])
+      se<-sqrt(se1^2+se2^2)
+      allsum$tempt[i]<-(mymean[1,2]-mymean[2,2])/se
+    }
+  }
+  wc<-which(colnames(allsum)=='tempt')
+  colnames(allsum)[wc]<-paste0('zlat_RDT_',d)
+
+}
+
+
+
+w<-which(is.na(allsum$Day1.RDT_RT_LI)) #remove those with NA in LI
+allsum$zlat_RDT_1[w]<-NA
+w<-which(is.na(allsum$Day2.RDT_RT_LI))
+allsum$zlat_RDT_2[w]<-NA
+
+#compare t-value from day 1 and day 2 
+myr <- cor(allsum$zlat_RDT_1,allsum$zlat_RDT_2,use='complete.obs')
+plot(allsum$zlat_RDT_1,allsum$zlat_RDT_2,xlim=c(-5,5),ylim=c(-5,5))
+abline(v=0)
+abline(h=0)
+abline(v=-1.65,lty=2,col='red') 
+abline(h=-1.65,lty=2,col='red')
+abline(v=1.65,lty=2,col='red') 
+abline(h=1.65,lty=2,col='red')
+text(-3,3,paste0('r = ',round(myr,3)))
+
+plot(allsum$Day1.RDT_RT_LI,allsum$zlat_RDT_1,xlim=c(-1.5,1.5),ylim=c(-5,5))
+plot(allsum$tlat_RDT_1,allsum$zlat_RDT_1,xlim=c(-1.5,1.5),ylim=c(-5,5))
+abline(0,1)
+
+#Confirms tlat is same as zlat for these sample sizes!
+```
 
 ## Does RDT relate to handedness?
 Answer is convincing nope!
