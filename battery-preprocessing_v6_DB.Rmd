@@ -1449,6 +1449,24 @@ is.nan.data.frame <- function(x)
 RDT_df1[is.nan(RDT_df1)] <- NA
 RDT_df2[is.nan(RDT_df2)] <- NA
 
+#Also record % correct for each category in allsum
+for (d in 1:2){
+  myfile<-RDT_df1
+  if(d==2){ myfile<-RDT_df2}
+pcorL<-myfile[myfile$side=='left',]
+pcorR<- myfile[myfile$side=='right',]
+pcorNull <- myfile[myfile$side=='no rhyme',]
+pcorL<-select(pcorL,subject,p.corr)
+pcorR<-select(pcorR,subject,p.corr)
+pcorNull<-select(pcorNull,subject,p.corr)
+colnames(pcorL)[2]<-paste0('RDT',d,'.pcorrL')
+colnames(pcorR)[2]<-paste0('RDT',d,'.pcorrR')
+colnames(pcorNull)[2]<-paste0('RDT',d,'.pcorrNull')
+allsum <- merge(allsum,pcorL,by="subject")
+allsum <- merge(allsum,pcorR,by="subject")
+allsum <- merge(allsum,pcorNull,by="subject")
+}
+
 #Scrutiny of these reveal a few cases who missed all 'no rhyme' cases.
 #Qu of whether to remove these: think so - this was included to ensure thoughtful responding.
 ```
@@ -1469,6 +1487,8 @@ w<-which(allsum$exRDT==0)
 incRDT <- allsum$subject[w]
 ninc <- length(incRDT)
 print(paste0('RDT: number remaining after exclusions = ',ninc))
+
+
 ```
 
 Comparison shows that there is significant side difference in RT. Accuracy is close to ceiling and does not show side difference (but it would be a bit odd for this task, - unlike CF and dichotic, there is no competing information and only one answer is correct).
