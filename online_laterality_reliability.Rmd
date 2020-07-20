@@ -9,6 +9,7 @@ output:
   word_document: default
 ---
 
+<!--- updated 20/7/20 to change 'select' to 'dplyr::select' to avoid conflicts-->
 Adam J. Parker
 
 Zoe V. J. Woodhead
@@ -336,24 +337,25 @@ makerawplot <- function(tempLR,mysession,myname,mylim){
 
 
 myname<-'Rhyme judge RT'
-tempLR<-select(LIs[LIs$exRDT==0,],RDTlog1.Lraw,RDTlog1.Rraw,handpch)
+tempbit<-LIs[LIs$exRDT==0,]
+tempLR<-dplyr::select(tempbit,RDTlog1.Lraw,RDTlog1.Rraw,handpch)
 #convert back to raw time
 tempLR[,1:2]<-exp(tempLR[,1:2])
 session<-1
 mylim<-c(500,1500)
 myg1<-makerawplot(tempLR,session,myname,mylim)
 
-tempLR<-select(LIs[LIs$exRDT==0,],RDTlog2.Lraw,RDTlog2.Rraw,handpch)
+tempLR<-dplyr::select(LIs[LIs$exRDT==0,],RDTlog2.Lraw,RDTlog2.Rraw,handpch)
 tempLR[,1:2]<-exp(tempLR[,1:2]) #convert from log back to original scale for plot
 session<-2
 myg2<-makerawplot(tempLR,session,myname,mylim)
 
 myname<-'Dichotic accuracy'
-tempLR<-select(LIs[LIs$exclude<2,],DL1.Lraw,DL1.Rraw,handpch)
+tempLR<-dplyr::select(LIs[LIs$exclude<2,],DL1.Lraw,DL1.Rraw,handpch)
 session<-1
 mylim<-c(0,100)
 myg3<-makerawplot(tempLR,session,myname,mylim)
-tempLR<-select(LIs[LIs$exclude<2,],DL2.Lraw,DL2.Rraw,handpch)
+tempLR<-dplyr::select(LIs[LIs$exclude<2,],DL2.Lraw,DL2.Rraw,handpch)
 session<-2
 myg4<-makerawplot(tempLR,session,myname,mylim)
 
@@ -361,20 +363,20 @@ myg4<-makerawplot(tempLR,session,myname,mylim)
 
 myname<-'Chimeric faces accuracy'
 #LIs exclude of 1 or 12 indicates excluded from CF; retain exclude 0,2
-tempLR<-select(LIs[LIs$exclude %in% c(0,2),],CF1.Lraw,CF1.Rraw,handpch)
+tempLR<-dplyr::select(LIs[LIs$exclude %in% c(0,2),],CF1.Lraw,CF1.Rraw,handpch)
 session<-1
 mylim<-c(0,100)
 myg5<-makerawplot(tempLR,session,myname,mylim)
-tempLR<-select(LIs[LIs$exclude %in% c(0,2),],CF2.Lraw,CF2.Rraw,handpch)
+tempLR<-dplyr::select(LIs[LIs$exclude %in% c(0,2),],CF2.Lraw,CF2.Rraw,handpch)
 session<-2
 myg6<-makerawplot(tempLR,session,myname,mylim)
 
 myname<-'N finger sequences'
-tempLR<-select(LIs,finger.L1,finger.R1,handpch)
+tempLR<-dplyr::select(LIs,finger.L1,finger.R1,handpch)
 session<-1
 mylim<-c(50,180)
 myg7<-makerawplot(tempLR,session,myname,mylim)
-tempLR<-select(LIs,finger.L2,finger.R2,handpch)
+tempLR<-dplyr::select(LIs,finger.L2,finger.R2,handpch)
 session<-2
 myg8<-makerawplot(tempLR,session,myname,mylim)
 
@@ -390,7 +392,7 @@ ggsave(
 ```{r computepcorrRDT}
 #revised this, as p.corr values now in allsum
 RDT.short.dat<-allsum[allsum$exRDT==0,]
-tempRDT <- select(RDT.short.dat,RDT1.pcorrL,RDT1.pcorrR,RDT2.pcorrL,RDT2.pcorrR)
+tempRDT <- dplyr::select(RDT.short.dat,RDT1.pcorrL,RDT1.pcorrR,RDT2.pcorrL,RDT2.pcorrR)
 allmeanpcorr <- mean(colMeans(tempRDT,na.rm=T))
 allsdpcorr <- sd(c(tempRDT$RDT1.pcorrL,tempRDT$RDT1.pcorrR,tempRDT$RDT2.pcorrL,tempRDT$RDT2.pcorrR),na.rm=T)
 ```
@@ -757,7 +759,7 @@ Initial scrutiny of Spearman correlations between LI_z scores suggests little ev
 ```{r bigcorrmatrix}
 
 # create subset of data frame for analysis - I used LI_z measures, as they are on similar scale
-interRR <- dplyr::select(interR, 'zlat_RDT_1', 'zlat_RDT_2', 'Day1_Dich_acc_Z',
+interRR <- dplyr::select(LIs, 'zlat_RDT_1', 'zlat_RDT_2', 'Day1_Dich_acc_Z',
                          'Day2_Dich_acc_Z', 'Day1_CF_acc_Z', 'Day2_CF_acc_Z','handedness')
 # rename
 interRR <- interRR %>% 
@@ -817,9 +819,9 @@ library(MASS)
 library(qpcR)
 # created handedness data
 # now create subset of data frame for analysis
-interRR <- dplyr::select(interR, 'zlat_RDT_1', 'zlat_RDT_2', 'Day1_Dich_acc_Z',
-                         'Day2_Dich_acc_Z', 'Day1_CF_acc_Z', 'Day2_CF_acc_Z','handedness')
-# rename
+interRR <- dplyr::select(LIs, zlat_RDT_1, zlat_RDT_2, Day1_Dich_acc_Z,
+                         Day2_Dich_acc_Z, Day1_CF_acc_Z, Day2_CF_acc_Z,handedness)
+# rename, and reverse sign for CF
 interRR <- interRR %>% 
   rename(
     "rhyme1" = zlat_RDT_1,
@@ -832,9 +834,12 @@ interRR <- interRR %>%
 
 #remove cases with missing values
 interRR<-na.omit(interRR)
+interRR$faces1 <- (-interRR$faces1) #reverse sign for faces
+interRR$faces2 <- (-interRR$faces2)
 # subset into right and left handers
 left_dat <- subset(interRR, handedness== "Left")
 right_dat <- subset(interRR, handedness== "Right")
+
 
 
 ```
