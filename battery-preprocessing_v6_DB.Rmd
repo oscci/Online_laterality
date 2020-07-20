@@ -14,6 +14,8 @@ output:
 2. Remove all analyses for raw RT in RDT, since we preregistered use of log RT scores. Have done this now by just substituting logRT at an early stage and deleting separate section for logs. As this involves deleting chunks of stuff I have created new version of this script.
 3. For DL2 there were 7 cases with very few trials - this looked like a technical error. I removed their data - see chunk where techerrs is defined.
 4. The t-test laterality index for RDT had got lost somewhere in translation. I've put it back. It actually gives a test-retest reliability of .63! Ho hum.
+5. Realised that it would be simplest to use a z-score for the standardized laterality for all measures, and that for the RDT RT this is actually equivalent to the t-value (just double checked that in one chunk - they are equivalent).
+6. Redid polarity of measures to be consistent with Hugdahl and others - LEFT brain is now positive.
 
 1st July 2020: AP edits
 (1) no longer remove lexTALE in file. I think this will make things a little easier when descirbing missing data in the MS.
@@ -926,13 +928,13 @@ origdat<-chim_dat1
 origdat$X1 <- origdat$N
 mycolname<-"Day1_CF_acc_Z"
 mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 
 origdat<-chim_dat2
 origdat$X1 <- origdat$N
 mycolname<-"Day2_CF_acc_Z"
-polarity<- (-1)#so LI is positive in predicted direction
+polarity<- (1)#so LI is positive in predicted direction
 allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
 w<-which(allsum$exclude == 1)
 allsum$Day1_CF_acc_Z[w] <- NA #removes zscores for excluded cases
