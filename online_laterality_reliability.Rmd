@@ -108,7 +108,7 @@ The battery consisted of eight tasks and were built and administered using the G
 
 #### Basic demographics questionnaire
 
-The basic demographics questionnaire asked participants to report age, gender, years in education, and whether they were bilingual. We also askedquestions about handedness and footedness. For handedness we asked: which is your dominant hand (i.e. which hand do you prefer to use for tasks such as writing, cutting, and catching a ball)? For footedness we asked: Pwhich foot do you normally use to step up on a ladder/step? For both questions, participants could answer "left", "right", or "no preference".
+The basic demographics questionnaire asked participants to report age, gender, years in education, and whether they were bilingual. We also askedquestions about handedness and footedness. For handedness we asked: which is your dominant hand (i.e. which hand do you prefer to use for tasks such as writing, cutting, and catching a ball)? For footedness we asked: Pwhich foot do you normally use to step up on a ladder/step? For both questions, participants could answer "left", "right", or "no preference".<!---ZW: what options were they given? Left / right / ambidextrous? A reviewer asked me about this recently--->
 
 #### Tests of ocular dominance
 
@@ -276,6 +276,13 @@ To address hypothesis 2, that extreme left-handers will be more likely to show a
 
 For rhyme decision and chimeric faces task, participants were categorised into four groups: typical on both; atypical on rhyme decision only; atypical on chimeric faces only, and atypical on both. A chi-square test was then used to test for association with the number of people in each of the four groups and the handedness classification from the Edinburgh Handedness Inventory. This was then be repeated for the dichotic listening and the chimeric faces tasks. A Bonferroni correction was applied to the outcome of each of the two chi-squared tests. 
 
+<!---ZW: This bit confused me.
+
+I thought that the hypothesis was that extreme left handers were more likely to be atypical on any given task, but the test looks at consistency of laterality across pairs of task. Isn’t that testing a different hypothesis?
+
+Both are interesting, but I think the first one needs to be tested too. E.g., are extreme left handers more likely than right handers to be atypically lateralized on Rhyme Decision / Chimeric Faces / Dichotic Listening?
+--->
+
 ##### Relationship between language and non-language LIs
 
 We examined the relationship between LIs on the rhyme decision, dichotic listening, and chimeric faces by modelling covariances using a subset of Structural Equation Modeling (SEM) that does not include any latent variables or directional paths. In this approach, we constrain particular covariance patterns and report ‘best’ model fit according AIC weights (Wagenmakers & Farrell, 2004). Akaike weights are transformations of the AIC values, which can be directly interpreted as conditional probabilities for each model. The best fitting model to the data for right- and left-handers is selected as the final model. This allowed us to compare three models:
@@ -442,7 +449,7 @@ for (i in 1:length(keynames)){
   LItable[i,2]<-length(temp)
   LItable[i,3]<-round(mean(temp),2)
   LItable[i,4]<-round(sd(temp),2)
-  LItable[i,5]<-round(t.test(temp)$statistic,2)
+  LItable[i,5]<-round(wilcox.test(temp)$statistic,2)
   pstring <- round(wilcox.test(temp)$p.value,3) # use wilcoxon
   ifelse(pstring<.001,pstring<-'<0.001',pstring<-char(pstring))
   
@@ -663,6 +670,7 @@ autofit(tab4, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
 ### Optimising the tasks
 
 The dichotic listening and chimeric faces tasks had test-retest reliability above *r*= .75, and so we investigated whether the tasks could be made more efficient by reducing the number of trials while keeping test-retest reliability above our criterion level of *r*= .65. Hence, we recalculated LIs for the dichotic listening and chimeric faces tasks using 1 to n trials, where n is the total number of trials on each task. The absolute test-retest correlation coefficients are shown in Figure 5. A minimum of 60 trials was required to achieve a test-retest correlation of *r*= .65 using the dichotic listening task. For the chimeric faces task, a minimum of 25 trials is necessary to achieve a test-retest reliability of r= .65. 
+<!--- I think this section is useful for us, but maybe not really for others. Is it just diluting the main messages of the paper? --->
 
 ![Figure 4. Test-retest correlations for (A) the dichotic listening task and (B) the chimeric faces task when using a variable number of trials to calculate laterality indices. The red dashed line marks the test-retest correlation *r*= .65. The correlations coefficients are shown as absolute values.](all.cor.plot.png)
 
@@ -1232,14 +1240,16 @@ Whitehouse, A. J., & Bishop, D. V. (2009). Hemispheric division of function is t
 
 Willemin, J., Hausmann, M., Brysbaert, M., Dael, N., Chmetz, F., Fioravera, A., Gieruc, K., & Mohr, C. (2016). Stability of right visual field advantage in an international lateralized lexical decision task irrespective of participants’ sex, handedness or bilingualism. *Laterality: Asymmetries of Body, Brain and Cognition*, *21*, 502-524.
 
+Woodhead Z. V. J., Bradshaw A. R., Wilson A. C., Thompson P. A. & Bishop D. V. M. (2019). Testing the unitary theory of language lateralization using functional transcranial Doppler sonography in adults. *Royal Society Open Science*, *6*, 181801.
+
 Woods, K. J., Siegel, M. H., Traer, J., & McDermott, J. H. (2017). Headphone screening to facilitate web-based auditory experiments. *Attention, Perception, & Psychophysics*, *79*, 2064-2072.
 
 Yovel, G., Tambini, A., & Brandman, T. (2008). The asymmetry of the fusiform face area is a stable individual characteristic that underlies the left-visual-field superiority for faces. *Neuropsychologia*, *46*, 3061-3068.
 
 #### Supplemental material
 
-Figure S1 shows scatterplots indicating scores on left and right sides for each task, with handedness colour-coded. For each task, mean for each side is shown as vertical and horizontal dotted lines, and equal performance on the two sides corresponds to the sloping red dotted line: thus an impression of whether the task is lateralised can be obtained by considering whether points cluster around the sloping lines symmetrically.
+Figure S1 shows scatterplots indicating scores on left and right sides for each task, with self-reported handedness (left vs right) colour-coded. For each task, the mean for each side is shown as vertical and horizontal dotted lines, and equal performance on the two sides corresponds to the sloping red dotted line: thus an impression of whether the task is lateralised can be obtained by considering whether points cluster around the sloping lines symmetrically.
 
 ![Figure S1. Left side (L) vs right side (R) scores for sessions 1 and 2 for the behavioural laterality tasks. The diagonal dotted line shows point of equality: points above this are higher for R than L, and points below are higher for L than R. Mean values for R and L are shown as horizontal and vertical dotted lines. The colour of the points indicates the participants’ handedness (black = right-handed; red = left-handed). ](all.raw.png)
 
-A preliminary impression of the data are shown in the Online Supplemental Materials.  For the rhyme decision task only correct responses were used for computing mean log RTs (shown transformed back to original ms scale in the plot). For dichotic listening and chimeric faces a correct response can be given from either side; it follows that there will be a negative correlation between the two sides reflecting the fact that the number of selections on the left will be inversely related to the number of correct responses on the right. For these tasks it is evident by inspection that most responses for dichotic listening cluster above the dotted line, indicating a right ear advantage, whereas most responses on chimeric faces cluster below the dotted line, indicating a left hemi-face advantage. Finally, we show the number of correct sequences with each hand on the finger tapping task. Here, a strong impact of handedness is evident on inspection, with left-handers generally more accurate with the left hand, and right-handers more accurate with the right hand.
+For the rhyme decision task only correct responses were used for computing mean log RTs (shown transformed back to original ms scale in the plot). For dichotic listening and chimeric faces a correct response can be given from either side; it follows that there will be a negative correlation between the two sides reflecting the fact that the number of selections on the left will be inversely related to the number of correct responses on the right. For these tasks it is evident by inspection that most responses for dichotic listening cluster above the dotted line, indicating a right ear advantage, whereas most responses on chimeric faces cluster below the dotted line, indicating a left hemi-face advantage. Finally, we show the number of correct sequences with each hand on the finger tapping task. Here, a strong impact of handedness is evident on inspection, with left-handers generally more accurate with the left hand, and right-handers more accurate with the right hand.
