@@ -3,29 +3,35 @@
 ---
 title: 'Assessing the reliability of an online behavioural laterality battery: a pre-registered study.'
 output:
-  word_document: default
   html_notebook: default
+  word_document: default
   html_document:
     df_print: paged
   pdf_document: default
 ---
 
+```{r font, echo- FALSE, include= FALSE}
+library(officedown)
+library(officer)
+ft <- fp_text(font.size = 12, bold = FALSE, color = "#C32900", font.family = "Cambria")
+
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+```
+
 <!--- updated 20/7/20 to change 'select' to 'dplyr::select' to avoid conflicts-->
+
 <!--- updated 3/8/20 to add ZW feedback--->
-Adam J. Parker*
-
-
-Zoe V. J. Woodhead
-
-
-Paul A. Thompson
-
-
-Dorothy V. M. Bishop
-
-
-
-
+\begin{center}
+Adam J. Parker*, Zoe V. J. Woodhead, Paul A. Thompson, Dorothy V. M. Bishop
+\end{center}
 
 Department of Experimental Psychology, University of Oxford, Anna Watts Building, Radcliffe Observatory Quarter, Woodstock Road, Oxford, OX2 6GG.
 
@@ -43,23 +49,27 @@ Hemispheric specialisation, or lateralisation, is a ubiquitous characteristic of
 
 ### Behavioural laterality tasks and their reliability
 
-Behavioural laterality tasks have long been used to establish hemispheric dominance for certain cognitive functions. Results from visual half-field and dichotic listening paradigms support the view that the left hemisphere plays the dominant role in language processing (Hugdahl, 2000; Ocklenburg & Güntürkün, 2018). Here we review how each paradigm has been implemented to study language lateralisation and what is known about reliability and validity.
+Behavioural laterality tasks have long been used to establish hemispheric dominance for certain cognitive functions. Results from visual half-field and dichotic listening paradigms support the view that the left hemisphere plays the dominant role in language processing (Hugdahl, 2000; Ocklenburg & Güntürkün, 2018). `r colFmt("By contrast, visual half-field paradigms indicate that the right hemisphere is involved in the processing of faces, global feature processing, and visuo-spatial attention (Brederoo, Nieuwenstein, Cornelissen,",'red')` & `r colFmt("Lorist, 2019). Below",'red')` we review how each paradigm has been implemented to study language lateralisation `r colFmt("and the detection of emotion in faces", 'red')` and what is known about reliability and validity.
 
-#### Visual half-field paradigm
+#### Lateralised visual word processing
 
-In this paradigm, visual stimuli are briefly presented to the left or right of a central fixation stimulus. The visual pathways from the left and right sides of space to the visual cortex are crossed for non-foveal viewing, and so the right visual-field (RVF) projects directly to the left hemisphere and the left visual-field (LVF) to the right hemisphere. The corpus callosum allows for transfer between hemispheres, but the rationale of the method is that there will be a processing advantage for language stimuli that are directly projected to the language-dominant hemisphere. This method has been used since the 1950s (Mishkin & Forgays, 1952). Bourne (2006) reviewed the literature, which consistently shows advantageous processing for letter strings presented in the RVF, relative to the LVF, in most people. 
+`r colFmt("Lateralised visual word processing has been studies using the visual half-field paradigm.", 'red')`In this paradigm, visual stimuli are briefly presented to the left or right of a central fixation stimulus. The visual pathways from the left and right sides of space to the visual cortex are crossed for non-foveal viewing, and so the right visual-field (RVF) projects directly to the left hemisphere and the left visual-field (LVF) to the right hemisphere. The corpus callosum allows for transfer between hemispheres, but the rationale of the method is that there will be a processing advantage for language stimuli that are directly projected to the language-dominant hemisphere. This method has been used since the 1950s (Mishkin & Forgays, 1952). Bourne (2006) reviewed the literature, which consistently shows advantageous processing for letter strings presented in the RVF, relative to the LVF, in most people. 
 
 Despite wide reporting of a RVF advantage at the population level, the validity of visual half-field tasks has been questioned. Krach, Chen, and Hartje (2006) compared the laterality indices (LIs) produced during a visual half-field experiment with those produced using functional Transcranial Doppler Sonography (fTCD). The visual half-field task consisted of lexical decisions made towards abstract nouns presented in the LVF and RVF. During the experiment, the blood flow to the left and right hemispheres of 58 participants was measured. In addition, blood flow was measured during a word generation task— the gold standard task for assessing hemispheric dominance for language. Despite showing the expected RVF advantage on the visual half-field task, the behavioural LIs produced on the visual half-field paradigm did not correlate with the fTCD LIs produced during word generation (*r*= .18) or the visual half-field task itself (r -.004). The lack of validity here likely reflects the poor reliability of the visual field task as split-half reliability was very low (reaction time split-half: *r*= .14; accuracy split-half: *r*= .20). This illustrates the difficulty of concluding associations between laterality indices when the reliability of measurement is so low. 
 
-In recent years it has become clear that the reliability and validity of visual half-field tasks to identify the language-dominant hemisphere is largely dependent on several methodological aspects. For example, Hunter and Brysbaert (2008) noted stronger and more stable visual field differences when stimuli were presented bilaterally relative to those where only one stimulus was presented either in the LVF or in the RVF (Boles, 1987, 1990, 1994; see also Iacoboni & Zaidel, 1996). Hunter and Brysbaert argued that this is the result of stimuli competing during bilateral presentation, enhancing the advantage to the stimulus presented in the language dominant hemisphere. Reliability and validity also depend on there being a sufficient number of trials and brief stimulus presentation to prevent eye movements. When accounting for these methodological aspects, the validity of visual half-field tasks seems promising. For example, Hunter and Brysbaert (2008) used two visual half-field tasks, word naming (192 trials) and picture naming (160 trials) in which stimuli were bilaterally presented and masked at offset. The two tasks correlated strongly (*r*= .8, 95% CI .598-.956) in a sample of 26 left-handers. Encouragingly, the LIs from these visual half-field tasks also correlated positively with laterality from functional Magnetic Resonance Imaging (fMRI) on a word generation task in 10 left-handers. However, the small sample size meant that the confidence intervals around these estimates were very wide: word naming, *r*= .63 (95% CI = .001-.902), picture naming, *r*= .77 (95% CI = .272-.943).
+In recent years it has become clear that the reliability and validity of visual half-field tasks to identify the language-dominant hemisphere is largely dependent on several methodological aspects. For example, Hunter and Brysbaert (2008) noted stronger and more stable visual field differences when stimuli were presented bilaterally relative to those where only one stimulus was presented either in the LVF or in the RVF (Boles, 1987, 1990, 1994; see also Iacoboni & Zaidel, 1996). Hunter and Brysbaert argued that this is the result of stimuli competing during bilateral presentation, enhancing the advantage to the stimulus presented in the language dominant hemisphere. Reliability and validity also depend on there being a sufficient number of trials and brief stimulus presentation to prevent eye movements. When accounting for these methodological aspects, the validity of visual half-field tasks seems promising. For example, Hunter and Brysbaert (2008) used two visual half-field tasks, word naming (192 trials) and picture naming (160 trials) in which stimuli were bilaterally presented and masked at offset. The two tasks correlated strongly (*r*= .8, 95% CI .598-.956) in a sample of 26 left-handers. Encouragingly, the LIs from these visual half-field tasks also correlated positively with laterality from functional Magnetic Resonance Imaging (fMRI) on a word generation task in 10 left-handers. However, the small sample size meant that the confidence intervals around these estimates were very wide: word naming, *r*= .63 (95% CI = .001-.902), picture naming, *r*= .77 (95% CI = .272-.943).`r colFmt("More recently, however, Van der Haegen, Cai, Seurinck, and Brysbaert (2011) reported highly similar findings in a somewhat larger sample of 50 participants. Again, participants completed behavioural word and picture naming visual half-field tasks and then a word generation task under fMRI. It is reassuring that the LIs for the behavioural measures were correlated with the fMRI LI",'red')`: `r colFmt("word naming,",'red')` *r*`r colFmt("= .64, picture naming, ",'red')` *r* `r colFmt("= .65. Van der Haegen et al. also report a set of analyses involving 250 participants who completed the behavioural visual half-field tasks while their eye movements were monitored. Two sets of LIs were calculated",'red')`; `r colFmt("one controlling for fixation error and one that did not. Importantly, the LIs which did and did not control for fixation error were highly correlated for word naming, ", 'red')`*r*`r colFmt("= .94, and picture naming, ",'red')`*r*`r colFmt("=.98, indicating that the inclusion of eye movement control adds little additional value when a visual half-field task employs mechanisms to encoruage central fixation and bilateral presentation.",'red')`
 
-#### Dichotic listening
+`r colFmt("A promising line of work has emerged which further highlights the potenitial for well designed visual half-field tasks to assess language lateralisation. First introduced by Willemin et al. (2016), the translingual lexical decision task involves participants viewing letter stings either side of fixation and judging whether the left, right, or neither of the letter strings was a valid word. With 100 participants completing 256 trials, Willemin et al. reported a RVF advatage at the population level. Since then this effect has been replicated in a large sample 496 participants cvering six international languages, with evidence of a RVF for each language studied. Not only does this task show validity, it seems reliable given Brederoo et al.'s (2020) obervsation that the task yields good split-half reliability when tested with 122 participants,",'red')` *r*`r colFmt("= 0.86 for error rates and", 'red')` *r*`r colFmt("= 0.80 for reaction times.",'red')`
+
+#### Laterlised auditory processing
 
 Simultaneous presentation of different auditory stimuli to left and right ears for immediate recall was a method originally used in studies of attention, but it became evident that there was usually an advantage for verbal stimuli presented to the right ear (Kimura, 1967). Both ears project to both hemispheres, but the weaker ipsilateral pathways appear to be suppressed when the two sides compete, and so the right ear, with a contralateral projection to the left hemisphere, will have an advantage in tasks that involve language processing. 
 
 Over the years, various dichotic listening paradigms have been used (Bryden, 1988; Westerhausen, 2019). As with the visual half-field paradigm, the test-retest reliability of dichotic listening paradigms has been far from optimal (Voyer, 1998; Kelley & Littenberg, 2019). However, recent data from Westerhausen and Samuelsen (2020) indicated that when designed well, the dichotic listening paradigm can be reliable. First, based on a review of the published literature, Westerhausen and Samuelsen outlined eight design features that should be used in an optimal dichotic listening paradigm and explain their justification for each. Their recommendations were to use: (1) stop consonant-vowel (CV) syllables as stimulus materials; (2) CV stimulus pairs from the same voicing category; (3) alternating trials of voiced and unvoiced stimulus pairs; (4) free-recall instruction; (5) one stimulus pair per trial; (6) a paradigm length of 120 dichotic trials; (7) all stimulus pairs are presented to the two sides in identical frequency; and (8) to include binaural (homonymic) trials. Putting these criteria into practice, Westerhausen and Samuelsen administered a modified dichotic listening paradigm using both a verbal and manual response format to 50 right-handers. Interestingly, the full paradigm yielded test-retest reliability of *r*= .93 for verbal responses and *r*= .91 for manual responses. Thus, the dichotic listening task provides a promising paradigm for those wanting to investigate language lateralisation without reliance on visual stimuli.
 
-#### Chimeric faces
+`r colFmt("To date, little work has been conducted online with visual stimuli. By contrast, the dichotic listening paradigm has been implemented online with huge success. Bless et al. (2013) developed a mobile device version of the consonant-voewl dichotic listening paradigm, with 36 simultaneous sound pairs. Under laboratory conditions, with a sample of 76 (33 Norwegian, 43 Austrialian) participants, they reported a test-retest reliability of *r*= 0.78 when using the mobile app. Furthermore, both subgroups of participants showed clear right ear advantages at the population level. In a subsequent large-scale study, Bless et al. (2015) administered the same application to a sample of over 4,000 participants with more than 60 different language backgrounds. Again Bless et al. (2015) reported a clear right ear advanatge at the population-level. They then used the large dataset to examine cultural/lingusitic effects on the degree on lateralisation; reporting that the degree of lateralization appears to be modulated by linguistic background. Together these studies demonstrate the potenital for online laterality research to generate large amounts of data while maintaining a tolerable degree of reliability.",'red')`
+
+#### Lateralised face processing
 
 In studies of face processing, it is possible to use a modification of the visual half-field paradigm in which single stimuli are viewed, composed of vertically split chimeric faces, where each half displays a different emotion or identity. Our focus here is on emotion detection in chimeric faces, where bias is usually found towards reporting the emotion shown in the left hemiface. 
 
@@ -69,23 +79,29 @@ The reliability of the chimeric faces tasks seems promising. Early work by Levy 
 
 The studies reviewed so far have indicated consistent population biases in lateralisation on behavioural tasks, but also there are also substantial individual differences. One factor that has been associated with the degree of lateralisation is handedness (for a comprehensive review, see Carey & Johnstone, 2014). Neuroimaging data indicates that for language tasks these differences in lateralisation primarily reflect the contribution of a subset of strong left-handers who are right hemisphere dominant for language, rather than indicating that this relationship operates on a continuum (Mazoyer et al., 2014). This association can be used to validate behavioural measures of lateralisation: we would expect to see a departure from typical lateralisation in strong left-handers.
 
-With regards to visual half-field tasks for studying language lateralisation, there is evidence to suggest that the visual field advantage varies with handedness (Elias, Bulman-Fleming, & McManus, 1999; Weekes, Capetillo-Cunliffe, Rayman, Iacoboni, & Zaidel, 1999). However, a relatively well-powered study involving 100 participants, conducted by Willemin et al. (2016), reported no hint of any effect of handedness, when coded as left and right, or when divided into left (N = 19), mixed (N = 24) and right-handed (N = 57) groups, on the visual field advantage during a lexical decision task. This result illustrates the recurring challenge of interpreting null results in this field: do they reflect a true lack of relationship, poor test reliability, inadequate power to detect small effects, or specific methodological factors? We may note that Willemin et al. asked participants to respond via manual response, whereas other studies have involved an active speech production component, which could influence task lateralisation.
+With regards to visual half-field tasks for studying language lateralisation, there is evidence to suggest that the visual field advantage varies with handedness (Elias, Bulman-Fleming, & McManus, 1999; Weekes, Capetillo-Cunliffe, Rayman, Iacoboni, & Zaidel, 1999). However, a relatively well-powered study involving 100 participants, conducted by Willemin et al. (2016), reported no hint of any effect of handedness, when coded as left and right, or when divided into left (N = 19), mixed (N = 24) and right-handed (N = 57) groups, on the visual field advantage during a lexical decision task. This result illustrates the recurring challenge of interpreting null results in this field: do they reflect a true lack of relationship, inadequate power to detect small effects, or specific methodological factors? `r colFmt("At current, we can rule out poor reliability as a cause for this null result as Brederoo et al. (2020) reported good split-half reliability for this task.",'red')` We may note that Willemin et al. asked participants to respond via manual response, whereas other studies have involved an active speech production component, which could influence task lateralisation `r colFmt("and may have contributed to the null effect of handedness.", 'red')`
 
 On dichotic listening tasks, the clear right ear (i.e. left hemisphere) advantage that is noted at the population level (see Hugdahl et al., 2009, and Westerhausen, 2019, for a review) is reduced in left-handers (Bethmann, Tempelmann, De Bleser, Scheich, & Brechmann, 2007; Bryden, 1970, 1988; Hugdahl, 2003). More recently, Karlsson, Johnstone, and Carey (2019) employed a consonant-vowel version of the dichotic listening task where participants reported which one of six syllables that they heard most clearly. In study 1, 87% of right-handers and 78% of non-right-handers showed a right ear advantage. For study 2, 85% of right-handers and 79% of non-right-handers showed a right ear advantage.
 
 For chimeric faces tasks, which typically show a left visual field advantage, there again appears to be a greater departure from the typical pattern of laterality for left-handers (e.g. Gilbert & Bakan, 1973; Levy et al., 1983; Rozkowski & Snelbecker, 1982). This was also studied by Karlsson et al. (2019). When viewing a single face with a different emotion shown in either hemiface, 75% of right-handers and 60% of non-right-handers showed a leftwards bias. For the second chimeric faces task that involved two chimeric faces arranged vertically, a similar pattern emerged. 73% of right-handers and 57% of non-right-handers showed a leftwards bias.
 
-From the above-reviewed studies, it appears that handedness is related to laterality across a range of tasks (for further discussion see Carey & Johnstone, 2014). This relationship points towards a general laterality factor which influences lateralisation across tasks and behaviours, as predicted by several theoretical accounts (Behrmann & Plaut, 2015; Hellige, 1993; Kosslyn, 1987). In a study of left-handers using fMRI with five tasks, Gerrits, Verhelst, and Vingerhoets (2020) found that the just under half the participants showed either standard laterality (left-lateralised for language and praxis, right-lateralised for face memory, line-bisection and vocal emotion) or a complete reversal of this pattern, providing clear evidence against the idea that these functions are lateralised independently. It is also clear that this association is far from perfect, (Badzakova-Trajkov, Haberling, Roberts, & Corballis, 2010) and some studies have found no correlation between laterality indices (Bryden, Hecaen, & Deagostini, 1983; Rosch, Bishop, & Badcock, 2012; Whitehouse & Bishop, 2009; van der Haegen & Brysbaert, 2018). Our ultimate goal is to unpick whether dissociations between laterality indices are evidence of multiple independent lateral biases across tasks, or whether there is a more prosaic explanation in terms of poor reliability or validity of tasks.
+From the above-reviewed studies, it appears that handedness is related to laterality across a range of tasks (for further discussion see Carey & Johnstone, 2014). This relationship points towards a general laterality factor which influences lateralisation across tasks and behaviours, as predicted by several theoretical accounts (Behrmann & Plaut, 2015; Hellige, 1993; Kosslyn, 1987). `r colFmt("For example, the causal complementarity principle proposes that the lateralisation of processes involving the same hemisphere will be lateralised to the homologue in the opposite hemisphere. With reference to language processing and face emotionality processing, it would be predicted that language processing would be left lateralised and face processing would be right lateralised, and an increase of one co-occurs with an increase of another. Indeed, several studies have reported such patterns. In support, Brederoo et al. (2020) and Dundas, Plaut, and Behrmann (2015) have reported significant correlations between LIs for word and face processing. However, that does not mean that all studies provide support for causal complementarity",'red')`. In a study of left-handers using fMRI with five tasks, Gerrits, Verhelst, and Vingerhoets (2020) found that the just under half the participants showed either standard laterality (left-lateralised for language and praxis, right-lateralised for face memory, line-bisection and vocal emotion) or a complete reversal of this pattern, providing clear evidence against the idea that these functions are lateralised independently. It is also clear that this association is far from perfect (Badzakova-Trajkov, Haberling, Roberts, & Corballis, 2010) and some studies have found no correlation between laterality indices (Bryden, Hecaen, & Deagostini, 1983; Rosch, Bishop, & Badcock, 2012; Whitehouse & Bishop, 2009; van der Haegen & Brysbaert, 2018). Our ultimate goal is to unpick whether dissociations between laterality indices are evidence of multiple independent lateral biases across tasks, or whether there is a more prosaic explanation in terms of poor reliability or validity of tasks.
+
+`r colFmt("So far the argument has been made that lateralisation across domains do not correlate. However, emerging lines of evidence have suggested that even within domains there is independent lateralisation across similar tasks. Woodhead, Bradshaw, Wilson, Thompson, and Bishop (2019) reported data for 37 participants engaged in six language tasks under transcranial Doppler sonography (fTCD) and examined the factorial structure of lateralisation across tasks using structural equation modeling. They pitted two models against each other. The first assumed that language laterality is a unidimensional trait and a single factor was used to model covariance. The second assumed that laterality on one set of tasks may vary independently with that one another. This model assumed that two factors underlie the pattern of covariance. The results supported a two factor model at the population level. However, further examination of the data revealed that this was driven by seven left-handers. For the majority of right-handed participants a single factor model was preferred. Of course this pattern of results may have resulted from the small proportion of left-handers in the current study. Woodhead, Thompson, Karlsson, and Bishop (2020) examined this factor structure in a larger sample of 74 participants with 43 right-handers and 31 left-handers. The data this time indicated that a two factor model was preferred for both right- and left-handers, with the preference for a two factor model being stronger for left-handers. Together, this indicated that not all language tasks show correlated laterality indices. Instead, there was evidence that the tasks covaried in two factors with distinct patterns. For the current work which implements two measures of llanguage laterality, it may be perfectly plausible that we observe a pattern of results which indicate that language lateralisation is not unidimensional and language tasks would fractionate.",'red')`
 
 ### The current study
 
-The principal goal of the current study was to evaluate the reliability and validity of an online behavioural laterality battery. Specifically, we examined whether it is possible to observe the usual laterality biases at the population level in tests of language and emotion processing and whether it is possible to achieve test-retest reliability of *r*= .65 or above using online behaviour research methods. In addition, for tasks where satisfactory reliability was achieved, we considered how many trials were needed to achieve this. The tasks included in the battery were a novel rhyme decision visual half-field task, a consonant-vowel dichotic listening task, a chimeric faces visual half-field task, and a novel finger tapping task.<!--- ZW: Would it be worth having a section on measurement of manual preference?; AP: As this is exploratory I don't want to add too much about this---> These behavioural tasks were completed twice on two different occasions. 
+The principal goal of the current study was to evaluate the reliability and validity of an online behavioural laterality battery. Specifically, we examined whether it is possible to observe the usual laterality biases at the population level in tests of language and emotion processing and whether it is possible to achieve test-retest reliability of *r*= .65 or above using online behaviour research methods. In addition, for tasks where satisfactory reliability was achieved, we considered how many trials were needed to achieve this. The tasks included in the battery were a novel rhyme decision visual half-field task, a consonant-vowel dichotic listening task, a chimeric faces visual half-field task, and a novel finger tapping task. These behavioural tasks were completed twice on two different occasions. `r colFmt("Below we justify our task selection.",'red')`.
+
+`r colFmt("When looking to include studies in our online battery we saw three criteria that a task would have to meet for inclusion. First, it would have show good test-retest reliability. Second, it would have to show validity and be lateralised at the population level. Third, it would have to be sensitive to the subtle differences in laterality that have been reported between right- and non-right-handers. Starting with the dichotic listening paradigm, recent endeavors have shown that the task yields reliable results when used online via a mobile app (Bless et al., 2013, 2015). Furthermore, Karlsson et al. (2019) have shown that this paradigm is sensitive to the subtle differences in language asymmetry between right and non-right handers, making it an obvious choice for inclusion. Given that numerous studies looking at the relationship lateralisation on language and non-language tasks have focused on the use of face stimuli (e.g. Brederoo et al., 2020), we chose to include a face task to conduct similar comparisons. Regarding the chimeric faces, Levy et al. (1983) reported good split-half reliability while Karlsson et al. had reported that, like the dichotic listening task, the the chimeric faces task is sensitive to the differences in perceptual asymmetry in right- and non-right-handers. In addition to these two tasks we looked to include a visual half-field task so that we could further assess language lateralisation. While the task reported by Brysbaert and colleagues looked promising, they involve verbal responses which would be difficult to record online with reasonable accuracy. We then explored the use of translingual lexical decision task reported by Hausmann and colleagues. At the point of pre-registering the study there had been no assessment of the tasks reliability. This coupled with the absence of an effect of handedness on reaction times in this task (Willemmin et al., 2016) did not give us faith in using the task. Thus we looked to develop our own task in which would required covert speech.",'red')`
+
+`r colFmt("In addition to the previous mentioned tasks, we sought to develop an online measure of manual performance. This was largely an exploratory effort. Most studies allude to handedness as a unitary phenomenon and classify using a dichotomy of left or right based on participants’ self-reported preference. Despite this, some right-handers will use their left hand more than others (Annett, 1998, 2002). This type of subtle variation is not captured using dichotomous reporting but is captured within some inventories. One such inventory is the Edinburgh handedness inventory (Oldfield, 1971), which requires participants to indicate the strength of hand preference for a range of activities (e.g. throwing, striking a match, using scissors). Inventory measures are not without limitation. It has been argued that respondents may avoid extreme responses on items or solely select extreme responses, thus confounding the measurements (Beaton",'red')` & `r colFmt("Moseley, 1984). A final way to assess handedness is to use performance measures, such as the Purdue Pegboard task (Tiffin",'red')` & `r colFmt("Asher, 1948).  Performance measures can detect subtle differences between each hand which can be placed on a continuum while correlating well with measures of handedness (e.g. Steenhous",'red')` & `r colFmt("Bryden, 1999). One of the most widely used performance tasks is the pegboard task (see Hodgson",'red')` & `r colFmt("Hudson, 2016, for discussion) yet this task is far from employable online given the requirement of pegs and a board. Thus, in addition to examining our hypotheses, we sought to develop and assess the reliability of a novel finger tapping task that could be used to quantify handedness based on performance.",'red')`
 
 Our first set of predictions (hypothesis 1) concerned the validity of the tasks as indicators of cerebral lateralisation. Based on previous work, we predicted that at the population level: (1) the laterality indices for rhyme decision would show a RVF advantage (indicating left hemisphere dominance for language processing); (2) the laterality indices for the dichotic listening task would show a right ear advantage (indicating left hemisphere dominance for language processing); and (3) the laterality indices for chimeric faces would show a LVF advantage (indicating right hemisphere dominance for face or emotion processing). Although exploratory, the finger tapping task was designed to provide a quantitative measure of the degree of handedness, and was expected to show a right-hand advantage in the overall sample.
 
 Our second prediction (hypothesis 2) related to handedness and atypical lateralisation. We predicted that strong left-handers (i.e. those with laterality quotients of -90 or less on the Edinburgh Handedness Inventory; Oldfield, 1971) would be more likely to show atypical laterality (i.e. laterality in the opposite direction to our population-level predictions) than right-handers. This prediction followed from observations by Mazoyer et al. (2014, p. 1) who studied a large group of left- and right-handers using fMRI to measure language laterality. They concluded, “concordance of hemispheric dominance for hand and for language occurs barely above the chance level, except in a group of rare individuals (less than 1% in the general population) who exhibit strong right hemisphere dominance for both language and their preferred hand”.
 
-Our final prediction (hypothesis 3) related to the inter-relationships between laterality indices. With online testing, there is the opportunity to test inter-relationships between laterality indices with an adequately powered sample using measures of known reliability. Prior studies have been inconclusive because it has been difficult to gather large amounts of data to establish test-retest reliability. For instance, van der Haegen and Brysbaert (2018), found that language laterality did not correlate with face laterality in visual half-field tasks. However, their study was restricted to left-handers, who may be atypical in this regard, and they noted that lack of association was hard to interpret because it may be due to unreliability of the individual measures. In the preregistration for our current study, we predicted that for right-handers, a model where the two language tasks are correlated with each other but not with the chimeric faces (model A) would be the best fit to the data, compared to either a model in which laterality indices are correlated between the language and chimeric face tasks (model B), or a base model where each task is independently lateralised (model C). Given our previous findings using fTCD to study dissociations in language laterality (Woodhead, Bradshaw, Wilson, Thompson, & Bishop, 2019), we further predicted that model fit may differ for right- and left-handers, with more dissociation between tasks in the latter group. 
+Our final prediction (hypothesis 3) related to the inter-relationships between laterality indices. With online testing, there is the opportunity to test inter-relationships between laterality indices with an adequately powered sample using measures of known reliability. Prior studies have been inconclusive because it has been difficult to gather large amounts of data to establish test-retest reliability. For instance, van der Haegen and Brysbaert (2018), found that language laterality did not correlate with face laterality in visual half-field tasks. However, their study was restricted to left-handers, who may be atypical in this regard, and they noted that lack of association was hard to interpret because it may be due to unreliability of the individual measures. In the pre-registration for our current study, we predicted that for right-handers, a model where the two language tasks are correlated with each other but not with the chimeric faces (model A) would be the best fit to the data, compared to either a model in which laterality indices are correlated between the language and chimeric face tasks (model B), or a base model where each task is independently lateralised (model C). Given our previous findings using fTCD to study dissociations in language laterality (Woodhead, Bradshaw, Wilson, Thompson, & Bishop, 2019), we further predicted that model fit may differ for right- and left-handers, with more dissociation between tasks in the latter group. 
 
 ## Method
 
@@ -95,23 +111,21 @@ This project was pre-registered on the Open Science Framework (OSF) before the s
 
 As our ultimate goal is to use these measures in individual differences research, we aimed to optimise the task to achieve observed test-retest reliability of at least *r*= .65. Our initial power analysis showed that to achieve sufficient precision around the estimate of reliability, we would require 300 participants. Out of the 300 participants, we originally specified that 80 would be left-handers. This would give us power to apply our planned model-fitting analysis to left-handers as a separate group. 
 
-In practice, our final sample exceeded 300, because we discarded participants from individual tasks for failing to meet prespecified criteria (see below). In total, 441 native English speakers were initially recruited through Prolific Academic (www.prolific.co). Participants had normal or corrected-to-normal vision and reported no history of neurological disease (e.g. head injury, brain tumour, stroke) or significant hearing loss or impairment. 
+In practice, our final sample exceeded 300, because we discarded participants from individual tasks for failing to meet prespecified criteria (see below). In total, 441 native English speakers were initially recruited through Prolific Academic (www.prolific.co)`r colFmt(", with 411 participants completing both sessions",'red')`. Participants `r colFmt("were 18- to 50-years-old,",'red')`, had normal or corrected-to-normal vision and reported no history of neurological disease (e.g. head injury, brain tumour, stroke) or significant hearing loss or impairment. 
 
 This study was approved by the University of Oxford's Medical Sciences Inter-Divisional Research Ethics Committee (reference number: R66638/RE002) and conducted following the principles of the Declaration of Helsinki. Participants gave informed consent and received compensation for their participation.
 
 ### Online behavioural laterality battery
 
-The battery included four measures of background information and four experimental assessments of behavioural  laterality that were built and administered using the Gorilla Experiment Builder (www.gorilla.sc), a cloud-based tool for collecting data in the behavioural sciences (Anwyl-Irvine, Massonnié, Flitton, Kirkham, & Evershed, 2020). Each task is described below.
-
+The battery included four measures of background information and four experimental assessments of behavioural laterality that were built and administered using the Gorilla Experiment Builder (www.gorilla.sc), a cloud-based tool for collecting data in the behavioural sciences (Anwyl-Irvine, Massonnié, Flitton, Kirkham, & Evershed, 2020). Each task is described below.
 
 #### Basic demographics questionnaire 
-
 
 The basic demographics questionnaire asked participants to report age, gender, years in education, and whether they were bilingual. We also asked questions about handedness and footedness. For handedness, we asked: which is your dominant hand (i.e. which hand do you prefer to use for tasks such as writing, cutting, and catching a ball)? For footedness, we asked: which foot do you normally use to step up on a ladder/step? For both questions, participants could answer "left", "right", or "no preference / Don't know".
 
 #### Tests of ocular dominance
 
-Adapted versions of the Miles test (Miles, 1929) and the Porta test (Porac & Coren, 1976) were used to determine each participant’s eye dominance in central gaze (i.e., when looking straight ahead). Each test classified participants as being either left or right eye dominant. In practice, the two tests agreed perfectly, so we report here just the Miles test.
+Adapted versions of the Miles test (Miles, 1929) and the Porta test (Porac & Coren, 1976) were used to determine each participant’s eye dominance in central gaze (i.e., when looking straight ahead). Each test classified participants as being either left or right eye dominant. `r colFmt("While we do not use tests of ocular dominance to asnwer apriori predictions, we report eyedness for participants inorder to further characterise them.",'red')` In practice, the two tests agreed perfectly, so we report here just the Miles test. 
 
 #### Edinburgh Handedness Inventory 
 
@@ -123,7 +137,7 @@ The Lexical Test for Advanced Learners of English (LexTALE; Lemhöfer & Broersma
 
 #### Rhyme decision task
 
-The rhyme decision task was developed for this project as a novel visual half-field technique designed to engage lateralised language processes. On each trial, participants were asked to decide whether a foveally presented letter string rhymed with the name of an image shown in either the LVF or RVF. With online presentation, a particular concern is a potential for eye movements away from fixation. We relied on the fact that participants had to focus initially on the central written word to do the task, with pictures subsequently displayed with brief bilateral presentation, which has been shown to give adequate control for eye movements in previous visual half-field experiments with verbal naming (Beaumont, 1982). Studies that directly monitored eye movements in this setting reported failures of fixation on only 0.5% of trials (Geffen, Bradshaw & Nettleton, 1972; but see also Bourne, 2006). Pictures of familiar objects were presented for rhyme matching to the written word, to ensure that the participant would have to covertly name the picture, thereby engaging left hemisphere speech processing. 
+The rhyme decision task was developed for this project as a novel visual half-field technique designed to engage lateralised language processes. On each trial, participants were asked to decide whether a foveally presented letter string rhymed with the name of an image shown in either the LVF or RVF. With online presentation, a particular concern is a potential for eye movements away from fixation. We relied on the fact that participants had to focus initially on the central written word to do the task `r colFmt(". We believed that this would encourage fixation to a central location at the start of the trial. We subsequently displayed pictures under",'red')`, brief bilateral presentation, which has been shown to give adequate control for eye movements in previous visual half-field experiments with verbal naming (Beaumont, 1982). Studies that directly monitored eye movements in this setting reported failures of fixation on only 0.5% of trials (Geffen, Bradshaw & Nettleton, 1972; but see also Bourne, 2006). Pictures of familiar objects were presented for rhyme matching to the written word, to ensure that the participant would have to covertly name the picture, thereby engaging left hemisphere speech processing. `r colFmt("While previous studies (e.g. Hunter",'red')` & `r colFmt("Brysbaert, 2008) have used overt naming, doing so online presents several problems. First, accurate naming latencies would require a microphone. This would have to be of sufficent quality to accurate capture naming latencies which many participants may not have. Seond, the recording of auditory responses would require additional scoring following data collection which would be a taxing procedure for researchers. It would also require additional ethical considerations with regards to the storing and processing of the data. It is for these reasons that we adopted a covert naming approach.",'red')`
 
 ##### Materials
 
@@ -132,14 +146,13 @@ Twenty-six monosyllabic words were presented in foveal vision. Each word was 3-4
 Word stimuli were presented in black lowercase Tahoma font on a white background. Font was scaled to 250% equating to 28pt font. The image pairs were presented at approximately 2.5 degrees of visual angle either side of fixation. As screen size was likely to vary between participants, the size of the stimuli and eccentricity of images relative to fixation was maintained using Gorilla’s scaling tool.
 
 
-![Figure 1. Schematic illustration of a trial on the rhyme decision task. In the example, the word “bite” is presented along with the two images “kite” and “door”. When making the correct judgement, participants would respond with by pressing ‘S’ to indicate that the rhyme was on the left.](Picture1.png)
-
+![Schematic illustration of a trial on the rhyme decision task. In the example, the word “bite” is presented along with the two images “kite” and “door”. When making the correct judgement, participants would respond with by pressing ‘S’ to indicate that the rhyme was on the left.](Picture1.png){width=60%}
 
 ##### Procedure
 
 The trials were preceded by a familiarisation phase in which each of the stimulus pictures was presented together with its written name. Then 260 stimuli (52 unique stimuli each shown 5 times) were displayed across four blocks (65 items per block). Each of the four blocks also contained five items for which there was no rhyme. For example, the word “moon” was displayed with the images for kite and door: kite – moon – door. These foil items were included in an attempt to prevent participants from preferentially responding to items in either the LVF or RVF. These items were then pseudo-randomised such that identical image pairs could not appear one after the other.
 
-Each trial began with a fixation cross presented centrally for 800 ms. Participants were instructed to keep their eyes on the central fixation point. Then a foveally presented word would appear for 200 ms. The bilaterally presented images were then presented for 150 ms. At stimulus offset, participants indicated whether the name of the image in the LVF or RVF rhymed with the foveally presented word. Participants were instructed to press ‘S’ if the written word rhymed with the image in the LVF, and ‘K’ if it rhymed with the image in the RVF. If participants did not detect a rhyme, they were instructed to press the space bar. The response triggered the next trial. Accuracy and reaction times (RT) were recorded.
+Each trial began with a fixation cross presented centrally for 800 ms. Participants were instructed to keep their eyes on the central fixation point. Then a foveally presented word would appear for 200 ms. The bilaterally presented images were then presented for 150 ms. At stimulus offset, participants indicated whether the name of the image in the LVF or RVF rhymed with the foveally presented word. Participants were instructed to press ‘S’ if the written word rhymed with the image in the LVF, and ‘K’ if it rhymed with the image in the RVF. If participants did not detect a rhyme, they were instructed to press the space bar. The response triggered the next trial`r colFmt("; trials did not time-out after a predetermined duration",'red')`. Accuracy and reaction times (RT) were recorded.
 
 #### Dichotic listening task 
 
@@ -151,9 +164,9 @@ The consonant-vowel stimuli were formed by pairing six stop-consonants (/b/, /d/
 
 ##### Procedure
 
-As the dichotic listening task demands the use of stereo-headphones, participants were screened at the start of each session. Screening consisted of two tasks. The first involved participants judging which of three pure tones was quietest, and is described by Woods, Siegel, Traer, and McDermott (2017) in full detail. This sound discrimination task was designed to be easy to achieve when using headphones but difficult over loudspeakers due to phase-cancellation. Participants were removed from the study if they failed to correctly discriminate the quietest sound on at least five out of six trials, indicating that they were unlikely to be using headphones. The second check involved participants hearing a sound presented in only one of the two channels. Participants were removed if they failed to correctly identify which channel the sound was played on five out of six trials, indicating that they were not using stereo-headphones.
+As the dichotic listening task demands the use of stereo-headphones, participants were screened at the start of each session. Screening consisted of two tasks. The first involved participants judging which of three pure tones was quietest, and is described by Woods, Siegel, Traer, and McDermott (2017) in full detail. This sound discrimination task was designed to be easy to achieve when using headphones but difficult over loudspeakers due to phase-cancellation. Participants were removed from the study if they failed to correctly discriminate the quietest sound on at least five out of six trials, indicating that they were unlikely to be using headphones. The second check involved participants hearing a sound presented in only one of the two channels. Participants were removed if they failed to correctly identify which channel the sound was played on five out of six trials, indicating that they were not using stereo-headphones [^1].
 
-Participants completed four blocks of the dichotic listening task. In each block, participants heard each of the 36 stimuli once. Across the four blocks, they responded to 144 stimuli. At the start of each trial, participants saw a fixation cross for 250 ms, after which a stimulus was played. After hearing each stimulus, participants were instructed to report the syllable they heard or if it seemed like they heard two different sounds, the one they heard most clearly by clicking a button corresponding to one of the six syllables. The response triggered the start of the next trial. Accuracy and reaction times (RT) were recorded.
+Participants completed four blocks of the dichotic listening task. In each block, participants heard each of the 36 stimuli once. Across the four blocks, they responded to 144 stimuli. At the start of each trial, participants saw a fixation cross for 250 ms, after which a stimulus was played. After hearing each stimulus, participants were instructed to report the syllable they heard or if it seemed like they heard two different sounds, the one they heard most clearly by clicking a button corresponding to one of the six syllables. The response triggered the start of the next trial`r colFmt("; trials did not time-out after a predetermined duration",'red')`. Accuracy and reaction times (RT) were recorded.
 
 #### Chimeric faces task
 
@@ -163,13 +176,15 @@ The chimeric faces stimuli were kindly provided by Dr Michael Burt, and have bee
 
 The faces consisted of symmetrical averaged images created from four male and four female faces. Four emotional expressions were used: anger, disgust, happiness, and sadness. The faces were split vertically down the middle and paired so that one emotive hemiface was attached to another and blended at the midline (see Figure 2 for an example). These were paired in all possible combinations creating 16 individual stimuli. Four stimuli showed identical emotions in each hemiface.
 
+\
 
-![Figure 2. An example stimulus from the chimeric faces task. In the example, “happiness” is shown on the left and “sadness” on the right. A participant who is right lateralised for emotional processing would be more likely to perceive the emotion in the left hemifield and would, therefore, respond “happiness”.](chim_example.png)
+![An example stimulus from the chimeric faces task. In the example, “happiness” is shown on the left and “sadness” on the right. A participant who is right lateralised for emotional processing would be more likely to perceive the emotion in the left hemifield and would, therefore, respond “happiness”.](chim_example.png){width=20%}
 
+\
 
 ##### Procedure
 
-Participants completed four blocks of the chimeric faces task. In each block, participants viewed each stimulus twice. Thus, they viewed 32 stimuli per block and 128 in total. At the start of each trial, participants fixated a cross for 1000 ms. A chimeric face was then displayed for 400 ms. Participants then reported the emotion seen in the face by clicking a button corresponding to one of the four emotions. The response triggered the start of the next trial. Accuracy and reaction times (RT) were recorded.
+Participants completed four blocks of the chimeric faces task. In each block, participants viewed each stimulus twice. Thus, they viewed 32 stimuli per block and 128 in total. At the start of each trial, participants fixated a cross for 1000 ms. A chimeric face was then displayed for 400 ms. Participants then reported the emotion seen in the face by clicking a button corresponding to one of the four emotions. The response triggered the start of the next trial`r colFmt("; trials did not time-out after a predetermined duration",'red')`. Accuracy and reaction times (RT) were recorded.
 
 #### Finger tapping task
 
@@ -177,9 +192,9 @@ The finger tapping task is a novel behavioural task that we designed as a quanti
 
 ### General Procedure
 
-The current study implemented a test-retest, within-subjects design across two sessions. Each session was three to 10 days apart. During session 1, participants completed the full battery of tasks. Self -report measures were completed first, followed by the behavioural laterality tasks. During session 2, participants completed only the behavioural laterality tasks. Hence, each participant provided data for the rhyme decision, dichotic listening, chimeric faces, and finger tapping tasks twice. Each session lasted approximately 45 minutes and 35 minutes respectively. 
+The current study implemented a test-retest, within-subjects design across two sessions. Each session was three to 10 days apart. During session 1, participants completed the full battery of tasks. Self -report measures were completed first, followed by the behavioural laterality tasks. During session 2, participants completed only the behavioural laterality tasks. Hence, each participant provided data for the rhyme decision, dichotic listening, chimeric faces, and finger tapping tasks twice. Each session lasted approximately 45 minutes and 35 minutes respectively. `r colFmt("Participants were paid £15 for their participation.",'red')`
 
-When completing the behavioural tasks participants were instructed to sit approximately 50 cm from the screen. Gorilla’s scaling tool was utilised such that stimuli size and eccentricity was maintained across tasks and participants. Stimuli from each task were repeated across four blocks. Within each block, participants completed 70 trials of the rhyme detection task (R); 36 trials of the dichotic listening task (D); 32 trials of the chimeric face task (C); and 2 trials of the finger tapping task (F) for both their dominant and non-dominant hand. The order of tasks with each block was determined as follows RDCF, DCFR, CFRD, FRDC, and the order of tasks remained consistent across blocks for each participant. For each task, trial order was randomised, except for the finger tapping task where participants responded with their dominant hand followed by their non-dominant hand.
+When completing the behavioural tasks participants were instructed to sit approximately 50 cm from the screen. Gorilla’s scaling tool was utilised such that stimuli size and eccentricity was maintained across tasks and participants. `r colFmt("During each task participants were instructed respond as fast and accurately as possible.",'red')` Stimuli from each task were repeated across four blocks. Within each block, participants completed 70 trials of the rhyme detection task (R); 36 trials of the dichotic listening task (D); 32 trials of the chimeric face task (C); and 2 trials of the finger tapping task (F) for both their dominant and non-dominant hand. The order of tasks with each block was determined as follows RDCF, DCFR, CFRD, FRDC, and the order of tasks remained consistent across blocks for each participant. For each task, trial order was randomised, except for the finger tapping task where participants responded with their dominant hand followed by their non-dominant hand.
 
 ### Data analysis
 
@@ -245,7 +260,7 @@ Out of 441 participants recruited, `r nrow(LIs_c)` (`r round(nrow(LIs_c)/441*100
 
 ##### Data cleaning
 
-For each task, we adopted the following data cleaning procedures. First, for all tasks, we removed trials in which response times were shorter than 200 ms. Response times were log-transformed to reduce skew, as specified in our pre-registration. Outlier reaction times were identified using Hoaglin and Iglewicz’s (1987) procedure, whereby outliers are defined as response times that are 1.65 times the difference between the first and third quantiles (1.65 * (Q3-Q1)) below or above the first and third quantile values (e.g: lower limit = Q1 – 1.65 x (Q3-Q1); upper limit = Q3 + 1.65 x (Q3-Q1)). Our differences criterion was set to 1.65 instead of the typical 2.2 because we expected to obtain asymmetric distributions for response time, with most outliers in one tail of the distribution. The Hoaglin and Iglewicz procedure was applied to each participant's data separately. After applying each data trimming procedure, participants left with less than 80% of trials were removed. 
+For each task, we adopted the following data cleaning procedures. First, for all tasks, we removed trials in which response times were shorter than 200 ms. Response times were log-transformed to reduce skew, as specified in our pre-registration. Outlier reaction times were identified using Hoaglin and Iglewicz’s (1987) procedure, whereby outliers are defined as response times that are 1.65 times the difference between the first and third quantiles (1.65 * (Q3-Q1)) below or above the first and third quantile values (e.g: lower limit = Q1 – 1.65 x (Q3-Q1); upper limit = Q3 + 1.65 x (Q3-Q1)) [^2]. Our differences criterion was set to 1.65 instead of the typical 2.2 because we expected to obtain asymmetric distributions for response time, with most outliers in one tail of the distribution. The Hoaglin and Iglewicz procedure was applied to each participant's data separately. After applying each data trimming procedure, participants left with less than 80% of trials were removed. 
 
 At the next stage, we excluded participants who failed to meet the pre-registered criteria for inclusion. Applying each of these procedures meant that the number of participants left in the final analyses could vary by task. For the chimeric faces task, we removed participants if they scored lower than 75% on trials in which an identical emotion was shown in each hemiface, and for the dichotic listening task, we removed those who scored less than 75% correct on trials where the same sound was played to each ear. These data trimming procedures left data for `r nrow(LIs)-nrow(LIs[LIs$exclude== 1 | LIs$exclude== 12,])` participants on the chimeric faces and `r nrow(LIs)-nrow(LIs[LIs$exclude== 2 | LIs$exclude== 12,])` participants on the dichotic listening task. An additional 7 cases had to be removed because of a technical error that meant they had less than 80 trials presented.
 
@@ -257,7 +272,7 @@ The final group consisted of `r nrow(LIs)` participants (`r nrow(LIs[LIs$gender=
 
 ##### Methods for calculating laterality indices, reliability, and population-level analysis
 
-We preregistered that we would calculate LIs in two ways: (1) traditionally (100 x (Right – Left)/(Right + Left)); (2) a standardised LI that involved computing a *z*-score that represented, for each individual, a comparison between left- and right-sided responses. In fact, for RT data we specified a *t*-score, but *t* and *z* converge when sample size exceeds 30, and for simplicity, we refer to these as LI_z scores. These LI_z scores are very highly correlated with the traditional LI measures (correlations typically exceed .95) but can be used to provide a common metric for RT and accuracy measures when identifying significantly lateralised individuals. For example, using a conventional 2-sided alpha of .05, we can categorise individuals with an absolute LI_z greater than 1.96 as significantly lateralised. 
+We pre-registered that we would calculate LIs in two ways: (1) traditionally (100 x (Right – Left)/(Right + Left)); (2) a standardised LI that involved computing a *z*-score that represented, for each individual, a comparison between left- and right-sided responses. In fact, for RT data we specified a *t*-score, but *t* and *z* converge when sample size exceeds 30, and for simplicity, we refer to these as LI_z scores. These LI_z scores are very highly correlated with the traditional LI measures (correlations typically exceed .95) but can be used to provide a common metric for RT and accuracy measures when identifying significantly lateralised individuals. For example, using a conventional 2-sided alpha of .05, we can categorise individuals with an absolute LI_z greater than 1.96 as significantly lateralised. 
 
 For the rhyme task, we pre-registered that we would calculate LIs based on log RT data, as accuracy during piloting was at ceiling. To obtain LI_z we ran a *t*-test comparing accurate log RTs for left- and right-sided stimuli for each person. 
 
@@ -269,16 +284,13 @@ For the reliability assessment, we first checked LIs for normality using a Shapi
 
 ##### Handedness and atypical laterality
 
-To address hypothesis 2, that extreme left-handers will be more likely to show atypical laterality than right-handers, we categorised participants as extreme left-handers if they scored less than -90 and right-handers if they scored more than 90 on the Edinburgh Handedness Inventory. Our preregistration specified that atypicality would first be defined according to whether the participant's LI_z was significantly lateralised (with alpha = .05) in the opposite direction from the majority. If there were less than 20 cases defined as atypical using this method, we planned to adjust the cut-off on that task until we acquired 20 atypical participants. 
+`r colFmt("To address hypothesis 2, that extreme left-handers will be more likely to show atypical laterality than right-handers, we categorised participants as extreme left-handers if they scored less than -90 on the EHI and right-handers if they scored greater than zero on the EHI. Following our pre-registration, atypicality was defined according to whether the participant's LI_z was significantly lateralised (with alpha = .05) in the opposite direction from the majority. Chi-squared tests were then used to examine the association between handedness and atypicality on the rhyme decision, dichotic listening, and chimeric faces tasks. In our pre-registration we had planned to look at cases who were atypical on the language tasks and the chimeric faces. We did not conduct this anlaysis due to very few participants showing atypical lateralisation across multiple tasks. In our Supplementary Materials we do, however, compare laterality indices between extreme left-handers and right-handers to further examine the link between handedness and atypical lateralisation.", 'red')`
 
-For rhyme decision and chimeric faces task, participants were categorised into four groups: typical on both; atypical on rhyme decision only; atypical on chimeric faces only, and atypical on both. A chi-square test was then used to test for association with the number of people in each of the four groups and the handedness classification from the Edinburgh Handedness Inventory. This was then repeated for the dichotic listening and the chimeric faces tasks. A Bonferroni correction was applied to the outcome of each of the two chi-squared tests. 
+<!--NOT NEEDED. THIS DESCRIBES AN ANALYSIS THAT WE DIDN'T CONDUCT.
 
-<!---ZW: This bit confused me.
+To address hypothesis 2, that extreme left-handers will be more likely to show atypical laterality than right-handers, we categorised participants as extreme left-handers if they scored less than -90 and right-handers if they scored more than 90 on the Edinburgh Handedness Inventory. Our pre-registration specified that atypicality would first be defined according to whether the participant's LI_z was significantly lateralised (with alpha = .05) in the opposite direction from the majority. If there were less than 20 cases defined as atypical using this method, we planned to adjust the cut-off on that task until we acquired 20 atypical participants. 
 
-I thought that the hypothesis was that extreme left handers were more likely to be atypical on any given task, but the test looks at consistency of laterality across pairs of task. Isn’t that testing a different hypothesis?
-
-Both are interesting, but I think the first one needs to be tested too. E.g., are extreme left handers more likely than right handers to be atypically lateralized on Rhyme Decision / Chimeric Faces / Dichotic Listening?
---->
+For rhyme decision and chimeric faces task, participants were categorised into four groups: typical on both; atypical on rhyme decision only; atypical on chimeric faces only, and atypical on both. A chi-square test was then used to test for association with the number of people in each of the four groups and the handedness classification from the Edinburgh Handedness Inventory. This was then repeated for the dichotic listening and the chimeric faces tasks. A Bonferroni correction was applied to the outcome of each of the two chi-squared tests. --->
 
 ##### Relationship between language and non-language LIs
 
@@ -294,7 +306,7 @@ This was completed separately for right- and left-handers using both session 1 a
 
 ## Results
 
-Foot and eye preference characteristics of the sample after exclusions as noted above are shown in Table 1. As participants self-reported eye dominance was always consistent between the Miles and Porta tests, we report data only from the Miles test.
+Foot and eye preference characteristics of the sample after exclusions as noted above are shown in Table 1. As participants self-reported eye dominance was always consistent between the Miles and Porta tests, we report data only from the Miles test. `r colFmt("As eye dominance is not a focus of this study, we will not elaborate further on it.", 'red')`
 
 ```{r simplifiedlatdescriptives, echo- FALSE, include= FALSE}
 #Miles and Porta are identical so only report one.
@@ -326,15 +338,20 @@ lattab$`R.handers.%`[6]<-"100"
 lattab$`L.handers.%`[6]<-"100"
 ```
 
+\
 
-Table 1 <!---New table - lattab to be added in nice format--->
-Count of left- and right-handers who report left or right on self-reported footedness, and eyedness (Miles test). 
+Table 1. Count of left- and right-handers who report left or right on self-reported footedness, and eyedness (Miles test).\
 ```{r Tab1,echo=FALSE, comment=FALSE, warning=FALSE}
+lattab<-lattab[,c(1,2,4,3,5)] #now reorder columns to make sense
+colnames(lattab)<-c('Foot-Eye','Right hander (N)','Left hander (N)','Right hander (%)','Left hander (%)')
 lattab <- flextable(lattab)
+lattab <- align(lattab, align = "center", j= 2:5)
 autofit(lattab, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
 ```
+
 *Note*. RR: right foot, right eye; RL: right foot, left eye; LR: left foot, right eye; LL: left foot, left eye. 'Other' includes those who responded 'No preference / Don't know'.
 
+\
 
 ```{r computepcorrRDT, echo=FALSE, comment=FALSE, warning=FALSE}
 #revised this, as p.corr values now in allsum
@@ -423,7 +440,15 @@ ggsave(
 )
 ```
 
-Distributions of the raw data are shown in the Online Supplemental Materials. The distribution of LIs can be used to quantify departures from symmetry. Recall that for all tasks, we computed LIs in a typical way: (100 x (Right – Left)/(Right + Left)), and that because of crossed pathways from hands, ears and eyes to the brain, a positive LI indicates left lateralisation and a negative LI indicates right lateralisation at the brain level. LIs on the rhyme task were calculated using log RTs for correct responses (accuracy was high; *M* = `r round(allmeanpcorr,1)`%, *SD* = `r round(allsdpcorr,2)` %). LIs for the dichotic listening and chimeric faces were calculated using the count of correct responses for sounds/emotions in each ear/visual. LIs on the finger tapping task were calculated using the number of sequences generated for each hand. Table 2 shows these mean LIs, as well as a one-sample Wilcoxon test comparing the mean LI with zero. Wilcoxon tests were chosen as a series of Shapiro-Wilks tests showed a departure from normality for several tasks. It can be seen that all measures were significantly lateralised in the predicted direction at the population level, with left-hemisphere superiority for rhyme decision, dichotic listening and finger tapping, and right-hemisphere superiority for chimeric faces. 
+Distributions of the raw data are shown in `r colFmt("Figure 3. The scatterplots indicate scores on the left and right sides for each task, with self-reported handedness (left vs right) colour-coded. For each task, the mean for each side is shown as vertical and horizontal dotted lines, and equal performance on the two sides corresponds to the sloping red dotted line: thus an impression of whether the task is lateralised can be obtained by considering whether points cluster around the sloping lines symmetrically.", 'red')`
+
+\newpage
+
+![Left side (L) vs right side (R) scores for sessions 1 and 2 for the behavioural laterality tasks. The diagonal dotted line shows the point of equality: points above this are higher for R than L, and points below are higher for L than R. Mean values for R and L are shown as horizontal and vertical dotted lines. The colour of the points indicates the participants’ handedness (black = right-handed; red = left-handed). ](all.raw.png){width=80%}
+
+`r colFmt("For the rhyme decision task, only correct responses were used for computing mean log RTs (shown transformed back to the original ms scale in the plot). Generally, accuracy on the rhyme decision task was high.",'red')` For session 1, accuracy was `r round(mean(allsum$RDT1.pcorrL, na.rm= TRUE),1)`% (*SD* = `r round(sd(allsum$RDT1.pcorrL, na.rm= TRUE),1)`%) in the LVF and `r round(mean(allsum$RDT1.pcorrR, na.rm= TRUE),1)`% (*SD* = `r round(sd(allsum$RDT1.pcorrR, na.rm= TRUE),1)`%) in the RVF. For session 2, accuracy was `r round(mean(allsum$RDT2.pcorrL, na.rm= TRUE),1)`% (*SD* = `r round(sd(allsum$RDT2.pcorrL, na.rm= TRUE),1)`%) in the LVF and `r round(mean(allsum$RDT2.pcorrR, na.rm= TRUE),1)`% (*SD* = `r round(sd(allsum$RDT2.pcorrR, na.rm= TRUE),1)`%) in the RVF. `r colFmt("For dichotic listening and chimeric faces, a correct response can be given from either side", 'red')`; `r colFmt("it follows that there will be a negative correlation between the two sides reflecting the fact that the number of selections on the left will be inversely related to the number of correct responses on the right. For these tasks, it is evident by inspection that most responses for dichotic listening cluster above the dotted line, indicating a right ear advantage, whereas most responses on chimeric faces cluster below the dotted line, indicating a left hemi-face advantage. Finally, we show the number of correct sequences with each hand on the finger tapping task. Here, a strong impact of handedness is evident on inspection, with left-handers generally more accurate with the left hand, and right-handers more accurate with the right hand.",'red')`
+
+The distribution of LIs can be used to quantify departures from symmetry. Recall that for all tasks, we computed LIs in a typical way: (100 x (Right – Left)/(Right + Left)), and that because of crossed pathways from hands, ears and eyes to the brain, a positive LI indicates left lateralisation and a negative LI indicates right lateralisation at the brain level. LIs on the rhyme task were calculated using log RTs for correct responses. LIs for the dichotic listening and chimeric faces were calculated using the count of correct responses for sounds/emotions in each ear/visual. LIs on the finger tapping task were calculated using the number of sequences generated for each hand. Table 2 shows these mean LIs, as well as a one-sample Wilcoxon test comparing the mean LI with zero. Wilcoxon tests were chosen as a series of Shapiro-Wilks tests showed a departure from normality for several tasks. It can be seen that all measures were significantly lateralised in the predicted direction at the population level, with left-hemisphere superiority for rhyme decision, dichotic listening and finger tapping, and right-hemisphere superiority for chimeric faces. 
 
 <!---for ease of interpretation I have chopped up the original big table so we can look at different aspects one step at a time; i.e. overall distribution of LIs (different from zero / skew); then the standardized LIs; then the test-retest.--->
 
@@ -433,7 +458,7 @@ Distributions of the raw data are shown in the Online Supplemental Materials. Th
 #Cells for each task are filled in course of plots.function chunk
 LItable <- data.frame(matrix(NA,nrow=8,ncol=7))
 colnames(LItable)<-c('Task','N','Mean','SD','One sample v','One sample p','Normality p')
-LItable[,1]<-c('Rhyme Decision 1','Rhyme Decision 2','Dichotic 1','Dichotic 2','Chimeric Faces 1','Chimeric Faces 2','Finger Tapping 1','Finger Tapping 2')
+LItable[,1]<-c('RD 1','RD 2','Dl 1','DL 2','CF 1','CF 2','FT 1','FT 2')
 
 keynames <- c("Day1.RDT_RT_LI"  ,"Day2.RDT_RT_LI" ,"Day1_DL_acc_LI" , "Day2_DL_acc_LI",   "Day1_CF_acc_LI", "Day2_CF_acc_LI","Day1_finger_LI", "Day2_finger_LI"   )
 for (i in 1:length(keynames)){
@@ -462,17 +487,22 @@ for (i in 1:length(keynames)){
   
 }
 ```
+\
 
 
-Table 2.Mean LIs and results from one-sample t-tests and Shapiro-Wilks tests for departure from normality for each task at sessions 1 and 2.
+Table 2. Mean LIs and results from one-sample t-tests and Shapiro-Wilks tests for departure from normality for the rhyme decision (RD), dichotic listening (DL), chimeric faces (CF), and finger tapping (FT) tasks at sessions 1 and 2.\
 ```{r Tab2,echo=FALSE, comment=FALSE, warning=FALSE}
 tab2 <- flextable(LItable)
+tab2 <- align(tab2, j= 2:7, align= "center")
 autofit(tab2, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
 ```
+
 *Note*. LIs are scored such that a positive value equates to left lateralisation at the brain level.
 
+\
 
-Table 3 shows data from the LI_z measures, which make it easier to compare different tasks on the same scale. For each task, those with LI_z scores greater than 1.96 are categorised as left-hemisphere dominant, and those with LI_z scores less than -1.96 are categorised as right-hemisphere dominant. If there were no population bias, we would expect around 2.5% of individuals to meet each of these criteria. It can be seen that for dichotic listening and chimeric faces, around 45% of individuals have hemispheric dominance in the predicted direction and around 9% have hemispheric dominance in the opposite direction. The proportions showing significant laterality are lower for the rhyme decision task (around 17% left-hemisphere dominant, and 5% right-hemisphere dominant), and for finger tapping, the proportions are only slightly greater than would be expected by chance, although there is a suggestion of increasing laterality on that task across the two sessions. Note, however, that we had oversampled left-handers for this study, and, as is evident from exploratory analyses presented below, finger-tapping was strongly influenced by handedness.
+Table 3 shows data from the LI_z measures, which make it easier to compare different tasks on the same scale. `r colFmt("The distributions of LI_z scores are shown graphically in the supplementary materials.",'red')` For each task, those with LI_z scores greater than 1.96 are categorised as left-hemisphere dominant, and those with LI_z scores less than -1.96 are categorised as right-hemisphere dominant. If there were no population bias, we would expect around 2.5% of individuals to meet each of these criteria. It can be seen that for dichotic listening and chimeric faces, around 45% of individuals have hemispheric dominance in the predicted direction and around 9% have hemispheric dominance in the opposite direction. The proportions showing significant laterality are lower for the rhyme decision task (around 17% left-hemisphere dominant, and 5% right-hemisphere dominant), and for finger tapping, the proportions are only slightly greater than would be expected by chance, although there is a suggestion of increasing laterality on that task across the two sessions. Note, however, that we had oversampled left-handers for this study, and, as is evident from exploratory analyses presented below, finger-tapping was strongly influenced by handedness.
+
 <!---this is also very evident from the scatterplot in Fig 3--->
 ```{r make.tab3,echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
 #Make a table to summarise LI means/distribution stats for 4 tasks this time using LI_z.
@@ -480,7 +510,7 @@ Table 3 shows data from the LI_z measures, which make it easier to compare diffe
 #Cells for each task are filled in course of plots.function chunk
 LIztable <- data.frame(matrix(NA,nrow=8,ncol=6))
 colnames(LIztable)<-c('Task','N','Mean','SD','L-lateralised %','R-lateralised %')
-LIztable[,1]<-c('Rhyme Decision 1','Rhyme Decision 2','Dichotic 1','Dichotic 2','Chimeric Faces 1','Chimeric Faces 2','Finger Tapping 1','Finger Tapping 2')
+LIztable[,1]<-c('RD 1','RD 2','DL 1','DL 2','CF 1','CF 2','FT 1','FT 2')
 
 keynames <- c("zlat_RDT_1"  ,"zlat_RDT_2" ,"Day1_Dich_acc_Z" , "Day2_Dich_acc_Z",   "Day1_CF_acc_Z", "Day2_CF_acc_Z","Day1_Finger_acc_Z", "Day2_Finger_acc_Z"   )
 for (i in 1:length(keynames)){
@@ -500,18 +530,21 @@ for (i in 1:length(keynames)){
   LIztable[i,6]<-round(100*length(which(temp<(-1.96)))/length(temp),1)
 }
 ```
+\
 
-
-Table 3. Mean LI_z and percentage of participants who were significantly left lateralised (z > 1.96) or right lateralised (z < -1.96) for each task at sessions 1 and 2.
+Table 3. Mean LI_z and percentage of participants who were significantly left lateralised (z > 1.96) or right lateralised (z < -1.96) on the rhyme decision (RD), dichotic listening (DL), chimeric faces (CF), and finger tapping (FT) tasks at sessions 1 and 2.\
 ```{r Tab3,echo=FALSE, comment=FALSE, warning=FALSE}
 tab3 <- flextable(LIztable)
+tab3 <- align(tab3, align= "center", j= 2:6)
 autofit(tab3, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
 ```
+
 *Note*. LIs are scored such that a positive value equates to left lateralisation at the brain level.
+\
 
 ### Test-retest reliability
 
-The scatterplots depicting test-retest reliability are shown in Figure 3, with Spearman test-retest correlations in Table 4. These were based on LI_z values, but are essentially identical to values from unscaled LI values. Confidence intervals were estimated using the *spearman.ci()* function from the RVAideMemoire package (version 0.9-75; Hervé, 2020) with 10,000 iterations. For all but the rhyme decision task, we obtained good test-retest reliability that exceeded our pre-registered threshold of *r*= .65.
+The scatterplots depicting test-retest reliability are shown in Figure 4, with Spearman test-retest correlations in Table 4. These were based on LI_z values, but are essentially identical to values from unscaled LI values. Confidence intervals were estimated using the *spearman.ci()* function from the RVAideMemoire package (version 0.9-75; Hervé, 2020) with 10,000 iterations. For all but the rhyme decision task, we obtained good test-retest reliability that exceeded our pre-registered threshold of *r*= .65.
 
 ```{r make.combotablex,echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
 #Make a table to summarise results for all 4 tasks
@@ -658,26 +691,41 @@ combotable[4,3]<-mycors[[2]]
 
 ```
 
+\
 
-Table 4. Test-retest reliability estimates and 95% CIs for each behavioural task.
+Table 4. Test-retest reliability estimates and 95% CIs for the rhyme decision (RD), dichotic listening (DL), chimeric faces (CF), and finger tapping (FT) tasks.\
 ```{r Tab4,echo=FALSE, comment=FALSE, warning=FALSE}
+combotable$Task[1] <- "RD"
+combotable$Task[2] <- "DL"
+combotable$Task[3] <- "CF"
+combotable$Task[4] <- "FT"
+
+combotable$`95% CI`[3] <- "0.84 - 0.90"
+combotable$`95% CI`[4] <- "0.68 - 0.80"
+
 tab4 <- flextable(combotable)
+tab4 <- align(tab4, align= "center", j= 2:3)
 autofit(tab4, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
 ```
 
+\
 
-![Figure 3. Scatter plots for day 1 and day 2 data for LI_z scores on each laterality task: (A) rhyme decision, (B) dichotic listening, (C) chimeric faces, and (D) Finger tapping. Handedness is colour coded with extreme left-handers identified as those who have a score below -90 on the Edinburgh Handedness Inventory. Note that z-scores are censored at absolute values of 5.](combined_LI_plot.png)
+\newpage
+
+![Scatter plots for day 1 and day 2 data for LI_z scores on each laterality task: (A) rhyme decision, (B) dichotic listening, (C) chimeric faces, and (D) Finger tapping. Handedness is colour coded with extreme left-handers identified as those who have a score below -90 on the Edinburgh Handedness Inventory. Note that z-scores are censored at absolute values of 5.](combined_LI_plot.png){width=80%}
 
 
 ### Optimising the tasks
 <!--- DB: I think the key issue is not so much getting reliability of .65, as how many trials could be dropped without any loss of reliability from whatever high level it got to. A bit of rewording to reflect this. Also modified in discussion--->
 The dichotic listening and chimeric faces tasks had test-retest reliability above *r* = .75, and so we investigated whether the tasks could be made more efficient by reducing the number of trials while retaining good test-retest reliability. Hence, we recalculated LIs for the dichotic listening and chimeric faces tasks using 1 to n trials, where n is the total number of trials on each task. The absolute test-retest correlation coefficients are shown in Figure 5. Peak reliability was reached in around 85 trials with dichotic listening, and a minimum of 60 trials was required to achieve a test-retest correlation of *r* = .65. For the chimeric faces task, peak reliability was achieved with around 36 trials, and a minimum of 25 trials was necessary to achieve test-retest reliability of *r* = .65. 
 
-![Figure 4. Test-retest correlations for (A) the dichotic listening task and (B) the chimeric faces task when using a variable number of trials to calculate laterality indices. The red dashed line marks the test-retest correlation *r* = .65. The correlations coefficients are shown as absolute values.](all.cor.plot.png)
+
+![Test-retest correlations for (A) the dichotic listening task and (B) the chimeric faces task when using a variable number of trials to calculate laterality indices. The red dashed line marks the test-retest correlation *r* = .65. The correlations coefficients are shown as absolute values.](all.cor.plot.png){width=70%}
+
 
 ### Atypical laterality and handedness
 
-According to Mazoyer et al (2014), extreme left-handers are more likely than other handedness groups to have reversed laterality compared to the rest of the population. Our preregistered analysis accordingly focused on comparing extreme left-handers (those with a score of -90 or below on the Edinburgh Handedness Inventory) with right-handers. We defined 'atypical laterality' as laterality that is in the opposite direction to the majority of participants, with an absolute LI_z value greater than 1.96. Although the focus of our planned analyses included only right-handers and extreme left-handers, we show data for the remaining left-handers for completeness in Table 5. 
+According to Mazoyer et al (2014), extreme left-handers are more likely than other handedness groups to have reversed laterality compared to the rest of the population. Our pre-registered analysis accordingly focused on comparing extreme left-handers (those with a score of -90 or below on the Edinburgh Handedness Inventory) with right-handers. We defined 'atypical laterality' as laterality that is in the opposite direction to the majority of participants, with an absolute LI_z value greater than 1.96. Although the focus of our planned analyses included only right-handers and extreme left-handers, we show data for the remaining left-handers for completeness in Table 5. 
 
 ```{r makecontingencies,echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
 #We start by using z-scores to make a 3-way categorisation into:
@@ -725,35 +773,41 @@ chi.c<-chisq.test(tabc[c(1,3),c(1,3)])
 #ignore the headings of these tables!
 ```
 
-Table 5. Frequencies of laterality typicality for extreme left-handers, moderate left-handers and right-handers across the rhyme decision, dichotic listening, and chimeric faces tasks.
+\
+
+Table 5. Frequencies of laterality typicality for extreme left-handers, moderate left-handers and right-handers across the rhyme decision (RD), dichotic listening (DL), and chimeric faces (CF) tasks.\
 ```{r Table2,echo=FALSE, comment=FALSE, warning=FALSE}
-tabr<-cbind(tabr,round(100*prop.table(tabr,2),1))
-tabd<-cbind(tabd,round(100*prop.table(tabd,2),1) )
-tabc<-cbind(tabc,round(100*prop.table(tabc,2),1)) #add percentages
-blankrow<-c(NA,NA,NA,NA,NA,NA)
-latcats <- as.data.frame(rbind(blankrow,tabr,blankrow,tabd,blankrow,tabc))
+tabr<-cbind(tabr,round(100*prop.table(tabr,1),1))
+tabd<-cbind(tabd,round(100*prop.table(tabd,1),1) )
+tabc<-cbind(tabc,round(100*prop.table(tabc,1),1)) #add percentages
+latcats <- as.data.frame(rbind(tabr,tabd,tabc))
 
 row.names(latcats) <- c() #remove rownames as they make problems for printing
 
 #Instead have a new column with these
-latcats$nucol <- c('Rhyme decision',
+latcats$nucol <- c('Extreme left-hander',
+                   'Moderate left-hander',
+                   'Right-hander',
                    'Extreme left-hander',
                    'Moderate left-hander',
                    'Right-hander',
-                   'Dichotic listening',
-                   'Extreme left-hander',
-                   'Moderate left-hander',
-                   'Right-hander',
-                   'Chimeric faces',
                    'Extreme left-hander',
                    'Moderate left-hander',
                    'Right-hander')
+latcats$nucol2 <- c('RD',
+                   ' ',
+                   ' ',
+                   'DL',
+                   ' ',
+                   ' ',
+                   'CF',
+                   ' ',
+                   ' ')
 
-latcats<-latcats[,c(7,3,6,2,5,1,4)] #now reorder columns to make sense
-colnames(latcats)<-c(' ','Left N','Left %','Non N','Non %','Right N','Right %')
+latcats<-latcats[,c(8,7,3,2,1,6,5,4)] #now reorder columns to make sense
+colnames(latcats)<-c('Task','Sub-group','Left N','Non N','Right N','Left %','Non %','Right %')
 
-myft2 <- flextable(
-  latcats)
+myft2 <- flextable(latcats)
 #NB This table needs formatting - has formatted all numbers to 3 decimal places, which is not what we want. Code below achieves this
 
 num_keys <- c("Left %","Non %","Right %")
@@ -761,12 +815,14 @@ int_keys <- c("Left N","Non N","Right N")
 
 ft <- colformat_num(x = myft2, col_keys = num_keys, digits = 1)
 ft <- colformat_int(x = ft, col_keys = int_keys, big.mark = ",")
-
 autofit(ft)
 ```
+
 *Note*. N is the count of participants. % is the percentage of participants.
 
-```{r pformatfunction, echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
+\
+
+```{r pformatfunction, echo=FALSE,include=FALSE, comment=FALSE, warning=FALSE}
 pformat<-function(pvalue){
   pp <- "*p* < .001" #default value
   if (pvalue>.001) {
@@ -776,9 +832,11 @@ pformat<-function(pvalue){
 }
 ```
 
-The rhyme decision task has few individuals who are significantly lateralised in either direction. We will therefore not consider it further, as our analyses are only justified if the task is an indicator of cerebral lateralisation. Both dichotic listening and chimeric faces, on the other hand, have a high proportion of strongly lateralised individuals. The planned analyses, comparing typically lateralised with atypically lateralised individuals, and extreme left vs right-handed individuals, show a significant association between extreme left-handedness and atypical laterality on chi-square test. For dichotic listening, chi-squared = `r round(chi.d$statistic,2)`, d.f. = 1, `r pformat(p.adjust(chi.d$p.value, method= "bonferroni", n=2))`; for chimeric faces, chi-squared = `r round(chi.c$statistic,2)`, d.f. = 1, `r pformat(p.adjust(chi.c$p.value, method= "bonferroni", n=2))`. 
+The rhyme decision task has few individuals who are significantly lateralised in either direction. We will therefore not consider it further, as our analyses are only justified if the task is an indicator of cerebral lateralisation. Both dichotic listening and chimeric faces, on the other hand, have a high proportion of strongly lateralised individuals. The planned analyses, comparing typically lateralised with atypically lateralised individuals, and extreme left vs right-handed individuals, show a significant association between extreme left-handedness and atypical laterality on a chi-square test. For dichotic listening, chi-squared = `r round(chi.d$statistic,2)`, d.f. = 1, `r pformat(p.adjust(chi.d$p.value, method= "bonferroni", n=2))`; for chimeric faces, chi-squared = `r round(chi.c$statistic,2)`, d.f. = 1, `r pformat(p.adjust(chi.c$p.value, method= "bonferroni", n=2))`. `r colFmt("Thus, it would appear that there is statistical evidence for departures from typical cerebral lateralisation in extreme left-handers supporting Mazoyer et al. (2014)..",'red')`
 
-With all participants included, on the dichotic listening task, `r round(100*tabd[1,3]/sum(tabd[,3]),1)`% of those with atypical laterality were extreme left-handers, `r round(100*tabd[3,3]/sum(tabd[,3]),1)`% were right-handers, and the remainder less extreme left-handers. For those with typical lateralisation, the corresponding figures were `r round(100*tabd[1,1]/sum(tabd[,1]),1)`% extreme left-handers, `r round(100*tabd[3,1]/sum(tabd[,1]),1)`% right-handers, and the remainder less extreme left-handers. For chimeric faces, the association was even more extreme. `r round(100*tabc[1,1]/sum(tabc[,1]),1)`% of those with atypical laterality were extreme left-handers, `r round(100*tabc[3,1]/sum(tabc[,1]),1)`% were right-handers, and the remainder less extreme left-handers. For those with typical lateralisation, `r round(100*tabc[1,3]/sum(tabc[,3]),1)`% were extreme left-handers, `r round(100*tabc[3,3]/sum(tabc[,3]),1)`% were right-handers, and the remainder less extreme left-handers. 
+<!--- REMOVING THIS AS IT SEEMS TO BE THE PORTION OF TEXT. IT DOES COMPLICATE THE MESSAGE AND MARC IS CORRECT, IT DOES NOT ACCOUNT FOR SAMPLE SIZES OF PARTICIPANTS.
+
+With all participants included, on the dichotic listening task, `r round(100*tabd[1,3]/sum(tabd[,3]),1)`% of those with typical laterality were extreme left-handers, `r round(100*tabd[3,3]/sum(tabd[,3]),1)`% were right-handers, and the remainder less extreme left-handers. For those with atypical lateralisation, the corresponding figures were `r round(100*tabd[1,1]/sum(tabd[,1]),1)`% extreme left-handers, `r round(100*tabd[3,1]/sum(tabd[,1]),1)`% right-handers, and the remainder less extreme left-handers. For chimeric faces, the association was even more extreme. `r round(100*tabc[1,1]/sum(tabc[,1]),1)`% of those with atypical laterality were extreme left-handers, `r round(100*tabc[3,1]/sum(tabc[,1]),1)`% were right-handers, and the remainder less extreme left-handers. For those with typical lateralisation, `r round(100*tabc[1,3]/sum(tabc[,3]),1)`% were extreme left-handers, `r round(100*tabc[3,3]/sum(tabc[,3]),1)`% were right-handers, and the remainder less extreme left-handers. --->
 
 ```{r contingency2tasks,echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
 tab2task <- table(LIs$dichotic1.cut,LIs$chimeric1.cut)
@@ -842,24 +900,52 @@ NR<-nrow(right_dat)
 #for left_dat N = 66
 # right_dat
 ```
+\
 
-
-Table 6. Spearman correlations between the LI_z scores for the different tasks in two Sessions. The upper diagonal shows correlations for the 143 right-handers (black font), and the values of the lower diagonal show for the 66 left-handers (red font).
+Table 6. Spearman correlations between the LI_z scores for the different tasks in two Sessions. The upper diagonal shows correlations for the 143 right-handers (black font), and the values of the lower diagonal show for the 66 left-handers (red font).\
 ```{r tab 5, echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
-allcorr2 <- cbind(Row.Names = rownames(allcorr), allcorr)
-names(allcorr2)[1] <- " "
-allcorr2[is.na(allcorr2)] <- "."
-myft5<- flextable(allcorr2)
+allcorr2 <- cbind(Row.Names = list(rownames(allcorr)), allcorr, stringsAsFactors = FALSE)
 
-myft5<-color(myft5, i = c(2,3,4,5, 6), j = "Rhyme_1", color= "red")
-myft5<-color(myft5, i = c(3,4,5, 6), j = "Rhyme_2", color= "red")
-myft5<-color(myft5, i = c(4,5, 6), j = "Dichotic_1", color= "red")
-myft5<-color(myft5, i = c(5, 6), j = "Dichotic_2", color= "red")
-myft5<-color(myft5, i = c(6), j = "Chimeric_1", color= "red")
+# rename columns
+names(allcorr2)[1] <- " "
+allcorr2$` `[1] <- "RD 1"
+allcorr2$` `[2] <- "RD 2"
+allcorr2$` `[3] <- "DL 1"
+allcorr2$` `[4] <- "DL 2"
+allcorr2$` `[5] <- "CF 1"
+allcorr2$` `[6] <- "CF 2"
+
+# rename rows
+names(allcorr2)[2] <- "RD 1"
+names(allcorr2)[3] <- "RD 2"
+names(allcorr2)[4] <- "DL 1"
+names(allcorr2)[5] <- "DL 2"
+names(allcorr2)[6] <- "CF 1"
+names(allcorr2)[7] <- "CF 2"
+
+# replace blanks with '.'
+#allcorr2$`RD 1`[1] <- "."
+#allcorr2$`RD 2`[2] <- "."
+#allcorr2$`DL 1`[3] <- "."
+#allcorr2$`DL 2`[4] <- "."
+#allcorr2$`CF 1`[5] <- "."
+#allcorr2$`CF 2`[6] <- "."
+
+myft5<- flextable(allcorr2)
+myft5 <- colformat_num(myft5, digits= 3)
+
+myft5<-color(myft5, i = c(2,3,4,5, 6), j = "RD 1", color= "red")
+myft5<-color(myft5, i = c(3,4,5, 6), j = "RD 2", color= "red")
+myft5<-color(myft5, i = c(4,5, 6), j = "DL 1", color= "red")
+myft5<-color(myft5, i = c(5, 6), j = "DL 2", color= "red")
+myft5<-color(myft5, i = c(6), j = "CF 1", color= "red")
 
 autofit(myft5, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
 ```
-Note. For right-handers, an absolute value of .16 is significant at the .05 level, and a value of .22 is significant at the .01 level. For left-handers, a value of .25 is significant at the .05 level and a value of .32 is significant at the .01 level.
+
+*Note*. For right-handers, an absolute value of .16 is significant at the .05 level, and a value of .22 is significant at the .01 level. For left-handers, a value of .25 is significant at the .05 level and a value of .32 is significant at the .01 level.
+
+\
 
 In a more formal test, we compared three models: (a) where the two language tasks are correlated with each other but not with the chimeric faces (i.e. a language laterality factor); (b) all LIs are correlated (i.e. a single laterality factor); and (c) a base model where the LIs are unrelated (i.e. independent functions). This was done separately for right- and left-handers, using a subset of SEM where we constrain particular covariance patterns and report ‘best’ model fit according to Akaike weights, where a larger weight indicates a better fit. The best-fitting model to the data for right- and left-handers is selected as the final model.
 
@@ -895,7 +981,9 @@ right_dat <- subset(interRR, handedness== "Right")
 
 As shown in Table 7, the Akaike weights favoured model c for both left-handers and right-handers, indicating that lateralisation across tasks is largely independent. This reflected the lack of cross-task correlation for LI_z measures. 
 
-Table 7. Akaike weights for the independent base model, language model, and laterality model.
+\
+
+Table 7. Akaike weights for the independent base model, language model, and laterality model.\
 ```{r AICmodels,echo=FALSE, comment=FALSE, warning=FALSE}
 #NB in pre-reg we just had time 1 data, but here we use time 1 and 2
 
@@ -981,6 +1069,180 @@ myft6 <- flextable(AICdf, col_keys = c("Handedness",
 autofit(myft6, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
 ```
 
+\
+
+# Updates code for correlations to test model and account for test retest
+
+```{r update, echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
+allcorr2 <- cbind(Row.Names = list(rownames(allcorr)), allcorr, stringsAsFactors = FALSE)
+
+# rename columns
+names(allcorr2)[1] <- " "
+allcorr2$` `[1] <- "RD 1"
+allcorr2$` `[2] <- "RD 2"
+allcorr2$` `[3] <- "DL 1"
+allcorr2$` `[4] <- "DL 2"
+allcorr2$` `[5] <- "CF 1"
+allcorr2$` `[6] <- "CF 2"
+
+# rename rows
+names(allcorr2)[2] <- "RD 1"
+names(allcorr2)[3] <- "RD 2"
+names(allcorr2)[4] <- "DL 1"
+names(allcorr2)[5] <- "DL 2"
+names(allcorr2)[6] <- "CF 1"
+names(allcorr2)[7] <- "CF 2"
+
+# replace blanks with '.'
+#allcorr2$`RD 1`[1] <- "."
+#allcorr2$`RD 2`[2] <- "."
+#allcorr2$`DL 1`[3] <- "."
+#allcorr2$`DL 2`[4] <- "."
+#allcorr2$`CF 1`[5] <- "."
+#allcorr2$`CF 2`[6] <- "."
+
+# correction formula
+# RD 1
+allcorr2$`RD 1`[3] <- allcorr2$`RD 1`[3] / sqrt(.630 * .780)
+allcorr2$`RD 1`[4] <- allcorr2$`RD 1`[4] / sqrt(.630 * .780)
+allcorr2$`RD 1`[5] <- allcorr2$`RD 1`[5] / sqrt(.630 * .878)
+allcorr2$`RD 1`[6] <- allcorr2$`RD 1`[6] / sqrt(.630 * .878)
+# RD 2
+allcorr2$`RD 2`[3] <- allcorr2$`RD 2`[3] / sqrt(.630 * .780)
+allcorr2$`RD 2`[4] <- allcorr2$`RD 2`[4] / sqrt(.630 * .780)
+allcorr2$`RD 2`[5] <- allcorr2$`RD 2`[5] / sqrt(.630 * .878)
+allcorr2$`RD 2`[6] <- allcorr2$`RD 2`[6] / sqrt(.630 * .878)
+# DL 1
+allcorr2$`DL 1`[1] <- allcorr2$`DL 1`[1] / sqrt(.630 * .780)
+allcorr2$`DL 1`[2] <- allcorr2$`DL 1`[2] / sqrt(.630 * .780)
+allcorr2$`DL 1`[5] <- allcorr2$`DL 1`[5] / sqrt(.780 * .878)
+allcorr2$`DL 1`[6] <- allcorr2$`DL 1`[6] / sqrt(.780 * .878)
+# DL 2
+allcorr2$`DL 2`[1] <- allcorr2$`DL 2`[1] / sqrt(.630 * .780)
+allcorr2$`DL 2`[2] <- allcorr2$`DL 2`[2] / sqrt(.630 * .780)
+allcorr2$`DL 2`[5] <- allcorr2$`DL 2`[5] / sqrt(.780 * .878)
+allcorr2$`DL 2`[6] <- allcorr2$`DL 2`[6] / sqrt(.780 * .878)
+# CF 1
+allcorr2$`CF 1`[1] <- allcorr2$`CF 1`[1] / sqrt(.630 * .878)
+allcorr2$`CF 1`[2] <- allcorr2$`CF 1`[2] / sqrt(.630 * .878)
+allcorr2$`CF 1`[3] <- allcorr2$`CF 1`[3] / sqrt(.780 * .878)
+allcorr2$`CF 1`[4] <- allcorr2$`CF 1`[4] / sqrt(.780 * .878)
+# CF 2
+allcorr2$`CF 2`[1] <- allcorr2$`CF 2`[1] / sqrt(.630 * .878)
+allcorr2$`CF 2`[2] <- allcorr2$`CF 2`[2] / sqrt(.630 * .878)
+allcorr2$`CF 2`[3] <- allcorr2$`CF 2`[3] / sqrt(.780 * .878)
+allcorr2$`CF 2`[4] <- allcorr2$`CF 2`[4] / sqrt(.780 * .878)
+
+myft5<- flextable(allcorr2)
+myft5 <- colformat_num(myft5, digits= 3)
+
+myft5<-color(myft5, i = c(2,3,4,5, 6), j = "RD 1", color= "red")
+myft5<-color(myft5, i = c(3,4,5, 6), j = "RD 2", color= "red")
+myft5<-color(myft5, i = c(4,5, 6), j = "DL 1", color= "red")
+myft5<-color(myft5, i = c(5, 6), j = "DL 2", color= "red")
+myft5<-color(myft5, i = c(6), j = "CF 1", color= "red")
+
+autofit(myft5, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
+
+
+
+
+
+# now create subset of data frame for analysis
+interRR <- dplyr::select(LIs, zlat_RDT_1, zlat_RDT_2, Day1_Dich_acc_Z,
+                         Day2_Dich_acc_Z, Day1_CF_acc_Z, Day2_CF_acc_Z,handedness)
+# rename, and reverse sign for CF
+interRR <- interRR %>% 
+  rename(
+    "rhyme1" = zlat_RDT_1,
+    "faces1" = Day1_CF_acc_Z,
+    "dichotic1" = Day1_Dich_acc_Z,
+     "rhyme2" = zlat_RDT_2,
+    "faces2" = Day2_CF_acc_Z,
+    "dichotic2" = Day2_Dich_acc_Z
+    )
+
+#remove cases with missing values
+interRR<-na.omit(interRR)
+interRR$faces1 <- (-interRR$faces1) #reverse sign for faces
+interRR$faces2 <- (-interRR$faces2)
+# subset into right and left handers
+left_dat <- subset(interRR, handedness== "Left")
+right_dat <- subset(interRR, handedness== "Right")
+
+#NB in pre-reg we just had time 1 data, but here we use time 1 and 2
+
+ #Model 1 all independent
+    model1<-"
+    
+    rhymeFACTOR =~ NA*rhyme1 + rhyme2
+    dichoticFACTOR =~ NA*dichotic1 + dichotic2
+    facesFACTOR =~ NA*faces1 +faces2
+    
+    rhymeFACTOR~~1*rhymeFACTOR
+    dichoticFACTOR~~1*dichoticFACTOR
+    facesFACTOR~~1*facesFACTOR
+    
+    rhymeFACTOR~~0*dichoticFACTOR
+    rhymeFACTOR~~0*facesFACTOR
+    dichoticFACTOR~~0*facesFACTOR
+    "
+#Model 2: language tasks are correlated
+    model2<-"
+    rhymeFACTOR =~ NA*rhyme1 + rhyme2
+    dichoticFACTOR =~ NA*dichotic1 + dichotic2
+    facesFACTOR =~ NA*faces1 +faces2
+    
+    rhymeFACTOR~~1*rhymeFACTOR
+    dichoticFACTOR~~1*dichoticFACTOR
+    facesFACTOR~~1*facesFACTOR
+    
+    rhymeFACTOR~~dichoticFACTOR
+    rhymeFACTOR~~0*facesFACTOR
+    dichoticFACTOR~~0*facesFACTOR
+    "
+#Model 3:all correlated
+    model3<-"
+    rhymeFACTOR =~ NA*rhyme1 + rhyme2
+    dichoticFACTOR =~ NA*dichotic1 + dichotic2
+    facesFACTOR =~ NA*faces1 +faces2
+    
+    rhymeFACTOR~~1*rhymeFACTOR
+    dichoticFACTOR~~1*dichoticFACTOR
+    facesFACTOR~~1*facesFACTOR
+    
+    rhymeFACTOR~~dichoticFACTOR
+    rhymeFACTOR~~facesFACTOR
+    dichoticFACTOR~~facesFACTOR
+    "
+#Make a little dataframe for AIC weights
+AICdf <- data.frame(matrix(NA,nrow=2,ncol=4))
+AICdf[,1]<-c('Right-handers','Left-handers')
+colnames(AICdf)<-c('Handedness','Model C','Model A','Model B')
+for (myhand in 1:2) {
+  mydat<-right_dat
+  if(myhand==2) {mydat<-left_dat}
+
+ #Using data from this handedness type, test all 3 models
+fit1A <- cfa(model1, data=mydat,auto.fix.first=FALSE)
+fit2A <- cfa(model2, data=mydat,auto.fix.first=FALSE)
+fit3A <- cfa(model3, data=mydat,auto.fix.first=FALSE)
+    aic_vector1 <- c(fitMeasures(fit1A, "aic"),fitMeasures(fit2A, "aic"),fitMeasures(fit3A, "aic"))
+   
+    #Confirms that for each model, lowest AIC obtained when the simulated data do match the model
+    # 
+    # The AIC weights make massive difference for preferred model!
+    AICweights<-akaike.weights(aic_vector1)$weights
+    # 
+ AICdf[myhand,2:4]<-round(AICweights,3)
+ }
+myft6 <- flextable(AICdf, col_keys = c("Handedness",
+                                       "Model A",
+                                       "Model B", 
+                                       "Model C"))
+autofit(myft6, add_w = 0.1, add_h = 0.1, part = c("body", "header"))
+```
+
 ### Exploratory analyses
 
 #### Finger tapping and Edinburgh Handedness Inventory
@@ -997,7 +1259,7 @@ To examine the relationship between the finger tapping task and a conventional h
 
 <!---#### Handedness measurements and their association with laterality --->
 
-```{r hand_explore, echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
+```{r hand_explore, echo=FALSE,include= FALSE, comment=FALSE, warning=FALSE}
 hand_cors <- data.frame(matrix(ncol = 5, nrow = 1))
   colnames(hand_cors) <- c(" ", "DL 1", "CF 1", "DL 2", "CF 2")
 # add rows
@@ -1078,11 +1340,93 @@ EHI_hand_Tabs <- flextable(
 
 <!---Adam I removed the exploratory analyses of different definitions of handedness, as I was worried the paper was getting too long and indigestible. These could be put in a supplementary section, but I think they are too much at this point--->
 
+<!--- Based on reviewer's comments. Haven't added in yet, but holding it here --->
+
+```{r makecontingencies_tasks,echo=FALSE,include=FALSE, comment=FALSE, warning=FALSE}
+#We start by using z-scores to make a 3-way categorisation into:
+#1 sig bias in typical direction; 2: NS bias 3: in atypical direction with sig bias.
+#
+LIs$rhyme1.cat <- cut(LIs$Day1.RDT_p.corr_LI, 
+                       breaks = c(-Inf, -1.96, 1.96, Inf), 
+                       labels = c("R.Right", "R.Bilat", "R.Left"), 
+                       right = FALSE)
+LIs$dichotic1.cat <- cut(LIs$Day1_Dich_acc_Z, 
+                       breaks = c(-Inf, -1.96, 1.96, Inf), 
+                       labels = c("D.Right", "D.Bilat", "D.Left"), 
+                       right = FALSE)
+LIs$chimeric1.cat <- cut(LIs$Day1_CF_acc_Z, 
+                       breaks =  c(-Inf, 0, 1.96, Inf), 
+                       labels = c("C.Right", "C.Bilat", "C.Right"), 
+                       right = FALSE)
+mytabr <- table(LIs$rhyme1.cat)
+mytabd <- table(LIs$dichotic1.cat)
+mytabc <- table(LIs$chimeric1.cat)
+mytabc<-mytabc[c(3,2,1)]
+mytab2 <-rbind(mytabr,mytabd,mytabc)
+row.names(mytab2)<-c('Rhyme decision','Dichotic','Chimeric Faces')
+mytab2<-data.frame(mytab2)
+mytab2$R.Right[3] <- 0
+
+# rhyme vs dichotic
+tab.R.D <- table(LIs$rhyme1.cat,LIs$dichotic1.cat)
+tab.R.D
+chisq.test(tab.R.D)
+
+# rhyme vs chimeric
+tab.R.C <- table(LIs$rhyme1.cat,LIs$chimeric1.cat)
+tab.R.C
+chisq.test(tab.R.C)
+
+# dichotic vs chimeric
+tab.D.C <- table(LIs$dichotic1.cat,LIs$chimeric1.cat)
+tab.D.C
+```
+
+
+```{r Table_reviews,echo=FALSE,include=FALSE, comment=FALSE, warning=FALSE}
+tabr<-cbind(tabr,round(100*prop.table(tabr,2),1))
+tabd<-cbind(tabd,round(100*prop.table(tabd,2),1) )
+tabc<-cbind(tabc,round(100*prop.table(tabc,2),1)) #add percentages
+blankrow<-c(NA,NA,NA,NA,NA,NA)
+latcats <- as.data.frame(rbind(blankrow,tabr,blankrow,tabd,blankrow,tabc))
+
+row.names(latcats) <- c() #remove rownames as they make problems for printing
+
+#Instead have a new column with these
+latcats$nucol <- c('Rhyme decision',
+                   'Extreme left-hander',
+                   'Moderate left-hander',
+                   'Right-hander',
+                   'Dichotic listening',
+                   'Extreme left-hander',
+                   'Moderate left-hander',
+                   'Right-hander',
+                   'Chimeric faces',
+                   'Extreme left-hander',
+                   'Moderate left-hander',
+                   'Right-hander')
+
+latcats<-latcats[,c(7,3,6,2,5,1,4)] #now reorder columns to make sense
+colnames(latcats)<-c(' ','Left N','Left %','Non N','Non %','Right N','Right %')
+
+myft2 <- flextable(
+  latcats)
+#NB This table needs formatting - has formatted all numbers to 3 decimal places, which is not what we want. Code below achieves this
+
+num_keys <- c("Left %","Non %","Right %")
+int_keys <- c("Left N","Non N","Right N")
+
+ft <- colformat_num(x = myft2, col_keys = num_keys, digits = 1)
+ft <- colformat_int(x = ft, col_keys = int_keys, big.mark = ",")
+
+#autofit(ft)
+```
+
 #### Vocabulary knowledge and laterality
 
 ```{r exploreA, echo= FALSE, comment=FALSE, warning=FALSE}
 # make sure we have good cases
-interR <- LIs[LIs$exclude == 0,]
+interR <- LIs_c[LIs_c$exclude == 0,]
 DL.lex<-RVAideMemoire::spearman.ci(interR$Day1_DL_acc_LI, interR$lexTALE, nrep = 10000, conf.level = 0.95)
 DL.lex.est<-cor.test(interR$Day1_DL_acc_LI, interR$lexTALE, method = "spearman")
 DL.lex1<-RVAideMemoire::spearman.ci(interR$Day2_DL_acc_LI, interR$lexTALE, nrep = 10000, conf.level = 0.95)
@@ -1105,19 +1449,20 @@ CF.st.t <- t.test(foot.dat$Day1_CF_acc_LI~ foot.dat$miles)
 CF.st.t <- t.test(foot.dat$Day2_CF_acc_LI~ foot.dat$miles)
 ```
 
-The LexTALE vocabulary measure had been included largely for data exclusion, but we had planned to explore correlations between LexTALE score and the laterality index on the rhyme decision task. However, as the rhyme task was less reliable than other measures, and showed only small asymmetries, we chose to examine the relationship between the LexTALE and the other verbal laterality measure, dichotic listening, instead. There was no correlation between the LexTALE score and LIs on the dichotic listening at session 1 (*r*= `r round(DL.lex.est$estimate, 2)`, *95% CI* [`r round(DL.lex$conf.int[1], 2)`, `r round(DL.lex$conf.int[2], 2)`] *p*= `r round(p.adjust(DL.lex.est$p.value[1], n= 2, method= "bonferroni"), 3)`) or session 2 (*r*= `r round(DL.lex.est1$estimate, 2)`, *95% CI* [`r round(DL.lex1$conf.int[1], 2)`, `r round(DL.lex1$conf.int[2], 2)`] *p*= `r round(p.adjust(DL.lex.est1$p.value[1], n= 2, method= "bonferroni"), 3)`).
+The LexTALE vocabulary measure had been included largely for data exclusion, but we had planned to explore correlations between LexTALE score and the laterality index on the rhyme decision task. However, as the rhyme task was less reliable than other measures, and showed only small asymmetries, we chose to examine the relationship between the LexTALE and the other verbal laterality measure, dichotic listening, instead. `r colFmt("For these exploratory analyses we included participants scoring less than 80 on the LexTALE in order to reduce the effect of a restricted range on the correlational analyses.",'red')`. There was no correlation between the LexTALE score and LIs on the dichotic listening at session 1 (*r*= `r round(DL.lex.est$estimate, 2)`, *95% CI* [`r round(DL.lex$conf.int[1], 2)`, `r round(DL.lex$conf.int[2], 2)`] *p*= `r round(p.adjust(DL.lex.est$p.value[1], n= 2, method= "bonferroni"), 3)`) or session 2 (*r*= `r round(DL.lex.est1$estimate, 2)`, *95% CI* [`r round(DL.lex1$conf.int[1], 2)`, `r round(DL.lex1$conf.int[2], 2)`] *p*= `r round(p.adjust(DL.lex.est1$p.value[1], n= 2, method= "bonferroni"), 3)`).
 
 <!--- footedness etc also removed here ; could be some interest in looking at people with unusual laterality patterns on eye/foot/hand, but here it is too much--->
-
 ## Discussion
 
 With the advancement of online behaviour research methods, it has become possible to test large samples of participants outside the laboratory. In the current study, we introduced an online behavioural laterality battery that was administered to a relatively large sample of right- and left-handers. In addition to completing self-report measures of handedness, footedness, and sightedness, participants completed a visual half-field rhyme decision task, a dichotic listening task, a chimeric faces task, and a finger tapping task twice. Thus, we were able to examine the test-retest reliability of each task. We also examined the association between handedness and atypical lateralisation and examined the intercorrelations between LIs on the dichotic listening and chimeric faces tasks.
 
-Each behavioural task yielded a hemispheric advantage in the expected direction, but the size of asymmetries and the test-retest reliability of the different tasks varied. A relatively small proportion of individuals showed significant asymmetry on the rhyme decision task. This task also yielded the poorest test-retest reliability, just falling short of our target minimum cutoff of *r* = .65. Compared to early studies (e.g. Krach et al., 2006) the rhyme decision task used here was more reliable but, compared to other visual half-field tasks, it was far from optimal. Van der Haegen and Brysbaert (2018) have reported that, under lab conditions, visual half-field paradigms can yield test-retest reliabilities of *r* = .77 when using pictures and *r* = .83 when using words. Our study was well-powered, so the relatively poor task validity and reliability are likely to be due to methodological factors. One key difference between van der Haegen and Brysbaert’s and our study was that their language-based visual half-field tasks involved overt naming. Speech production is highly lateralised (Kosslyn, 1987) and requiring speech production should yield a hemispheric advantage. Our task was designed to require covert speech, but an active speech production component might reveal stronger lateralisation. This would, however, be logistically difficult to implement online. The other main limitation of online testing is that the visual half-field method depends critically on presenting lateralised visual stimuli that project to one hemisphere. Although we were able to calibrate screen size at the start of the session and to request participants to sit a certain distance from the screen, it is plausible this was not sufficient to achieve adequately lateralised presentation. While we can format images to be consistent across displays, we cannot control participants’ behaviour. Outside of the lab, participants can freely move their head which will influence the size of images on the retina, and it is difficult to ensure images are shown in foveal or parafoveal vision. One avenue that might be worth exploring is the use of images presented in peripheral vision, as it is unlikely that small head movements would result in the image shifting from peripheral vision. This increased difficultly in the processing of information in this region may also result in stronger visual field advantages.
+Each behavioural task yielded a hemispheric advantage in the expected direction, but the size of asymmetries and the test-retest reliability of the different tasks varied. A relatively small proportion of individuals showed significant asymmetry on the rhyme decision task `r colFmt("despite the population as a whole being singificantly left lateralised. This pattern of results indicates that while very few participants showed statistically better performance for images in the right visual field (i.e. LI_z showed scores above |1.96|), many showed more subtle RVF advantages and had corresponding LI_z scores that were not statistically different from zero at the individual level. When comparing LI_z scores to zero at the population there will have been sufficient power to determine whether these small differences were different from zero.",'red')`  This task also yielded the poorest test-retest reliability, just falling short of our target minimum cutoff of *r* = .65. Compared to early studies (e.g. Krach et al., 2006) the rhyme decision task used here was more reliable but, compared to other visual half-field tasks, it was far from optimal. Van der Haegen and Brysbaert (2018) have reported that, under lab conditions, visual half-field paradigms can yield test-retest reliabilities of *r* = .77 when using pictures and *r* = .83 when using words. Our study was well-powered, so the relatively poor task validity and reliability are likely to be due to methodological factors. One key difference between van der Haegen and Brysbaert’s and our study was that their language-based visual half-field tasks involved overt naming. Speech production is highly lateralised `r colFmt("(e.g. Knetch et al., 2000)",'red')` and requiring speech production should yield a hemispheric advantage. Our task was designed to require covert speech, but an active speech production component might reveal stronger lateralisation. This would, however, be logistically difficult to implement online. `r colFmt("It is, of course, important to reconcile this suggestion with other work. Recent studies have reported robust right visual-field advanatges without the use of active speech production (Brederoo et al., 2020; Hausmann et al., 2019; Willemin et al., 2019), highlighting that the relatively poor task validity and reliability likely stem from other methodological issues.",'red')` 
 
-In contrast to rhyme decision, the other verbal task, dichotic listening, showed excellent validity and reliability. Participants showed a clear right-ear advantage at the population level, and the task exceeded our pre-registered reliability cut-off of *r*= .65. Indeed, the test-retest correlation of the dichotic listening task, r = .78, was identical to that reported by Bless et al. (2013) using the iDichotic application, and numerically higher than that reported for the same dichotic listening task when run under lab conditions (Bless et al., 2013). We further showed (see Figure 4) that there was little decline in reliability with 85 trials, and with as few as 60 trials, the current implementation of the dichotic listening task yielded a test-retest correlation higher than *r* = .65, suggesting that those who wish to use this paradigm in the future could use a smaller number of trials. It would be of interest to extend this line of work to use the modified version of dichotic listening described by Westerhausen and Samuelsen (2020), which had even higher reliability. Of course, it is important to screen for adequate use of stereo headphones when devising online versions of the task.
+`r colFmt("A second explanation for the poor validity and reliability of the rhyme task relates to the control viewing conditions.",'red')` The visual half-field method depends critically on presenting lateralised visual stimuli that project to one hemisphere. Although we were able to calibrate screen size at the start of the session and to request participants to sit a certain distance from the screen, it is plausible this was not sufficient to achieve adequately lateralised presentation. While we can format images to be consistent across displays, we cannot control participants’ behaviour. Outside of the lab, participants can freely move their head which will influence the size of images on the retina, and it is difficult to ensure that images are shown `r colFmt("exclusively in parafoveal vision. If on a subset of images are not equally displaced in parafoveal vision it could mean that processing is more efficient for the image in its corresponding visual field, reducing the validity of the task and adding considerable noise to reaction time estimates in each visual field. Without stict monitoring of eye-movements here it is not possible to control for this.",'red')` One alterante avenue that might be worth exploring is the use of images presented in peripheral vision, as it is unlikely that small head movements would result in the image shifting from peripheral vision. This increased difficultly in the processing of information in this region may also result in stronger visual field advantages.
 
-Like the dichotic listening task, the chimeric faces task showed impressive levels of both validity and reliability, this time with a strong right hemisphere bias at the population level. The task has previously been shown to have high split-half reliability (Levy et al., 1983), we show that it can meet the higher standard of achieving a high test-retest correlation. Our subsequent analysis showed that acceptable levels of reliability can be achieved with this task using very few trials: reliability did not suffer when only 35 trials were used, and test-retest reliability of *r*= .65 could be found with 25 trials. It seems likely that one reason for the success of the chimeric faces task online is the task’s simplistic nature. From the perspective of the participant, it is a straightforward task of reporting the emotion expressed in a single face and does not require any explicit comparison.
+In contrast to rhyme decision, the other verbal task, dichotic listening, showed excellent validity and reliability. Participants showed a clear right-ear advantage at the population level, and the task exceeded our pre-registered reliability cut-off of *r*= .65. Indeed, the test-retest correlation of the dichotic listening task, r = .78, was identical to that reported by Bless et al. (2013) using the iDichotic application, and numerically higher than that reported for the same dichotic listening task when run under lab conditions (Bless et al., 2013). We further showed (see Figure 5) that there was little decline in reliability with 85 trials, and with as few as 60 trials, the current implementation of the dichotic listening task yielded a test-retest correlation higher than *r* = .65, suggesting that those who wish to use this paradigm in the future could use a smaller number of trials. It would be of interest to extend this line of work to use the modified version of dichotic listening described by Westerhausen and Samuelsen (2020), which had even higher reliability. Of course, it is important to screen for adequate use of stereo headphones when devising online versions of the task.
+
+Like the dichotic listening task, the chimeric faces task showed impressive levels of both validity and reliability, this time with a strong right hemisphere bias at the population level. The task has previously been shown to have high split-half reliability (Levy et al., 1983), we show that it can meet the higher standard of achieving a high test-retest correlation. Our subsequent analysis showed that acceptable levels of reliability can be achieved with this task using very few trials: reliability did not suffer when only 35 trials were used, and test-retest reliability of *r*= .65 could be found with 25 trials. It seems likely that one reason for the success of the chimeric faces task online is the task’s simplistic nature. From the perspective of the participant, it is a straightforward task of reporting the emotion expressed in a single face and does not require any explicit comparison. `r colFmt("The finding that good test-retest reliability could be observed with a reduced number of trials will also be welcome for future studies. Participants in the current study recieved financial reimbursement for their participation and this almost certainly played a role in recruiting a large sample with relatively low rates of attrition. Unpaid volunteers would be unlikely to complete the battery as it stand. However, they may be more likely to participate in a more streamlined version which contained a reduced number of trials.",'red')`
 
 We also introduced a novel finger tapping task, which we designed to quantify handedness behaviourally. This produced a right-hand advantage at the population level, and test-retest reliability of the LIs was good. The asymmetries were small in absolute terms, but this in part reflected the high proportion of the left-handers in the sample: our exploratory analysis indicated that LIs from this task correlated reasonably well with the Edinburgh Handedness Inventory (see also Figure 3). Previous studies have reported correlations between hand preference and measures of relative hand skill, but different hand skill measures typically are weakly intercorrelated (Bishop, 1990), and it seems that asymmetries may vary depending on particular aspects of planning and execution of motor coordination that is involved. It would be of interest to see how far LIs resemble that from tasks such as the pegboard task (e.g. Hodgson, Hirst, & Hudson, 2016), which is widely used in neuropsychological assessment. Future work should also examine how other factors such as the complexity of key combinations and reach through the midline influence the task.
 
@@ -1125,33 +1470,44 @@ In addition to assessing lateralisation of the task using traditional LIs, we al
 
 As well as validating the battery and establishing its test-retest reliability, we addressed two theoretically motivated questions related to handedness and atypicality and intercorrelations between the dichotic listening and chimeric faces task. In our pre-registered analysis of handedness, we categorised participants into right-, left-, and extreme left-handers. The data are consistent in showing that extreme left-handers showed increased atypicality on both the dichotic listening and chimeric faces task. Mazoyer et al. (2014) reported a relationship between the strength of lateralisation and hand preference, which was largely driven by the existence of a group with strong left-hand preference and strong right hemisphere dominance for language. They further claimed that this right hemisphere language dominance may be exclusively present in left-handers. Although strong left-handers were over-represented in this category in our data, we did also observe cases of right-handers with right language dominance on the dichotic listening task. This raises the question of whether right language dominance on dichotic listening is equivalent to right language dominance on more direct measures of brain lateralisation, such as fMRI.
 
-A common mechanism that co-determines lateralisation on a range of skills, extending beyond handedness and language, has been a hotly debated topic in the laterality literature. Several researchers have postulated complementary lateralisation for left hemisphere and right hemisphere brain asymmetries, predicting that LIs on verbal and nonverbal tasks should be inversely correlated (Behrmann & Plaut, 2015; Hellige, 1993; Kosslyn, 1987). On this view, a person with atypical right hemisphere language representation should have atypical left hemisphere representation for nonverbal domains such as face processing. However, several studies have reported no such association, or only a weak relationship (Bradzakova-Trajkov et al., 2010; Bryden et al.,1983; Rosch et al., 2012; Whitehouse & Bishop, 2009; van der Haegen & Brysbaert, 2018). Data from the current work supports a view in which laterality on each task is independent. Not only was our study well powered to examine this relationship, our sample included a large number of left-handers who showed increased variability in their LIs. Specifically, we found no association between the LI_z indices for rhyme decision, dichotic listening and chimeric faces. The lack of association between the two language tasks, rhyme decision and dichotic listening, must be interpreted cautiously, given that the rhyme decision task was unsatisfactory in several respects: it had relatively low test-retest reliability and only weak asymmetry in the sample as a whole. It is possible that, as argued by Bishop (2013), there is fractionation between language skills: the dichotic listening task is purely perceptual, whereas the rhyme decision task involves implicit speech production. The current result suggests there could be interest in replicating this comparison of the two tasks using a visual-half-field language task that has better reliability and validity. The lack of association between dichotic listening and chimeric faces is, however, much more convincing, given that both tasks show strong lateralisation at the population level and high test-retest reliability. This is consistent with the view that, at least for some functions, lateralisation is determined by independent biases: the left-hemisphere population bias for language is unrelated to the right-hemisphere bias for facial expressions of emotion. Given the range of evidence now available, it may be time to abandon hypotheses that predict that different lateralised skills are either wholly interdependent or wholly independent. Evidence such as that from Gerrits et al (2020) confirms that lateralisation of different functions is associated far more than expected by chance, yet cases of dissociation are not uncommon. Research in future might explore which functions are associated, and to what extent, rather than making a simple contrast between models that postulate a general answer to explain all of laterality.
+A common mechanism that co-determines lateralisation on a range of skills, extending beyond handedness and language, has been a hotly debated topic in the laterality literature. Several researchers have postulated complementary lateralisation for left hemisphere and right hemisphere brain asymmetries, predicting that LIs on verbal and nonverbal tasks should be inversely correlated (Behrmann & Plaut, 2015; Hellige, 1993; Kosslyn, 1987). On this view, a person with atypical right hemisphere language representation should have atypical left hemisphere representation for nonverbal domains such as face processing. However, several studies have reported no such association, or only a weak relationship (Bradzakova-Trajkov et al., 2010; Bryden et al.,1983; Rosch et al., 2012; Whitehouse & Bishop, 2009; van der Haegen & Brysbaert, 2018). Data from the current work supports a view in which laterality on each task is independent. Not only was our study well powered to examine this relationship, our sample included a large number of left-handers who showed increased variability in their LIs. Specifically, we found no association between the LI_z indices for rhyme decision, dichotic listening and chimeric faces. The lack of association between the two language tasks, rhyme decision and dichotic listening, must be interpreted cautiously, given that the rhyme decision task was unsatisfactory in several respects: it had relatively low test-retest reliability and only weak asymmetry in the sample as a whole. It is possible that, as argued by Bishop (2013), there is fractionation between language skills: the dichotic listening task is purely perceptual, whereas the rhyme decision task involves implicit speech production. The current result suggests there could be interest in replicating this comparison of the two tasks using a visual-half-field language task that has better reliability and validity. The lack of association between dichotic listening and chimeric faces is, however, much more convincing, given that both tasks show strong lateralisation at the population level and high test-retest reliability. This is consistent with the view that, at least for some functions, lateralisation is determined by independent biases: the left-hemisphere population bias for language is unrelated to the right-hemisphere bias for facial expressions of emotion. Given the range of evidence now available, it may be time to abandon hypotheses that predict that different lateralised skills are either wholly interdependent or wholly independent. Evidence such as that from Gerrits et al. (2020) confirms that lateralisation of different functions is associated far more than expected by chance, yet cases of dissociation are not uncommon. Research in future might explore which functions are associated, and to what extent, rather than making a simple contrast between models that postulate a general answer to explain all of laterality.
+
+`r colFmt("On the issue of looking to explore associations between functions, Brederoo et al. (2020) reported data for 122 participants. In their study, participants completed a variety of visual half-field tasks covering a range of domains such as word processing, face processing, and spatial frequency processing. At the population level Brederoo et al. reported lateralisation in the expected direction for the majority of tasks. For left handers and those with right hemisphere dominant speech, there was evidence of a deviation from typical lateralistion. Contrary to the current study, Brederoo et al. reported partial evidence to suggest that processes recruiting similar resources will lateralise to homologue areas to promote intra-hemispheric proximity to other cortical areas within their processing hierarchies. In one analysis they found the lateralisation of faces and word recongition to be correlated but when they looked at lateralisation in those who were right handed versus those withright domaincnat language processing there was considerably less evidence for causual complimentarity. In contrast Brederoo et al. reported consistent evidence within the visual domain, where lateralisation low and high frequency information processing was dependent on one another while the lateralisation was independent to lateralisation across all other tasks. So it would appear by comparing tasks of a wider varity and looking to explore assocations in laterality across domains Brederoo et al. elucidate the issue of colateralisation and suggest that the relationships between lateralisation on some related tasks may be stronger when task demands are similar and share processing resources.",'red')`
 
 To conclude, the present study introduced an online behaviour laterality battery that can be used to examine laterality for speech perception, facial emotion perception, and manual preference with good test-retest reliability. The battery of tasks was administered to a large sample of participants with relative ease and enabled us to examine several questions related to lateralisation. We find evidence of increased atypical lateralisation in left- relative to right-handers. However, we find no indication that the laterality indices on one task are dependent on another and we conclude that, for the tasks studied here, the causes of lateralisation appear to have different origins.
 
-
 \newpage
 ## Data accessibility
+
 This project was pre-registered on the Open Science Framework (OSF) before the start of data collection. The registration form along with all task materials, analysis scripts and anonymised data can be found on the OSF at https://osf.io/qsxcv/. Working versions of the dichotic listening, chimeric faces, and finger tapping tasks are available on Gorilla Open Materials: https://gorilla.sc/openmaterials/104636.
 
 \newpage
 ## Competing Interests
+
 We declare we have no competing interests.
 
 \newpage
 ## Funding 
+
 This study was supported by an Advanced Grant from the European Research Council (694189).
 
 \newpage
 ## Acknowledgements
-We would like to thank Dr Mike Burt (University of Durham, UK) for providing stimuli for the chimeric faces task. We would also like to thank Professor Kenneth Hugdahl (University of Bergen, Norway) for providing stimuli for the dichotic listening task. Portions of this work were presented at the Online Meeting of the Experimental Psychology Society in July 2020. 
+
+First, we would like to thank Mike Burt for providing stimuli for the chimeric faces task and Kenneth Hugdahl for providing stimuli for the dichotic listening task. Second, we would like to thank Marco Himstein, Marc Brysbaert, and Sanne Brederoo for their helpful comments on a prior manuscript. Third, we would like to thank Rogier Kievit for his advice regarding the modeling of covariances. Portions of this work were presented at the Online Meeting of the Experimental Psychology Society in July 2020. 
 
 \newpage
 ## References
 
+Annett, M. (1998). Handedness and cerebral dominance: The right shift theory. *Journal of Neuropsychiatry and Clinical Neuroscience*, *10*, 459-469.
+
+Annett, M. (2002). *Handedness and Brain Asymmetry; the right shift theory*. Hove, Sussex; Psychology Press
+
 Anwyl-Irvine, A. L., Massonnié, J., Flitton, A., Kirkham, N., & Evershed, J. K. (2020). Gorilla in our midst: An online behavioral experiment builder. *Behavior research methods*, *52*, 388-407.
 
 Badzakova-Trajkov, G., Häberling, I. S., Roberts, R. P., & Corballis, M. C. (2010). Cerebral asymmetries: complementary and independent processes. *PloS one*, *5*, e9682.
+
+Beaton, A. A., & Moseley, L. G. (1984). Anxiety and the measurement of handedness. *British Journal of Psychology*, *75*, 275-278.
 
 Beaumont, J. G. (1982). Studies with verbal stimuli. In J. G. Beaumont (Ed.), *Divided visual field studies of cerebral organisation* (pp. 58–86). London: Academic Press. 
 
@@ -1167,6 +1523,8 @@ Bishop, D. V. M. (2017) *Which neuroimaging measures are useful for individual d
 
 Bless, J. J., Westerhausen, R., Arciuli, J., Kompus, K., Gudmundsen, M., & Hugdahl, K. (2013). “Right on all occasions?”–On the feasibility of laterality research using a smartphone dichotic listening application. *Frontiers in Psychology*, *4*, 42.
 
+Bless, J. J., Westerhausen, R., Torkildsen, J. V. K., Gudmundsen, M., Kompus, K., & Hugdahl, K. (2015). Laterality across languages: Results from a global dichotic listening study using a smartphone application. *Laterality: Asymmetries of Body, Brain and Cognition*, *20*, 434-452.
+
 Boles, D. B. (1987). Reaction time asymmetry through bilateral versus unilateral stimulus presentation. *Brain and Cognition*, *6*, 321–333.
 
 Boles, D. B. (1990). What bilateral displays do. *Brain and Cognition*, *12*, 205– 228.
@@ -1174,6 +1532,10 @@ Boles, D. B. (1990). What bilateral displays do. *Brain and Cognition*, *12*, 20
 Boles, D. B. (1994). An experimental comparison of stimulus type, display type and input variable contributions to visual field asymmetry. *Brain and Cognition*, *24*, 184–197. 
 
 Bourne, V. J. (2006). The divided visual field paradigm: Methodological considerations. *Laterality*, *11*, 373–393.
+
+Brederoo, S. G., Nieuwenstein, M. R., Cornelissen, F. W., & Lorist, M. M. (2019). Reproducibility of visual-field asymmetries: Nine replication studies investigating lateralization of visual information processing. *Cortex*, *111*, 100-126.
+
+Brederoo, S. G., Van der Haegen, L., Brysbaert, M., Nieuwenstein, M. R., Cornelissen, F. W., & Lorist, M. M. (2020). Towards a unified understanding of lateralized vision: A large-scale study investigating principles governing patterns of lateralization using a heterogeneous sample. *Cortex*. https://doi.org/10.1016/j.cortex.2020.08.029
 
 Bryden, M. P. (1970). Laterality effects in dichotic listening: relations with handedness and reading ability in children. *Neuropsychologia*, *8*, 443-450.
 
@@ -1184,6 +1546,8 @@ Bryden, M. P., Hécaen, H., & DeAgostini, M. (1983). Patterns of cerebral organi
 Burt, D. M., & Perrett, D. I. (1997). Perceptual asymmetries in judgements of facial attractiveness, age, gender, speech and expression. *Neuropsychologia*, *35*, 685-693.
 
 Carey, D. P., & Johnstone, L. T. (2014). Quantifying cerebral asymmetries for language in dextrals and adextrals with random-effects meta analysis. *Frontiers in Psychology*, *5*, 1128.
+
+Dundas, E. M., Plaut, D. C., & Behrmann, M. (2015). Variable left-hemisphere language and orthographic lateralization reduces right-hemisphere face lateralization. *Journal of Cognitive Neuroscience*, *27*, 913-925.
 
 Elias, L. J., Bulman-Fleming, M. B., & McManus, I. C. (1999). Visual temporal asymmetries are related to asymmetries in linguistic perception. *Neuropsychologia*, *37*, 1243-1249.
 
@@ -1201,6 +1565,8 @@ Hoaglin, D. C., & Iglewicz, B. (1987). Fine-tuning some resistant rules for outl
 
 Hodgson, J. C., Hirst, R. J., & Hudson, J. M. (2016). Hemispheric speech lateralisation in the developing brain is related to motor praxis ability. *Developmental cognitive neuroscience*, *22*, 9-17.
 
+Hodgson, J. C., & Hudson, J. M. (2018). Speech lateralization and motor control. In G. S. Forrester, W. D. Hopkins, K. Hudry, & A. Lindell (Eds). *Progress in Brain Research* (pp. 145-178). Elsevier.
+
 Hugdahl, K. (2000). Lateralization of cognitive processes in the brain. *Acta psychologica*, *105*, 211-235.
 
 Hugdahl, K. (2003). Dichotic listening in the study of auditory laterality. In K. Hugdahl and R. J. Davidson (Eds.), *The asymmetrical brain* (pp. 441–476). Cambridge, MA: MIT Press.
@@ -1215,11 +1581,13 @@ Innes, B. R., Burt, D. M., Birch, Y. K., & Hausmann, M. (2016). A leftward bias 
 
 Karlsson, E. M., Johnstone, L. T., & Carey, D. P. (2019). The depth and breadth of multiple perceptual asymmetries in right handers and non-right handers. *Laterality: Asymmetries of Body, Brain and Cognition*, *24*, 707-739.
 
-Kelley KS, Littenberg B. (2019). Dichotic Listening Test–retest reliability in children. *Journal of Speech, Language, and Hearing Research*, *62*,169-76.
+Kelley KS, Littenberg B. (2019). Dichotic Listening Test–retest reliability in children. *Journal of Speech, Language, and Hearing Research*, *62*, 169-76.
 
 Kimura, D. (1967). Functional asymmetry of the brain in dichotic listening. *Cortex*, *3*, 163-178.
 
 Kosslyn, S. M. (1987). Seeing and imagining in the cerebral hemispheres: a computational approach. *Psychological review*, *94*, 148.
+
+Knecht, S., Dräger, B., Deppe, M., Bobe, L., Lohmann, H., Flöel, A., Ringelstein, E. B., & Henningsen, H. (2000). Handedness and hemispheric language dominance in healthy humans. *Brain*, *123*, 2512-2518.
 
 Krach, S., Chen, L. M., & Hartje, W. (2006). Comparison between visual halffield performance and cerebral blood flow changes as indicators of language dominance. *Laterality*, *11*, 122-140.
 
@@ -1243,7 +1611,13 @@ Rosch, R. E., Bishop, D. V., & Badcock, N. A. (2012). Lateralised visual attenti
 
 Roszkowski, M. J., & Snelbecker, G. E. (1982). Temporal stability and predictive validity of self-assessed hand preference with first and second graders. *Brain and Cognition*, *1*, 405-409.
 
+Steenhuis, R. E., & Bryden, M. P. (1999). The relation between hand preference and hand performance: What you get depends on what you measure. *Laterality: Asymmetries of Body, Brain and Cognition*, *4*, 3-26.
+
+Tiffin, J., & Asher, E., (1948). The Purdue pegboard; norms and studies of reliability and validity. *Journal of Applied Psychology*, *32*, 234-47.
+
 Van der Haegen, L., & Brysbaert, M. (2018). The relationship between behavioral language laterality, face laterality and language performance in left-handers. *PloS one*, *13*, e0208696.
+
+Van der Haegen, L., Cai, Q., Seurinck, R., & Brysbaert, M. (2011). Further fMRI validation of the visual half field technique as an indicator of language laterality: A large-group analysis. *Neuropsychologia*, *49*, 2879-2888.
 
 Van Heuven, W. J., Mandera, P., Keuleers, E., & Brysbaert, M. (2014). SUBTLEX-UK: A new and improved word frequency database for British English. *Quarterly journal of experimental psychology*, *67*, 1176-1190.
 
@@ -1263,15 +1637,147 @@ Wagenmakers, E. J., & Farrell, S. (2004). AIC model selection using Akaike weigh
 
 Woodhead Z. V. J., Bradshaw A. R., Wilson A. C., Thompson P. A. & Bishop D. V. M. (2019). Testing the unitary theory of language lateralization using functional transcranial Doppler sonography in adults. *Royal Society Open Science*, *6*, 181801.
 
+Woodhead, Z. V. J., Thompson, P. A., Karlsson, E., & Bishop, D. V. M. (2020, September 9). Investigating multidimensionality of language lateralisation in left and right handed adults: an update on Woodhead et al. 2019. https://doi.org/10.31234/osf.io/mrkgf
+
 Woods, K. J., Siegel, M. H., Traer, J., & McDermott, J. H. (2017). Headphone screening to facilitate web-based auditory experiments. *Attention, Perception, & Psychophysics*, *79*, 2064-2072.
 
 Yovel, G., Tambini, A., & Brandman, T. (2008). The asymmetry of the fusiform face area is a stable individual characteristic that underlies the left-visual-field superiority for faces. *Neuropsychologia*, *46*, 3061-3068.
 
+<!--- FOOTNOTESS --->
+[^1]: Hugdahl et al. (2009) recommend excluding participants with a general hearing impairment of more than 20 dB for all frequencies tested, and/or an interaural hearing threshold difference of more than 10 dB as this can influence dichotic listening outcomes. It is important to note that this exclusion was not possible in the current study as we did not include a hearing test. With the current sample size, subtle hearing deficits in one ear will unlikely undermine the results. However, it will be important for future studies to incorporate hearing accuracy tests in order to exclude participants with these hearing related difficulties.
+[^2]: In line with our pre-registration, outliers were identified using data pooled across visual fields/ears. We explored the possibility that a different pattern of results could have been obtained by identifying outliers separately for each visual field/ear. While reliability estimates remained unchanged for each measure very small differences were observed across analyses. Despite these small differences the pattern of results and conclusions we form remain unchanged.
+
+```{r dist_plots,echo=FALSE,include=FALSE, comment=FALSE, warning=FALSE}
+# rename
+RD.dat$handed3 <- as.factor(RD.dat$handed3)
+  levels(RD.dat$handed3) <- c("Extreme LH", 'Moderate LH', "RH")
+CF.dat$handed3 <- as.factor(CF.dat$handed3)
+  levels(CF.dat$handed3) <- c("Extreme LH", 'Moderate LH', "RH")
+DL.dat$handed3 <- as.factor(DL.dat$handed3)
+  levels(DL.dat$handed3) <- c("Extreme LH", 'Moderate LH', "RH")
+FT.dat$handed3 <- as.factor(FT.dat$handed3)
+  levels(FT.dat$handed3) <- c("Extreme LH", 'Moderate LH', "RH")
+# plot all
+plota <- ggplot(RD.dat, aes(x=tlat_RDT_1, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Rhyme decision LI_z (day 1)') + ggtitle("Rhyme decision (day 1)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-5,5) + ylim(0, 65)
+plotb <- ggplot(RD.dat, aes(x=tlat_RDT_2, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Rhyme decision LI_z (day 2)') + ggtitle("Rhyme decision (day 2)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-5,5) + ylim(0, 65)
+plotc <- ggplot(DL.dat, aes(x=Day1_Dich_acc_Z, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Dichotic listening LI_z (day 1)') + ggtitle("Dichotic listening (day 1)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-20,20) + ylim(0, 65)
+plotd <- ggplot(DL.dat, aes(x=Day2_Dich_acc_Z, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Dichotic listening LI_z (day 2)') + ggtitle("Dichotic listening (day 2)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-20,20) + ylim(0, 65)
+plote <- ggplot(CF.dat, aes(x=Day1_CF_acc_Z, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Chimeric faces LI_z (day 1)') + ggtitle("Chimeric faces (day 1)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-20,20) + ylim(0, 65)
+plotf <- ggplot(CF.dat, aes(x=Day2_CF_acc_Z, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Chimeric faces LI_z (day 2)') + ggtitle("Chimeric faces (day 2)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-20,20) + ylim(0, 65)
+plotg <- ggplot(FT.dat, aes(x=Day1_Finger_acc_Z, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Finger tapping LI_z (day 1)') + ggtitle("Finger tapping (day 1)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-5,5) + ylim(0, 65)
+ploth <- ggplot(FT.dat, aes(x=Day2_Finger_acc_Z, fill=handed3, color=handed3)) +
+  geom_histogram(position="identity", alpha= .35) + theme_classic(20) +
+  xlab('Finger tapping LI_z (day 2)') + ggtitle("Finger tapping (day 2)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "top", legend.title = element_blank()) + xlim(-5,5) + ylim(0, 65)
+# plot together
+all.plots <- ggpubr::ggarrange(plota, plotb, plotc, plotd, plote, plotf, plotg, ploth, ncol = 2, nrow= 4)
+ggsave("./plots/dist.plots.png", plot=all.plots,dpi = 300, width = 12, height = 24,)
+```
+
 \newpage
-#### Supplemental material
 
-Figure S1 shows scatterplots indicating scores on the left and right sides for each task, with self-reported handedness (left vs right) colour-coded. For each task, the mean for each side is shown as vertical and horizontal dotted lines, and equal performance on the two sides corresponds to the sloping red dotted line: thus an impression of whether the task is lateralised can be obtained by considering whether points cluster around the sloping lines symmetrically.
+\begin{center}
 
-![Figure S1. Left side (L) vs right side (R) scores for sessions 1 and 2 for the behavioural laterality tasks. The diagonal dotted line shows the point of equality: points above this are higher for R than L, and points below are higher for L than R. Mean values for R and L are shown as horizontal and vertical dotted lines. The colour of the points indicates the participants’ handedness (black = right-handed; red = left-handed). ](all.raw.png)
+Assessing the reliability of an online behavioural laterality battery: a pre-registered study.
 
-For the rhyme decision task, only correct responses were used for computing mean log RTs (shown transformed back to the original ms scale in the plot). For dichotic listening and chimeric faces, a correct response can be given from either side; it follows that there will be a negative correlation between the two sides reflecting the fact that the number of selections on the left will be inversely related to the number of correct responses on the right. For these tasks, it is evident by inspection that most responses for dichotic listening cluster above the dotted line, indicating a right ear advantage, whereas most responses on chimeric faces cluster below the dotted line, indicating a left hemi-face advantage. Finally, we show the number of correct sequences with each hand on the finger tapping task. Here, a strong impact of handedness is evident on inspection, with left-handers generally more accurate with the left hand, and right-handers more accurate with the right hand.
+Parker, A. J., Woodhead, Z. V. J., Thompson, P. A., Bishop, D. V. M.
+
+Supplementary Materials
+
+\end{center}
+
+In these Supplementary Materials we include the distribution of laterality indices for each behavioural laterality task across both testing sessions. We also include a series of t-tests examining the difference in LI_z scores between extreme left-handers and right-handers.
+
+**LI_z distributions**
+
+the disributions of LI_z scores are shown in Figure S1.
+
+![Distribution of laterality indices on the behavioural tasks. The distributions of LI_z are show in pink for extreme left-handers, green for moderate left-handers, and blue for right-handers. Negative values indicates left lateralisation at the brain level and positive values indicate left lateralisation at the brain level.](./plots/dist.plots.png){width=60%}
+
+**LI_z scores in extreme left-handers and right-handers**
+```{r hand.corrs,echo=FALSE,include=TRUE, comment=FALSE, warning=FALSE}
+comp_c <- ggplot(subset(LIs, handed3== "Right-hander" | handed3=="Extreme left-hander"),
+  aes(x= handed3, y= Day1_CF_acc_Z, fill= handed3)) +
+  geom_hline(yintercept=0) + 
+  geom_hline(yintercept=1.96, linetype= "dashed", color= "red") +
+  geom_hline(yintercept=-1.96, linetype= "dashed", color= "red") +
+  geom_violin(alpha= .1, size= .5) +
+  geom_jitter(width= .1, aes(color= handed3), alpha= .25) +
+  geom_boxplot(width=0.1, position=position_dodge(0.9), size= .5 , notch = T, notchwidth = 0.4, varwidth =F,
+               color= 'black', show.legend=FALSE, linetype= 'solid', outlier.color = NA) +
+  ylab("Chimeric faces LI_z") + 
+  xlab(" ") +
+  ggtitle("(C)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylim(-20, 20) +
+  theme_classic(18) +
+  theme(legend.position= "none") + theme(plot.title = element_text(hjust = 0.5))
+comp_b <- ggplot(subset(LIs, handed3== "Right-hander" | handed3=="Extreme left-hander"),
+  aes(x= handed3, y= Day1_Dich_acc_Z, fill= handed3)) +
+  geom_hline(yintercept=0) + 
+  geom_hline(yintercept=1.96, linetype= "dashed", color= "red") +
+  geom_hline(yintercept=-1.96, linetype= "dashed", color= "red") +
+  geom_violin(alpha= .1, size= .5) +
+  geom_jitter(width= .1, aes(color= handed3), alpha= .25) +
+  geom_boxplot(width=0.1, position=position_dodge(0.9), size= .5 , notch = T, notchwidth = 0.4, varwidth =F,
+               color= 'black', show.legend=FALSE, linetype= 'solid', outlier.color = NA) +
+  ylab("Dichotic listening LI_z") +
+  xlab(" ") +
+  ggtitle("(B)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylim(-20, 20) +
+  theme_classic(18) +
+  theme(legend.position= "none") + theme(plot.title = element_text(hjust = 0.5))
+comp_a <- ggplot(subset(LIs, handed3== "Right-hander" | handed3=="Extreme left-hander"),
+  aes(x= handed3, y= tlat_RDT_1, fill= handed3)) +
+  geom_hline(yintercept=0) + 
+  geom_hline(yintercept=1.96, linetype= "dashed", color= "red") +
+  geom_hline(yintercept=-1.96, linetype= "dashed", color= "red") +
+  geom_violin(alpha= .1, size= .5) +
+  geom_jitter(width= .1, aes(color= handed3), alpha= .25) +
+  geom_boxplot(width=0.1, position=position_dodge(0.9), size= .5 , notch = T, notchwidth = 0.4, varwidth =F,
+               color= 'black', show.legend=FALSE, linetype= 'solid', outlier.color = NA) +
+  ylab("Rhyme decision LI_z") +
+  xlab(" ") +
+  ggtitle("(A)") + 
+  ylim(-20, 20) +
+  theme_classic(18) +
+  theme(legend.position= "none") + theme(plot.title = element_text(hjust = 0.5))
+t.plots <- ggpubr::ggarrange(comp_a, comp_b, comp_c, ncol = 1, nrow= 3)
+ggsave("./plots/t.plots.png", plot=t.plots,dpi = 300, width = 5, height = 15,)
+# tests
+t1 <- t.test(data= subset(LIs, handed3== "Right-hander" | handed3=="Extreme left-hander"), tlat_RDT_1~ handed3, alternate= "less")
+t2 <- t.test(data= subset(LIs, handed3== "Right-hander" | handed3=="Extreme left-hander"), Day1_DL_acc_LI~ handed3, alternate= "less")
+t3 <- t.test(data= subset(LIs, handed3== "Right-hander" | handed3=="Extreme left-hander"), Day1_CF_acc_Z~ handed3, alternate= "greater")
+```
+
+To further examine the link between handedness and atypical laterality, we conducted a series of *t*-tests using session 1 data. The distribution of LI_z scores are shown separately in Figure S2. A one-tailed independent-samples *t*-tests indicated that LI_z scores did not differ between extreme left-handers and right-handers on the rhyme decision, *t*(`r round(t1$parameter, 2)`)= `r round(t1$statistic, 2)`, *95% CI*= [`r round(t1$conf.int[1], 2)`, `r round(t1$conf.int[2], 2)`], *p*= `r round(t1$p.value, 3)`. This is not surprising given that very few participants were lateralised on this task. While LI_z scores did not differ between extreme left-handers and right-handers on the rhyme decision, they did on the dichotic listening, *t*(`r round(t2$parameter, 2)`)= `r round(t2$statistic, 2)`, *95% CI*= [`r round(t2$conf.int[1], 2)`, `r round(t2$conf.int[2], 2)`], *p*= `r round(t2$p.value, 3)`, and chimeric faces, *t*(`r round(t3$parameter, 2)`)= `r round(t3$statistic, 2)`, *95% CI*= [`r round(t3$conf.int[1], 2)`, `r round(t3$conf.int[2], 2)`], *p*= `r round(t3$p.value, 3)`. These differences demostrate that, as a population, extreme left-handers were less lateralised.
+
+![Violin plots showing the distribution of laterality indices on the behavioural tasks for extreme left-handers (in pink) and right-handers (in blue). The notch on the boxplot indicates the mean per condition. The red dashed lines are drawn at -1.96 and 1.96, indicating significant lateralisation to either the left or right hemisphere. Data points represent indiciaul participants' data.](./plots/t.plots.png){width=40%}
