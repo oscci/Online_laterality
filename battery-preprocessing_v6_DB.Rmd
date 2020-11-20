@@ -96,7 +96,8 @@ First, the demographics is processed.This gives us a participant subject, age, g
 
 ```{r demograhics, warning=FALSE}
 #Reading from OSF - this only works if files are public
-demo_dat <- read.csv('https://osf.io/7smj6/download',stringsAsFactors = F)
+#demo_dat <- read.csv('https://osf.io/7smj6/download',stringsAsFactors = F)
+demo_dat <- read.csv("./data/Demographics.csv",stringsAsFactors = F)
 
 # relabel 
 demo_dat$subject <- demo_dat$Participant.Public.ID
@@ -157,8 +158,10 @@ allsum$genderpch[w]<-NA
 Now we import and append the Porta and Miles Test to the allsum data frame. 
 
 ```{r sightednesss, warning=FALSE}
-porta_dat <- read.csv("https://osf.io/zmqkt/download",stringsAsFactors = F)
-miles_dat <-  read.csv("https://osf.io/ekqsp/download",stringsAsFactors = F)
+#porta_dat <- read.csv("https://osf.io/zmqkt/download",stringsAsFactors = F)
+#miles_dat <-  read.csv("https://osf.io/ekqsp/download",stringsAsFactors = F)
+porta_dat <- read.csv("./data/porta.csv",stringsAsFactors = F)
+miles_dat <- read.csv("./data/miles.csv",stringsAsFactors = F)
 
 miles_dat$test_subject <- "miles"
 porta_dat$test_subject <- "porta"
@@ -196,7 +199,8 @@ head(allsum) #just to check all looking OK
 Now we add the EHI. Here we score and plot the Edinburgh handedness inventory (Oldfield, 1971) in its short form.
 
 ```{r EHI, warning=FALSE}
-EHI <- read.csv("https://osf.io/kfdma/download",stringsAsFactors = F)
+#EHI <- read.csv("https://osf.io/kfdma/download",stringsAsFactors = F)
+EHI <- read.csv("./data/EHI.csv",stringsAsFactors = F)
 
 # select only responses
 EHI <- EHI[EHI$Question.Key == "response-2-quantised" | EHI$Question.Key == "response-3-quantised" | 
@@ -287,7 +291,7 @@ eplot<-ggplot(allsum, aes(handpch,index_EHI, colour=gender)) +
   ggtitle("Handedness index on the Edinburgh Handedness Inventory")
 eplot
 #This is not perfect, but gives and subjectea to check EHI is valid etc.
-
+allsum$handpch <- as.factor(allsum$handpch)
 ggplot(allsum, aes(x=index_EHI)) + geom_density(aes(group=handpch,fill=handpch))
 
 #NB two supposed right-handers have index_EHI around -50. 
@@ -302,7 +306,8 @@ Next, the lexTale is preprocesssed. This is done using the weighted average for 
 
 ```{r lexTALE, warning=FALSE}
 # read data
-lexTALE <- read.csv("https://osf.io/h4btp/download",stringsAsFactors = F)
+#lexTALE <- read.csv("https://osf.io/h4btp/download",stringsAsFactors = F)
+lexTALE <- read.csv("./data/LexTALE.csv",stringsAsFactors = F)
 
 # filter
 lexTALE <- lexTALE[lexTALE$Attempt == 1,]
@@ -341,7 +346,7 @@ x<-ggplot(lexTale_score, aes(x=lexTALE, y=subject, fill=subject)) +
 x + theme_bw() + theme(legend.position = "none") + theme(axis.text.y = element_blank()) 
 
 # now create a data frame only for index 
-lexTALE <- select(lexTale_score, "subject", "lexTALE")
+lexTALE <- dplyr::select(lexTale_score, "subject", "lexTALE")
 # now merge with allsum
 allsum <- merge(allsum, lexTALE, by= "subject")
 # now write the full allsum 
@@ -365,10 +370,10 @@ NB This step is quite slow (slower if reading from OSF than from drive).
 ```{r readraw,include= FALSE, warning=FALSE}
 # Set directory
 for (d in 1:2){
-  data_file <- "https://osf.io/mhk29/download" #day 1 data
+  data_file <- "./data/combined/day1_combined.csv" #"https://osf.io/mhk29/download" #day 1 data
   
   if (d ==2){
-    data_file <-  "https://osf.io/ebm6s/download"
+    data_file <-  "./data/combined/day2_combined.csv"#"https://osf.io/ebm6s/download"
   }
   #we will assign raw data to all_dat2 (day2), but then reassign to all_dat1 on first run through loop, so we have correct data for each day
 all_dat2 <- read.csv(data_file, na.strings = "NA",stringsAsFactors=F)
@@ -589,7 +594,7 @@ if(length(w)>0){
 Lsubjectf$LI[w] <- NA}
 
 # now create a data frame for lat index 
-Lsubjectf <- select(Lsubjectf, "subject", "LI")
+Lsubjectf <- dplyr::select(Lsubjectf, "subject", "LI")
 # now merge with allsum
 # First check if this column already exists and delete it if so
 w<-which(colnames(allsum)==mycolname)
@@ -641,7 +646,7 @@ Zdf <- na.omit(Zdf)
 Zdf$Z <- Zdf$Z*polarity #polarity can be set to reverse sign - eg for RT a large score is bad, whereas for acc it is good, so can have opp polarity
 
 # now create a data frame for lat index 
-Zdf <- select(Zdf, "subject", "Z")
+Zdf <- dplyr::select(Zdf, "subject", "Z")
 # now merge with allsum
 # First check if this column already exists and delete it if so
 w<-which(colnames(allsum)==mycolname)
@@ -854,10 +859,10 @@ measure <- 'RT'
 dopirate(origdat,task,measure)
 
 #added by DB 17th July 2020: include raw accuracy L and R in the allsum dataframe
-chimdatL1<-select(filter(chim_dat1,side=='Left'),subject,accurate)
-chimdatR1<-select(filter(chim_dat1,side=='Right'),subject,accurate)
-chimdatL2<-select(filter(chim_dat2,side=='Left'),subject,accurate)
-chimdatR2<-select(filter(chim_dat2,side=='Right'),subject,accurate)
+chimdatL1<-dplyr::select(filter(chim_dat1,side=='Left'),subject,accurate)
+chimdatR1<-dplyr::select(filter(chim_dat1,side=='Right'),subject,accurate)
+chimdatL2<-dplyr::select(filter(chim_dat2,side=='Left'),subject,accurate)
+chimdatR2<-dplyr::select(filter(chim_dat2,side=='Right'),subject,accurate)
 
 allsum <- merge(allsum,chimdatL1,by="subject")
 allsum <- merge(allsum,chimdatR1,by="subject")
@@ -1179,10 +1184,10 @@ dopirate(origdat,task,measure)
 ```
 ```{r add.dichotic.raw}
 #added by DB 17th July 2020: include raw accuracy L and R in the allsum dataframe
-DLdatL1<-select(filter(DL_dat1,side=='Left'),subject,accurate)
-DLdatR1<-select(filter(DL_dat1,side=='Right'),subject,accurate)
-DLdatL2<-select(filter(DL_dat2,side=='Left'),subject,accurate)
-DLdatR2<-select(filter(DL_dat2,side=='Right'),subject,accurate)
+DLdatL1<-dplyr::select(filter(DL_dat1,side=='Left'),subject,accurate)
+DLdatR1<-dplyr::select(filter(DL_dat1,side=='Right'),subject,accurate)
+DLdatL2<-dplyr::select(filter(DL_dat2,side=='Left'),subject,accurate)
+DLdatR2<-dplyr::select(filter(DL_dat2,side=='Right'),subject,accurate)
 
 
 #Add to allsum
@@ -1456,9 +1461,9 @@ for (d in 1:2){
 pcorL<-myfile[myfile$side=='left',]
 pcorR<- myfile[myfile$side=='right',]
 pcorNull <- myfile[myfile$side=='no rhyme',]
-pcorL<-select(pcorL,subject,p.corr)
-pcorR<-select(pcorR,subject,p.corr)
-pcorNull<-select(pcorNull,subject,p.corr)
+pcorL<-dplyr::select(pcorL,subject,p.corr)
+pcorR<-dplyr::select(pcorR,subject,p.corr)
+pcorNull<-dplyr::select(pcorNull,subject,p.corr)
 colnames(pcorL)[2]<-paste0('RDT',d,'.pcorrL')
 colnames(pcorR)[2]<-paste0('RDT',d,'.pcorrR')
 colnames(pcorNull)[2]<-paste0('RDT',d,'.pcorrNull')
@@ -1514,10 +1519,10 @@ dopirate(origdat,task,measure)
 
 ```{r add.rdt.raw}
 #added by DB 17th July 2020: include raw accuracy L and R in the allsum dataframe
-RDTdatL1<-select(filter(RDT_df1,side=='left'),subject,RT)
-RDTdatR1<-select(filter(RDT_df1,side=='right'),subject,RT)
-RDTdatL2<-select(filter(RDT_df2,side=='left'),subject,RT)
-RDTdatR2<-select(filter(RDT_df2,side=='right'),subject,RT)
+RDTdatL1<-dplyr::select(filter(RDT_df1,side=='left'),subject,RT)
+RDTdatR1<-dplyr::select(filter(RDT_df1,side=='right'),subject,RT)
+RDTdatL2<-dplyr::select(filter(RDT_df2,side=='left'),subject,RT)
+RDTdatR2<-dplyr::select(filter(RDT_df2,side=='right'),subject,RT)
 
 allsum <- merge(allsum,RDTdatL1,by="subject")
 allsum <- merge(allsum,RDTdatR1,by="subject")
@@ -1686,10 +1691,6 @@ t.test(Day1.RDT_RT_LI~handpch,data=partsum)
 t.test(Day2.RDT_RT_LI~handpch,data=partsum)
 ```
 
-
-
-
-
 ## Finger Tapping Task
 
 This portion of the notebook processes the "Finger Tapping Task' implmented in Gorilla.sc, which aims to provide a quantified measure of hand skill. In the task, participants are required to press a sequence of buttons for each hand (Left: W, R, V, X; Right: T, U, M, B) as many times as possible within 30 ms. We have also devised is a version that requires more complex movements, but early data suggested that does not achieve our aim of emphasising lateral differences.
@@ -1846,10 +1847,10 @@ dopirate(origdat,task,measure)
 ```
 ```{r add.fingerL_R}
 #added by DB 17th July 2020: include raw accuracy L and R in the allsum dataframe
-fingerL1<-select(finger.df,subject,L1)
-fingerR1<-select(finger.df,subject,R1)
-fingerL2<-select(finger.df,subject,L2)
-fingerR2<-select(finger.df,subject,R2)
+fingerL1<-dplyr::select(finger.df,subject,L1)
+fingerR1<-dplyr::select(finger.df,subject,R1)
+fingerL2<-dplyr::select(finger.df,subject,L2)
+fingerR2<-dplyr::select(finger.df,subject,R2)
 
 allsum <- merge(allsum,fingerL1,by="subject")
 allsum <- merge(allsum,fingerR1,by="subject")
@@ -1916,6 +1917,224 @@ text(-2,3.5,paste0('r = ',round(cor1,3)))
 write.csv(allsum, "LIs.csv")
 ```
 
+### Calculate split half reliability
+
+#### Chimeric faces
+
+```{r Chimeric Split Half}
+varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR
+latlist <- c("Left","Right") #names of factor levels
+nloop=2 #same as levels of latlist
+# create data frames
+CF_dat1$split <- c("odds", "even")
+  CF_dat_1.1 <- CF_dat1[CF_dat1$split== "odds",]
+  CF_dat_1.2 <- CF_dat1[CF_dat1$split== "even",]
+CF_dat2$split <- c("odds", "even")
+  CF_dat_2.1 <- CF_dat2[CF_dat2$split== "odds",]
+  CF_dat_2.2 <- CF_dat2[CF_dat2$split== "even",]
+# create aggregate data
+chim_dat1.1 <- make.df(CF_dat_1.1,varlist,latlist,nloop)
+chim_dat1.2 <- make.df(CF_dat_1.2,varlist,latlist,nloop)
+chim_dat2.1 <- make.df(CF_dat_2.1,varlist,latlist,nloop)
+chim_dat2.2 <- make.df(CF_dat_2.2,varlist,latlist,nloop)
+#exclude
+#find included cases
+w<-which(allsum$exclude==0)
+  inclsubs <- allsum$subject[w]
+
+# NOW MAKE LI_z
+# 1 odds
+task<-'Chimeric faces'
+origdat<-chim_dat1.1
+origdat$X1 <- origdat$N
+mycolname<-"split.chim.1.1"
+mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
+polarity<- (1)#so LI is positive in predicted direction
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+# 1 even
+origdat<-chim_dat1.2
+origdat$X1 <- origdat$N
+mycolname<-"split.chim.1.2"
+polarity<- (1)#so LI is positive in predicted direction
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+# 2 odds
+origdat<-chim_dat2.1
+origdat$X1 <- origdat$N
+mycolname<-"split.chim.2.1"
+polarity<- (1)#so LI is positive in predicted direction
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+# 2 evens
+origdat<-chim_dat2.2
+origdat$X1 <- origdat$N
+mycolname<-"split.chim.2.2"
+polarity<- (1)#so LI is positive in predicted direction
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+# remove
+w<-which(allsum$exclude == 1)
+  allsum$split.chim.1.1[w] <- NA
+  allsum$split.chim.1.2[w] <- NA
+  allsum$split.chim.2.1[w] <- NA
+  allsum$split.chim.2.2[w] <- NA
+
+print(paste0("Chimeric faces session 1 split-half: ", cor(allsum$split.chim.1.1, allsum$split.chim.1.2, use = "complete.obs")))
+print(paste0("Chimeric faces session 2 split-half: ", cor(allsum$split.chim.2.1, allsum$split.chim.2.2, use = "complete.obs")))
+```
+
+#### Dichotic listening
+
+```{r Dichotic Split Half}
+varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR
+origdat <- dichotic_dat1
+latlist <- c("Left","Right") #names of factor levels
+nloop=2 #same as levels of latlist
+# made data frames
+dichotic_dat1$split <- c("odds", "even")
+  DL_1.1 <- dichotic_dat1[dichotic_dat1$split== "odds",]
+  DL_1.2 <- dichotic_dat1[dichotic_dat1$split== "even",]
+dichotic_dat2$split <- c("odds", "even")
+  DL_2.1 <- dichotic_dat2[dichotic_dat2$split== "odds",]
+  DL_2.2 <- dichotic_dat2[dichotic_dat2$split== "even",]
+# create aggregate data
+DL_dat1.1 <- make.df(DL_1.1,varlist,latlist,nloop)
+DL_dat1.2 <- make.df(DL_1.2,varlist,latlist,nloop)
+DL_dat2.1 <- make.df(DL_2.1,varlist,latlist,nloop)
+DL_dat2.2 <- make.df(DL_2.2,varlist,latlist,nloop)
+# exclude
+w<-which(is.na(DL_dat1.1$subject))
+  if (length(w)>0) {DL_dat1.1<-DL_dat1.1[-w,]}
+w<-which(is.na(DL_dat1.2$subject))
+  if (length(w)>0) {DL_dat1.2<-DL_dat1.2[-w,]}
+w<-which(is.na(DL_dat2.1$subject))
+  if (length(w)>0) {DL_dat2.1<-DL_dat2.1[-w,]}
+w<-which(is.na(DL_dat2.2$subject))
+  if (length(w)>0) {DL_dat2.2<-DL_dat2.2[-w,]}
+DL_dat1.1[is.na(DL_dat1.1)] <- 0
+DL_dat1.2[is.na(DL_dat1.2)] <- 0
+DL_dat2.1[is.na(DL_dat2.1)] <- 0
+DL_dat2.2[is.na(DL_dat2.2)] <- 0
+
+# MAKE Z SCORE
+# day 1 odds
+task<-'Dichotic listening'
+origdat<-DL_dat1.1
+origdat$X1 <- origdat$N
+mycolname<-"split.DL.1.1"
+mycutoff <- 10 #NB! need to check against prereg. I think this is N correct, rather than percentage. People with avg scores below this value will be excluded.
+polarity<- (1)#so LI is positive in predicted direction
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+# day 1 evens
+origdat<-DL_dat1.2
+origdat$X1 <- origdat$N
+mycolname<-"split.DL.1.2"
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+# day 2 odds
+origdat<-DL_dat2.1
+origdat$X1 <- origdat$N
+mycolname<-"split.DL.2.1"
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+# day 2 evens
+origdat<-DL_dat2.2
+origdat$X1 <- origdat$N
+mycolname<-"split.DL.2.2"
+allsum <- makeZ(allsum,origdat,task,mycolname,polarity,mycutoff)
+#remove
+# remove
+w<-which(allsum$exclude == 2)
+  allsum$split.DL.1.1[w] <- NA
+  allsum$split.DL.1.2[w] <- NA
+  allsum$split.DL.2.1[w] <- NA
+  allsum$split.DL.2.2[w] <- NA
+
+print(paste0("Dichotic listening session 1 split-half: ", cor(allsum$split.DL.1.1, allsum$split.DL.1.2, use = "complete.obs")))
+print(paste0("Dichotic listening session 2 split-half: ", cor(allsum$split.DL.2.1, allsum$split.DL.2.2, use = "complete.obs")))
+```
+
+#### Rhyme decision task
+
+```{r Rhyme Split Half}
+varlist <-   c("subject", "side", "accurate", "RT") #need to be in this order, ie sub, side, acc and RR
+latlist <- c("left","no rhyme","right") #names of factor levels
+nloop<-length(latlist)
+# made data frames
+RDT_dat1$split <- c("odds", "even")
+  RDT_dat1.1 <- RDT_dat1[RDT_dat1$split== "odds",]
+  RDT_dat1.2 <- RDT_dat1[RDT_dat1$split== "even",]
+RDT_dat2 <- RDT_dat2[-nrow(RDT_dat2),]
+RDT_dat2$split <- c("odds", "even")
+  RDT_dat2.1 <- RDT_dat2[RDT_dat2$split== "odds",]
+  RDT_dat2.2 <- RDT_dat2[RDT_dat2$split== "even",]
+# create aggregate data
+RDT_df1.1 <- make.df(RDT_dat1,varlist,latlist,nloop)
+RDT_df1.2 <- make.df(RDT_dat2,varlist,latlist,nloop)
+RDT_df2.1 <- make.df(RDT_dat1,varlist,latlist,nloop)
+RDT_df2.2 <- make.df(RDT_dat2,varlist,latlist,nloop)
+# remove NaN
+is.nan.data.frame <- function(x)
+  do.call(cbind, lapply(x, is.nan))
+RDT_df1.1[is.nan(RDT_df1.1)] <- NA
+RDT_df1.2[is.nan(RDT_df1.2)] <- NA
+RDT_df2.1[is.nan(RDT_df2.1)] <- NA
+RDT_df2.2[is.nan(RDT_df2.2)] <- NA
+
+# exclude
+wn <-unique(which(RDT_df1.1$accurate ==0),which(RDT_df1.2$accurate ==0, (which(RDT_df2.1$accurate ==0, (which(RDT_df2.2$accurate ==0))))))
+w1<-which(RDT_df1.1$p.corr < 75)
+w2<-which(RDT_df1.2$p.corr < 75)
+w3<-which(RDT_df2.1$p.corr < 75)
+w4<-which(RDT_df2.2$p.corr < 75)
+exRDT<-unique(c(RDT_df1.1$subject[w1],
+                RDT_df1.2$subject[w2],
+                RDT_df2.1$subject[w3],
+                RDT_df2.1$subject[w4],
+                RDT_df1.1$subject[wn],
+                RDT_df1.2$subject[wn],
+                RDT_df2.1$subject[wn],
+                RDT_df2.2$subject[wn]))
+allsum$exRDT_split <- 0
+allsum$exRDT_split[allsum$subject %in% exRDT]<-1 #decided best to have separate column for exclusion for each task
+w<-which(allsum$exRDT_split==0)  
+incRDT <- allsum$subject[w]
+ninc <- length(incRDT)
+
+# MAKE Z LAT
+for (d in 1:4){
+  ifelse(d==1, myfile<-RDT_dat1.1, 
+         ifelse(d==2, myfile<-RDT_dat1.2,
+                ifelse(d==3, myfile<-RDT_dat2.1,
+                       myfile<-RDT_dat2.2)))
+    ifelse(d==1, lab<- 1.1, 
+         ifelse(d==2, lab<- 1.2,
+                ifelse(d==3, lab<- 2.1,
+                       lab <- 2.2)))
+  nsubs <- nrow(allsum)
+  allsum$tempt<-NA #initialise a new column
+  for (i in 1:nsubs) {
+    mysub<-filter(myfile,side %in% c('left','right'),subject==allsum$subject[i])
+    if(nrow(mysub)>10)
+    {
+      mymean<-aggregate(RT~side,mysub,FUN = mean)
+      mysd<-aggregate(RT~side,mysub,FUN = sd)
+        myN<-aggregate(RT~side,mysub,FUN = length)
+      se1<-mysd[1,2]/sqrt(myN[1,2])
+      se2<-mysd[2,2]/sqrt(myN[2,2])
+      se<-sqrt(se1^2+se2^2)
+      allsum$tempt[i]<-(mymean[1,2]-mymean[2,2])/se
+    }
+  }
+  wc<-which(colnames(allsum)=='tempt')
+  colnames(allsum)[wc]<-paste0('split.RDT.',lab)
+}
+w<-which(is.na(allsum$Day1.RDT_RT_LI)) #remove those with NA in LI
+  allsum$split.RDT.1.1[w]<-NA
+  allsum$split.RDT.1.2[w]<-NA
+w<-which(is.na(allsum$Day2.RDT_RT_LI))
+  allsum$split.RDT.2.1[w]<-NA
+  allsum$split.RDT.2.1[w]<-NA
+
+print(paste0("Rhyme decision session 1 split-half: ", cor(allsum$split.RDT.1.1, allsum$split.RDT.1.2, use = "complete.obs")))
+print(paste0("Rhyme decision session 2 split-half: ", cor(allsum$split.RDT.2.1, allsum$split.RDT.2.2, use = "complete.obs")))
+```
+
 ### list of participants who completed. 
 
 We need a list of participants here who completed the both days for later filtering. 
@@ -1947,7 +2166,7 @@ complete.day2b <- merge(day2.RD, day2.FT, by= "subject")
 complete.day2 <- merge(complete.day2a, complete.day2b, by= "subject")
 # add row to code
 complete.day2$day2.complete <- 1
-complete.day2 <- select(complete.day2, -2, -3, -4, -5)
+complete.day2 <- dplyr::select(complete.day2, -2, -3, -4, -5)
 # now merge into allsum
 allsum <- merge(allsum, complete.day2, by= "subject", all= TRUE)
 
@@ -2085,11 +2304,10 @@ move_corr <- cor(move[move$lexTALE <= 80,]$Day1_CF_moving, move[move$lexTALE <= 
 }
 # plot
 CF.corrs <- na.omit(CF.corrs)
-CF.cor.plot <- ggplot(CF.corrs, aes(x=trial, y=cor)) +
-  geom_hline(yintercept=.65, linetype="dashed", color = "blue") +
-  geom_hline(yintercept=.75, linetype="dashed", color = "red") +
-  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_classic() +
-  xlab("No. of trials") + ylab("Test-retest reliability") + ggtitle("B") + theme(plot.title = element_text(hjust = 0.5))
+CF.cor.plot <- ggplot(CF.corrs, aes(x=trial, y=abs(cor))) +
+  geom_hline(yintercept=.65, linetype="dashed", color = "red") +
+  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_bw() +
+  xlab("Number of trials") + ylab("Test-retest reliability") + ggtitle("(B)") + theme(plot.title = element_text(hjust = 0.5))
 # print number of trials needed
 print(paste0("Number of chimeric faces required for at least .65 test-retest: ", min(CF.corrs[CF.corrs$cor >= .65,]$trial)))
 print(paste0("Number of chimeric faces required for at least .75 test-retest: ", min(CF.corrs[CF.corrs$cor >= .75,]$trial)))
@@ -2186,11 +2404,10 @@ move_corr <- cor(move$Day1_DL_moving, move$Day2_DL_moving, use= "complete.obs")
 }
 # plot
 DL.corrs <- na.omit(DL.corrs)
-DL.cor.plot <- ggplot(DL.corrs, aes(x=trial, y=cor)) +
-  geom_hline(yintercept=.65, linetype="dashed", color = "blue") +
-  geom_hline(yintercept=.75, linetype="dashed", color = "red") +
-  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_classic() +
-  xlab("No. of trials") + ylab("Test-retest reliability") + ggtitle("A") + theme(plot.title = element_text(hjust = 0.5))
+DL.cor.plot <- ggplot(DL.corrs, aes(x=trial, y=abs(cor))) +
+  geom_hline(yintercept=.65, linetype="dashed", color = "red") +
+  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_bw() +
+  xlab("Number of trials") + ylab("Test-retest reliability") + ggtitle("(A)") + theme(plot.title = element_text(hjust = 0.5))
 # print number of trials needed
 print(paste0("Number of chimeric faces required for at least .65 test-retest: ", min(DL.corrs[DL.corrs$cor >= .65,]$trial)))
 print(paste0("Number of chimeric faces required for at least .75 test-retest: ", min(DL.corrs[DL.corrs$cor >= .75,]$trial)))
@@ -2201,7 +2418,7 @@ all.cor.plot <- suppressMessages(suppressWarnings(ggpubr::ggarrange(DL.cor.plot,
 all.cor.plot
 # save
 ggsave(
-  "all.cor.plot.png",
+  "./plots/all.cor.plot.png",
   plot = all.cor.plot,
   width = 6, height = 3,
   dpi = 300
@@ -2217,3 +2434,4 @@ Based on a couple of rounds with this, removing a lower limit on trials correct 
 - Hugdahl, K., Westerhausen, R., Alho, K., Medvedev, S., Laine, M., & Hämäläinen, H. (2009). Attention and cognitive control: unfolding the dichotic listening story. Scandinavian journal of psychology, 50(1), 11-22.
 - Innes, B. R., Burt, D. M., Birch, Y. K., & Hausmann, M. (2016). A leftward bias however you look at it: Revisiting the emotional chimeric face task as a tool for measuring emotion lateralization. Laterality: Asymmetries of Body, Brain and Cognition, 21(4-6), 643–661.
 - Karlsson, E. M., Johnstone, L. T., & Carey, D. P. (2019). The depth and breadth of multiple perceptual asymmetries in right handers and non-right handers. Laterality: Asymmetries of Body, Brain and Cognition, 24(6), 707-739.
+
