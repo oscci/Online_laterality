@@ -287,7 +287,7 @@ for (i in 1:nrow(allsum)){
   w<-which(EHI2$subject==thissub)
  allsum$index_EHI[i] <- EHI2$index_EHI[w]
 }
-
+allsum$handpch <- as.factor(allsum$handpch)
 #now plot EHI in relation to handedness (modified by DB)
 
 eplot<-ggplot(allsum, aes(handpch,index_EHI, colour=gender)) +
@@ -2010,10 +2010,6 @@ text(-2,3.5,paste0('r = ',round(cor1,3)))
 }
 write.csv(allsum, paste0("LIs",oddeven,".csv"))
 ```
-
-
-```
-
 
 ### Reduce to .75
 
