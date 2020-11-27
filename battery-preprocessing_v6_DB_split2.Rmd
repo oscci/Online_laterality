@@ -12,9 +12,6 @@ output:
 Also ensured that 'merge' selected ALL
 
 Modified to allow rerun on split half.
-For this we take blocks of 4 rows, e.g. 1,2,3,4,9,10,11,12 etc.
-This way the script will work for finger tapping as well as the other tasks.
-Idea is to do this selection of rows right at the outset on the raw file.
 
 
 18th July DB edits
@@ -82,9 +79,8 @@ Once processed, a file is made.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 # libraries 
-library(readr)
+
 library(yarrr)
-library(dplyr)
 library(tidyr)
 library(car)
 library(ggplot2)
@@ -103,28 +99,34 @@ library(BSDA) #for ztest
 First, the demographics is processed.This gives us a participant subject, age, gender, footedness, and handedness.
 
 ```{r demograhics, warning=FALSE}
+
+oddeven <- 0 #set to zero for full dataset; to 1 for odds, and to 2 for evens
+#NB we want to use exclusion criteria from full dataset for the split half as well, and so we need to run the script with oddeven set to zero before using it for split
+
+#Demographics not needed for odd/even runs
+if (oddeven==0){
 #Reading from OSF - this only works if files are public
 demo_dat <- read.csv('https://osf.io/7smj6/download',stringsAsFactors = F)
 
 # relabel 
-demo_dat$subject <- demo_dat$Participant.Public.ID
-demo_dat$subject <- as.factor(demo_dat$subject)
+demo_dat$origID <- demo_dat$Participant.Public.ID
+demo_dat$origID <- as.factor(demo_dat$origID)
 # count and print subjects
-nsub <-length(levels(demo_dat$subject))
+nsub <-length(levels(demo_dat$origID))
 print(paste0("subjects: ", nsub))
 
 # create data frame
 allsum <- data.frame(matrix(ncol = 7, nrow = nsub))
-  colnames(allsum) <- c("subject", "age", "gender", "footedness", "handedness", "bilingual", "strongest.language")
+  colnames(allsum) <- c("origID", "age", "gender", "footedness", "handedness", "bilingual", "strongest.language")
 myrow <- 0 # start row counter
 for (i in 1:nsub) { # loop through subjects
-  subname <- levels(demo_dat$subject)[i] # find subject subject
-  myrows <- which(demo_dat$subject==subname) # select rows for this subject
+  subname <- levels(demo_dat$origID)[i] # find origID subject
+  myrows <- which(demo_dat$origID==subname) # select rows for this subject
   tmp <- data.frame(demo_dat[myrows,])
 
     myrow <- i
 
-    allsum$subject[myrow] <- subname
+    allsum$origID[myrow] <- subname
     allsum$age[myrow] <- as.numeric( tmp[tmp$Question.Key == "Age",]$Response)
     allsum$gender[myrow] <- tmp[tmp$Question.Key == "Gender",]$Response
     allsum$footedness[myrow] <- tmp[tmp$Question.Key == "footedness",]$Response
@@ -160,50 +162,54 @@ w<-which(allsum$gender=='Male')
 allsum$genderpch[w] <-1
 w<-which(allsum$gender=='Prefer not to say')
 allsum$genderpch[w]<-NA
+}
 ```
 
 Now we import and append the Porta and Miles Test to the allsum data frame. 
 
 ```{r sightednesss, warning=FALSE}
+if (oddeven==0){
 porta_dat <- read.csv("https://osf.io/zmqkt/download",stringsAsFactors = F)
 miles_dat <-  read.csv("https://osf.io/ekqsp/download",stringsAsFactors = F)
 
-miles_dat$test_subject <- "miles"
-porta_dat$test_subject <- "porta"
+miles_dat$test_origID <- "miles"
+porta_dat$test_origID <- "porta"
 # merge the two
 sight_dat <- rbind(miles_dat, porta_dat)
 # relabel 
-sight_dat$subject <- sight_dat$Participant.Public.ID
-sight_dat$subject <- as.factor(sight_dat$subject)
+sight_dat$origID <- sight_dat$Participant.Public.ID
+sight_dat$origID <- as.factor(sight_dat$origID)
 
 # count and print subjects
-nsub <-length(levels(sight_dat$subject))
+nsub <-length(levels(sight_dat$origID))
 print(paste0("subjects: ", nsub))
 
 # create data frame
 sightedness <- data.frame(matrix(ncol = 3, nrow = nsub))
-  colnames(sightedness) <- c("subject", "miles", "porta")
+  colnames(sightedness) <- c("origID", "miles", "porta")
 myrow <- 0 # start row counter
 for (i in 1:nsub) { # loop through subjects
-  subname <- levels(sight_dat$subject)[i] # find subject subject
-  myrows <- which(sight_dat$subject==subname) # select rows for this subject
+  subname <- levels(sight_dat$origID)[i] # find origID subject
+  myrows <- which(sight_dat$origID==subname) # select rows for this subject
   tmp <- data.frame(sight_dat[myrows,])
 
     myrow <- i
 
-    sightedness$subject[myrow] <- subname
+    sightedness$origID[myrow] <- subname
     sightedness$miles[myrow] <- tmp[tmp$Question.Key == "response-2",]$Response
     sightedness$porta[myrow] <- tmp[tmp$Question.Key == "response-2",]$Response
   }
 
 # now merge sightedness and allsum
-allsum <- merge(allsum, sightedness, by= "subject",all=TRUE)
+allsum <- merge(allsum, sightedness, by= "origID",all=TRUE)
 head(allsum) #just to check all looking OK
+}
 ```
 
 Now we add the EHI. Here we score and plot the Edinburgh handedness inventory (Oldfield, 1971) in its short form.
 
 ```{r EHI, warning=FALSE}
+if (oddeven==0){
 EHI <- read.csv("https://osf.io/kfdma/download",stringsAsFactors = F)
 
 # select only responses
@@ -219,12 +225,12 @@ EHI <- EHI[EHI$Question.Key == "response-2-quantised" | EHI$Question.Key == "res
            EHI$Question.Key == "response-20-quantised",]
 
 # recode variables
-EHI$subject <- EHI$Participant.Public.ID
-EHI$subject <- as.factor(EHI$subject)
+EHI$origID <- EHI$Participant.Public.ID
+EHI$origID <- as.factor(EHI$origID)
 
 # reduce data
 # new data
-meaningful <- c("subject", "Question Key", "Response") # select wanted columns
+meaningful <- c("origID", "Question Key", "Response") # select wanted columns
 c<-which(names(EHI) %in% meaningful) #find colnumbers of unwanted
 EHI <-EHI[,c] #remove unwanted columns
 EHI <- na.omit(EHI) # remove NAs
@@ -254,25 +260,25 @@ for (r in 1:nrow(EHI)) {
 
 # re-reduce data
 # new data
-meaningful <- c("subject", "right_hand", "left_hand") # select wanted columns
+meaningful <- c("origID", "right_hand", "left_hand") # select wanted columns
 c<-which(names(EHI) %in% meaningful) #find colnumbers of unwanted
 EHI <-EHI[,c] #remove unwanted columns
 EHI <- na.omit(EHI) # remove NAs
 
 # find sum for left and right for each participant 
 # create hand data 
-nsub <-length(levels(EHI$subject))
+nsub <-length(levels(EHI$origID))
 EHI2 <- data.frame(matrix(ncol = 3, nrow = nsub))
-  colnames(EHI2) <- c("subject", "right_hand", "left_hand")
+  colnames(EHI2) <- c("origID", "right_hand", "left_hand")
 
 
 for (i in 1:nsub) { # loop through subjects
   myrow <- i
-  subname <- levels(EHI$subject)[i] # find subject subject
-  myrows <- which(EHI$subject==subname) # select rows for this subject
+  subname <- levels(EHI$origID)[i] # find origID subject
+  myrows <- which(EHI$origID==subname) # select rows for this subject
   tmp <- data.frame(EHI[myrows,])
   
-    EHI2$subject[myrow] <- subname # add row for subject
+    EHI2$origID[myrow] <- subname # add row for subject
     EHI2$right_hand[myrow] <- sum(tmp$right_hand) # sum for R hand
     EHI2$left_hand[myrow] <- sum(tmp$left_hand) # sum for L hand
   }
@@ -283,18 +289,18 @@ EHI2$index_EHI <- 100*(EHI2$right_hand-EHI2$left_hand)/(EHI2$right_hand+EHI2$lef
 # merge with allsum
 allsum$index_EHI <- NA #initialise
 for (i in 1:nrow(allsum)){
-  thissub <- allsum$subject[i]
-  w<-which(EHI2$subject==thissub)
+  thissub <- allsum$origID[i]
+  w<-which(EHI2$origID==thissub)
  allsum$index_EHI[i] <- EHI2$index_EHI[w]
 }
-allsum$handpch <- as.factor(allsum$handpch)
+
 #now plot EHI in relation to handedness (modified by DB)
 
 eplot<-ggplot(allsum, aes(handpch,index_EHI, colour=gender)) +
-  geom_jitter(wsubjectth=.25,height=2)+
+  geom_jitter(width=.25,height=2)+
   ggtitle("Handedness index on the Edinburgh Handedness Inventory")
 eplot
-#This is not perfect, but gives and subjectea to check EHI is valid etc.
+#This is not perfect, but gives and ID to check EHI is valid etc.
 
 ggplot(allsum, aes(x=index_EHI)) + geom_density(aes(group=handpch,fill=handpch))
 
@@ -304,11 +310,13 @@ ggplot(allsum, aes(x=index_EHI)) + geom_density(aes(group=handpch,fill=handpch))
 oddcase <- intersect(which(allsum$index_EHI<0),which(allsum$handedness=='Right'))
 allsum$handedness[oddcase] <- 'Left'
 allsum$handpch[oddcase] <- 1
+}
 ```
 
 Next, the lexTale is preprocesssed. This is done using the weighted average for the test. 
 
 ```{r lexTALE, warning=FALSE}
+if (oddeven==0){
 # read data
 lexTALE <- read.csv("https://osf.io/h4btp/download",stringsAsFactors = F)
 
@@ -316,26 +324,26 @@ lexTALE <- read.csv("https://osf.io/h4btp/download",stringsAsFactors = F)
 lexTALE <- lexTALE[lexTALE$Attempt == 1,]
 lexTALE <- lexTALE[lexTALE$display == "Task",]
 # rename variables
-lexTALE$subject <- lexTALE$Participant.Public.ID
+lexTALE$origID <- lexTALE$Participant.Public.ID
 lexTALE$accuracy <- lexTALE$Correct
 lexTALE$condition <- lexTALE$ANSWER
 # code as factors
-lexTALE$subject <- as.factor(lexTALE$subject)
+lexTALE$origID <- as.factor(lexTALE$origID)
 lexTALE$condition <- as.factor(lexTALE$condition)
   levels(lexTALE$condition) <- c("non-word", "word")
 
 # create data frame
 lexTale_score <- data.frame(matrix(ncol = 4, nrow = nsub))
-  colnames(lexTale_score) <- c("subject", "Word", "nonWord", "lexTALE")
+  colnames(lexTale_score) <- c("origID", "Word", "nonWord", "lexTALE")
 
-for (i in 1:nsub) { # loop through subjects
-  subname <- levels(lexTALE$subject)[i] # find subject subject
-  myrows <- which(lexTALE$subject==subname) # select rows for this subject
+for (i in 1:nsub) { # loop through origIDs
+  subname <- levels(lexTALE$origID)[i] # find origID subject
+  myrows <- which(lexTALE$origID==subname) # select rows for this subject
   tmp <- data.frame(lexTALE[myrows,])
 
     myrow <- i
 
-    lexTale_score$subject[myrow] <- subname
+    lexTale_score$origID[myrow] <- subname
     lexTale_score$Word[myrow] <- sum(tmp[tmp$condition == "word",]$accuracy)
     lexTale_score$nonWord[myrow] <- sum(tmp[tmp$condition == "non-word",]$accuracy)
     lexTale_score$lexTALE[myrow] <- ((sum(tmp[tmp$condition == "word",]$accuracy)/40*100) + (sum(tmp[tmp$condition == "non-word",]$accuracy)/20*100)) / 2
@@ -343,15 +351,15 @@ for (i in 1:nsub) { # loop through subjects
 }
 
 # plot
-x<-ggplot(lexTale_score, aes(x=lexTALE, y=subject, fill=subject)) +
+x<-ggplot(lexTale_score, aes(x=lexTALE, y=origID, fill=origID)) +
   geom_dotplot(binaxis='y', stackdir='center') + xlim(0, 100) +
   ggtitle("Lextale") + geom_vline(xintercept = 80, linetype="dashed", color = "black", size=1.5)
 x + theme_bw() + theme(legend.position = "none") + theme(axis.text.y = element_blank()) 
 
 # now create a data frame only for index 
-lexTALE <- dplyr::select(lexTale_score, "subject", "lexTALE")
+lexTALE <- dplyr::select(lexTale_score, "origID", "lexTALE")
 # now merge with allsum
-allsum <- merge(allsum, lexTALE, by= "subject",all=TRUE)
+allsum <- merge(allsum, lexTALE, by= "origID",all=TRUE)
 # now write the full allsum 
 write.csv(allsum, file = "./allsum_out.csv")
 
@@ -362,6 +370,7 @@ paste0("No. of participants below LexTALE cuttoff: ", sum(allsum$lexTALE < 80))
 
 # mark those who ID don't pass the LexTALE
 allsum <- allsum %>% mutate(lexOut= if_else(lexTALE < 80, "remove", "keep"))
+}
 ```
 
 # Read in raw data for day 1 and 2
@@ -371,14 +380,20 @@ NB This step is quite slow (slower if reading from OSF than from drive).
 
 
 ```{r readraw,include= FALSE, warning=FALSE}
-# Set directory
-
+  #reading direct from OSF is temperamental
+  #Often gives error message if run from chunk, but line by line is OK. Grrr.
+  readosf<-0
+  if(readosf==1){
   data_file <- "https://osf.io/mhk29/download" #day 1 data
   all_dat1 <- read.csv(data_file, na.strings = "NA",stringsAsFactors=F)
 
     data_file <-  "https://osf.io/ebm6s/download"
      all_dat2 <- read.csv(data_file, na.strings = "NA",stringsAsFactors=F)
-
+  }
+  if(readosf==0){
+    all_dat1=read.csv("./data/day1_combined.csv",na.strings = "NA",stringsAsFactors=F)
+      all_dat2=read.csv("./data/day2_combined.csv",na.strings = "NA",stringsAsFactors=F)
+  }
  
    all_dat1$Session<-1
    all_dat2$Session<-2
@@ -390,16 +405,23 @@ NB This step is quite slow (slower if reading from OSF than from drive).
       all_dat2<-all_dat2[,-64] #extraneous X56 col
       
       alldat<-rbind(all_dat1,all_dat2[,colnames(all_dat1)])
-      
+
+
 
 alldat %>% filter(Attempt >= 1) # only answers 
+
 # write as factors
-alldat$subject <- as.factor(alldat$Participant.Public.ID)
+alldat$origID <- as.factor(alldat$Participant.Public.ID)
+alldat$subject<-as.numeric(alldat$origID)
 alldat$RT <- as.numeric(as.character(alldat$Reaction.Time))
 alldat$Trial <-as.numeric(alldat$Trial.Number) #useful if we want to restrict analysis to subset of trials so retain this variable
 alldat$Task.Name <- as.factor(alldat$Task.Name)
 alldat$word<-substring(alldat$word,66,(nchar(alldat$word)-4)) #remove format from written word stimuli
-oddeven <- 1 #set to zero for full dataset; to 1 for odds, and to 2 for evens
+
+##################################################################################
+#      MODIFICATION FOR ODD AND EVEN ANALYSIS
+##################################################################################
+
 nr<-nrow(alldat)
 
 if (oddeven==1){
@@ -408,32 +430,35 @@ if (oddeven==1){
 if (oddeven==2){
   alldat<-alldat[alldat$Trial%%2==0,] #even trials only
 }
-
-
-alldat$word_OG<-NA #create dummy column just to make it easier to align columns
-
 ```
 
-Create a simple numerical ID to make life easier when screening data if we need to identify subjects whose data is odd in some way. Ensure this is consistent across all_dat1 and all_dat2 and allsum.
-We first rename the current subject variable so we can reuse this name with the numbered ID for all future computations.
-Again, this is rather slow because done in a loop, which is probably not very efficient!
-
-```{r makesubject}
-#Use allsum as the basis for the check
-#First rename all subject to origID
-allsum <- allsum %>% rename(origID = subject) 
-alldat <- alldat %>% rename(origID = subject) 
-
-alldat$subject <- NA
-
-for (n in 1:nrow(allsum)){
-  allsum$subject[n] <- n
-  w<-which(alldat$origID == allsum$origID[n])
-  alldat$subject[w] <-n
-
+```{r reuse.allsum}
+#for odd and even subsets, read in original allsum and select demographic and exclusion cols to keep
+if (oddeven>0){
+  allsum<-read.csv("./data/allsum_out.csv",stringsAsFactors=F)
+  keepcols<-c("subject" , "origID","age" ,"gender","footedness" ,"handedness","bilingual", "strongest.language","handpch","genderpch" ,"miles", "porta","index_EHI" ,"lexTALE", "lexOut","exclude","exRDT"      )
+  allsum<-allsum[,keepcols]
 }
 head(allsum)
+
 ```
+```{r subnums}
+##################################################################################
+#find subject number corresponding to orig ID
+
+allsum$subject<-NA
+for (i in 1:nrow(allsum)){
+  thisID<-allsum$origID[i]
+  w<-which(alldat$origID == thisID)
+  allsum$subject[i]<-alldat$subject[w[1]]
+}
+
+
+
+```
+
+
+
 
 # Functions
 
@@ -765,6 +790,7 @@ colnames(allsum)[(mycol-3):mycol]<-c("Emot.corr.same1","Emot.corr.diff1","Emot.c
 ```
 
 ```{r excludelowCFacc}
+if (oddeven==0) {
 #db modified to mark rather than drop cases with scores < .75
 allsum$exclude <- 0 #default is to include
 
@@ -776,6 +802,7 @@ allsum$exclude[w]<-1 #code exclude = 1 if excluded because poor emot recog
 print(paste('N flagged for exclusion because < 75% on at least one trial:',length(w)))
 w <- union(which(allsum$Emot.corr.diff1 ==0),which(allsum$Emot.corr.diff2 == 0)) #also exclude if no correct response on one side
 allsum$exclude[w]<-2 #code exclude = 2 if excluded because no response one side
+}
 ```
 
 ```{r plotCFacc}
@@ -847,7 +874,8 @@ The data is visualised using the pirate plot function and t.test conducted.
 
 ```{r dosummary}
 #find included cases
-w<-which(allsum$exclude==0)
+w<-which(allsum$exclude==0) 
+
 inclsubs <- allsum$subject[w]
 
 #-------------------------
@@ -1078,11 +1106,13 @@ complete.day2.DL <- unique(dichotic_dat2$subject)
 
 Now remove outliers, using same function as for CF.
 ```{r dichotic.outliers}
+if (oddeven==0){
 dichotic_dat1 <- detect.outliers(dichotic_dat1,200,1.65) #use generic outlier removal function
 outliertable1<-table(dichotic_dat1$subject,dichotic_dat1$outlier)
 dichotic_dat2 <- detect.outliers(dichotic_dat2,200,1.65) #use generic outlier removal function
 outliertable2<-table(dichotic_dat2$subject,dichotic_dat2$outlier)
 #print(outliertable)
+}
 ```
 
 
@@ -1125,6 +1155,7 @@ w<-union(which(allsum$sound.recog1 < .75), which(allsum$sound.recog2 < .75))
 ww<-intersect(which(allsum$exclude==1),w)
 #Also exclude if less than 75% accuracy on the different trials
 
+if(oddeven==0){
 #ww contains people who were excluded on both dichotic and faces. 
 # code exclude = 2 for the cases where there less than 75% for identical stimuli
 allsum$exclude[w]<-2 #code exclude = 2 if excluded because poor dichotic
@@ -1132,6 +1163,7 @@ allsum$exclude[ww]<-12 #code for those excluded on both chimeric and dichotic
 t <- table(allsum$exclude) 
 rownames(t)<-c('include','exclude CF','exclude dich','exclude CF+dich')
 t
+}
 ```
 
 In this section, the correct sequences are marked as 1, incorrect asnwers are marked as 0. We then mark whether the correct answers were in the left or right ear. 
@@ -1185,15 +1217,21 @@ We have to remove cases where v few trials because of technical problems. Specif
 NB This is only run for session 2 because there were no technical problems for session 1.
 
 ```{r marktecherr}
+Nfortech<-80 #need at least this N trials
+if(oddeven>0){Nfortech<-40} #half the number for split half runs
 techerr<-table(dichotic_dat2$subject)
-te<-which(techerr<80)
+te<-which(techerr<Nfortech)
 techerr<-techerr[te] #subject numbers for those with few trials.
 techerr<-as.numeric(names(techerr))
+w<-which(allsum$subject%in% techerr)
+allsum$exclude[w]<-4 #exclude for tech error
+
 ```
 The data is visualised using the pirate plot function and t.test conducted.
 
 ```{r dosummarydich}
 includesubs <- which(allsum$exclude<2) #only plot/t-test included cases
+#only plot/t-test included cases
 origdat <- DL_dat1[DL_dat1$subject %in% includesubs,]
 measure <- 'Accuracy'
 origdat$X1 <- origdat$accurate #we used a dummy column name so we can vary the data that are used in the pirate plot etc
@@ -1453,16 +1491,33 @@ complete.day2.RD <- unique(RDT_dat2$subject)
 Now use generic function to remove outliers.
 
 ```{r rdt_outliers}
+
 #First we create a RT column that is based on LOGRT
 RDT_dat1$rawRT <- RDT_dat1$RT
 RDT_dat2$rawRT <- RDT_dat2$RT
 RDT_dat1$RT <- log(RDT_dat1$rawRT)
 RDT_dat2$RT <- log(RDT_dat2$rawRT)
+if(oddeven==0){
 RDT_dat1<-detect.outliers(RDT_dat1,log(200),1.65) #numbers specify min RT and 
 RDT_dat2<-detect.outliers(RDT_dat2,log(200),1.65) #numbers specify min RT and zscore for Hoaglin-Iglewicz respectively
 
 outliertable1<-table(RDT_dat1$subject,RDT_dat1$outlier)
 outliertable2<-table(RDT_dat2$subject,RDT_dat2$outlier)
+}
+#for splithalves read in the original RDT file for all trials and then split
+#This means we keep the outlier designation as before
+if(oddeven>0){
+  tempRDT1<-read.csv("./data/myRDTdat1.csv",stringsAsFactors=F)
+  tempRDT2<-read.csv("./data/myRDTdat2.csv",stringsAsFactors=F)
+  if(oddeven==1){
+  RDT_dat1<-tempRDT1[tempRDT1$Trial%%2==1,] #odd trials only
+  RDT_dat2<-tempRDT2[tempRDT2$Trial%%2==1,] #odd trials only
+  }
+    if(oddeven==2){
+  RDT_dat1<-tempRDT1[tempRDT1$Trial%%2==0,] #even trials only
+  RDT_dat2<-tempRDT2[tempRDT2$Trial%%2==0,] #even trials only
+  }
+}
 ```
 
 Scrutiny of outliertable indicates a few problematic cases with far fewer than 260 trials in total. Seems related to glitches in Gorilla.
@@ -1509,7 +1564,7 @@ allsum <- merge(allsum,pcorNull,by="subject",all=TRUE)
 Next exclude those who never get 'no rhyme' items correct, and those with less than 75% correct responses on either side
 
 ```{r RDT_exclude}
-
+if (oddeven==0){
 w1x<-which(is.na(RDT_df1$RT))
 w2x<-which(is.na(RDT_df2$RT))
 
@@ -1519,8 +1574,8 @@ exRDTx<-unique(c(RDT_df1$subject[w1x],RDT_df2$subject[w2x]))
 nr1<-RDT_df1[RDT_df1$side=='no rhyme',] 
 nr2<-RDT_df2[RDT_df2$side=='no rhyme',]
 
-w1<-which(nr1$p.corr==0)
-w2<-which(nr2$p.corr==0)
+w1<-which(nr1$p.corr<75)
+w2<-which(nr2$p.corr<75)
 
 
 exRDT<-unique(c(nr1$subject[w1],nr2$subject[w2]))
@@ -1530,8 +1585,8 @@ wr1<-RDT_df1[RDT_df1$side!='no rhyme',]
 wr2<-RDT_df2[RDT_df2$side!='no rhyme',]
 
 
-w1a<-which(wr1$p.corr<75)
-w2a<-which(wr2$p.corr<75)
+w1a<-which(wr1$p.corr<50)
+w2a<-which(wr2$p.corr<50)
 
 
 exRDT2<-unique(c(wr1$subject[w1a],wr2$subject[w2a]))
@@ -1542,7 +1597,10 @@ allsum$exRDT <- 0
 
 allsum$exRDT[allsum$subject %in% exRDT]<-1 #decided best to have separate column for exclusion for each task
 allsum$exRDT[allsum$subject %in% exRDTx]<-2 #missing data
+}
+
 w<-which(allsum$exRDT==0)  
+
 incRDT <- allsum$subject[w]
 ninc <- length(incRDT)
 print(paste0('RDT: number remaining after exclusions = ',ninc))
@@ -1556,26 +1614,7 @@ RDT_df2<-RDT_df2[RDT_df2$side !='no rhyme',]
 
 
 ```
-```{r oldRDT_exclude}
-#Original version now superseded
-doold<-0
-if(doold==1){
-  wn <-unique(which(RDT_df1$accurate ==0),which(RDT_df2$accurate ==0)) #this catches those who were always wrong on 'no rhyme' trials, and possibly others where presentation messed up for technical reasons
 
-w1<-which(RDT_df1$p.corr < 75)
-w2<-which(RDT_df2$p.corr < 75)
-
-exRDT<-sort(unique(c(RDT_df1$subject[w1],RDT_df2$subject[w2],RDT_df2$subject[wn])))
-
-allsum$exRDT <- 0
-allsum$exRDT[allsum$subject %in% exRDT]<-1 #decided best to have separate column for exclusion for each task
-w<-which(allsum$exRDT==0)  
-incRDT <- allsum$subject[w]
-ninc <- length(incRDT)
-print(paste0('RDT: number remaining after exclusions = ',ninc))
-
-}
-```
 
 Comparison shows that there is significant side difference in RT. Accuracy is close to ceiling and does not show side difference (but it would be a bit odd for this task, - unlike CF and dichotic, there is no competing information and only one answer is correct).
 ```{r rdtpirate}
@@ -1594,6 +1633,13 @@ dopirate(origdat,task,measure)
 # RT
 origdat$X1 <- origdat$RT
 measure <- 'RT'
+#need to exclude those who don't have RT values on both L and R
+w<-which(is.na(origdat$X1))
+if (length(w)>0){
+  takeout<-unique(origdat$subject[w])
+  ww<-which(origdat$subject %in% takeout)
+  origdat<-origdat[-ww,]
+}
 dopirate(origdat,task,measure)
 }
 ```
@@ -2008,7 +2054,7 @@ abline(h=0)
 abline(0,1,lty=2)
 text(-2,3.5,paste0('r = ',round(cor1,3)))
 }
-write.csv(allsum, paste0("LIs",oddeven,".csv"))
+write.csv(allsum, paste0("./data/LIs",oddeven,".csv"))
 ```
 
 ### Reduce to .75
@@ -2097,11 +2143,10 @@ move_corr <- cor(move[move$lexTALE <= 80,]$Day1_CF_moving, move[move$lexTALE <= 
 }
 # plot
 CF.corrs <- na.omit(CF.corrs)
-CF.cor.plot <- ggplot(CF.corrs, aes(x=trial, y=cor)) +
-  geom_hline(yintercept=.65, linetype="dashed", color = "blue") +
-  geom_hline(yintercept=.75, linetype="dashed", color = "red") +
-  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_classic() +
-  xlab("No. of trials") + ylab("Test-retest reliability") + ggtitle("B") + theme(plot.title = element_text(hjust = 0.5))
+CF.cor.plot <- ggplot(CF.corrs, aes(x=trial, y=abs(cor))) +
+  geom_hline(yintercept=.65, linetype="dashed", color = "red") +
+  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_bw() +
+  xlab("Number of trials") + ylab("Test-retest reliability") + ggtitle("(B)") + theme(plot.title = element_text(hjust = 0.5))
 # print number of trials needed
 print(paste0("Number of chimeric faces required for at least .65 test-retest: ", min(CF.corrs[CF.corrs$cor >= .65,]$trial)))
 print(paste0("Number of chimeric faces required for at least .75 test-retest: ", min(CF.corrs[CF.corrs$cor >= .75,]$trial)))
@@ -2200,11 +2245,10 @@ move_corr <- cor(move$Day1_DL_moving, move$Day2_DL_moving, use= "complete.obs")
 }
 # plot
 DL.corrs <- na.omit(DL.corrs)
-DL.cor.plot <- ggplot(DL.corrs, aes(x=trial, y=cor)) +
-  geom_hline(yintercept=.65, linetype="dashed", color = "blue") +
-  geom_hline(yintercept=.75, linetype="dashed", color = "red") +
-  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_classic() +
-  xlab("No. of trials") + ylab("Test-retest reliability") + ggtitle("A") + theme(plot.title = element_text(hjust = 0.5))
+DL.cor.plot <- ggplot(DL.corrs, aes(x=trial, y=abs(cor))) +
+  geom_hline(yintercept=.65, linetype="dashed", color = "red") +
+  geom_line(size=1, alpha=0.8) + ylim(0, 1) + theme_bw() +
+  xlab("Number of trials") + ylab("Test-retest reliability") + ggtitle("(A)") + theme(plot.title = element_text(hjust = 0.5))
 # print number of trials needed
 print(paste0("Number of chimeric faces required for at least .65 test-retest: ", min(DL.corrs[DL.corrs$cor >= .65,]$trial)))
 print(paste0("Number of chimeric faces required for at least .75 test-retest: ", min(DL.corrs[DL.corrs$cor >= .75,]$trial)))
@@ -2215,7 +2259,7 @@ all.cor.plot <- suppressMessages(suppressWarnings(ggpubr::ggarrange(DL.cor.plot,
 all.cor.plot
 # save
 ggsave(
-  "all.cor.plot.png",
+  "./plots/all.cor.plot.png",
   plot = all.cor.plot,
   width = 6, height = 3,
   dpi = 300
@@ -2224,6 +2268,65 @@ ggsave(
 ```
 
 Based on a couple of rounds with this, removing a lower limit on trials correct here is the only way to examine if less than 1 block would be enough to achieve r= .75. From this analysis, it appears that 82 trials would be sufficient to run the DL with reasonable reliability. Three repetitions of all combinations would lead to 108 trials (90 with different emotions in each hemifield, 18 same-same trials).
+
+```{r finalbit}
+if(oddeven==0){
+  
+  # CF
+day2.CF <- data.frame(matrix(nrow=length(complete.day2.CF), ncol= 2))
+  colnames(day2.CF) <- c("task", "subject")
+  day2.CF$subject <- complete.day2.CF
+  day2.CF$task <- "CF"
+# DL
+day2.DL <- data.frame(matrix(nrow=length(complete.day2.DL), ncol= 2))
+  colnames(day2.DL) <- c("task", "subject")
+  day2.DL$subject <- complete.day2.DL
+  day2.DL$task <- "DL"
+# RD
+day2.RD <- data.frame(matrix(nrow=length(complete.day2.RD), ncol= 2))
+  colnames(day2.RD) <- c("task", "subject")
+  day2.RD$subject <- complete.day2.RD
+  day2.RD$task <- "CF"
+# Finger
+day2.FT <- data.frame(matrix(nrow=length(complete.day2.FT), ncol= 2))
+  colnames(day2.FT) <- c("task", "subject")
+  day2.FT$subject <- complete.day2.FT
+  day2.FT$task <- "CF"
+# now create a combined df
+complete.day2a <- merge(day2.CF, day2.DL, by= "subject")
+complete.day2b <- merge(day2.RD, day2.FT, by= "subject")
+complete.day2 <- merge(complete.day2a, complete.day2b, by= "subject")
+# add row to code
+complete.day2$day2.complete <- 1
+complete.day2 <- dplyr::select(complete.day2, -2, -3, -4, -5)
+# now merge into allsum
+allsum <- merge(allsum, complete.day2, by= "subject", all= TRUE)
+  
+  
+  allsumex<-allsum #make a copy that has the exclusions from the whole dataset
+  write.csv(allsum,'./data/allsum_out.csv',row.names=F)
+}
+LIname<-paste0('./data/LIs',oddeven,'.csv')
+LIcols<-c("subject","handpch", "Day1_CF_acc_LI", "Day2_CF_acc_LI",
+          "Day1_DL_acc_LI" ,"Day2_DL_acc_LI" ,
+          "Day1.RDT_RT_LI" ,"Day2.RDT_RT_LI")
+
+write.csv(allsum[,LIcols],LIname,row.names=F)
+
+zname<-paste0('./data/LIzs',oddeven,'.csv')
+LIzcols<-c("subject","handpch", "Day1_CF_acc_Z", "Day2_CF_acc_Z",
+          "Day1_Dich_acc_Z" ,"Day2_Dich_acc_Z" ,
+          "zlat_RDT_1" ,"zlat_RDT_2")
+
+write.csv(allsum[,LIzcols],zname,row.names=F)
+
+#we need to preserve the RDT files that have the outliers marked as NA
+if(oddeven==0){
+  write.csv(RDT_dat1,'./data/myRDTdat1.csv',row.names=F)
+  write.csv(RDT_dat2,'./data/myRDTdat2.csv',row.names=F)
+}
+
+```
 
 **References:**
 
